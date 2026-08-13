@@ -1,0 +1,66 @@
+{
+  "schema": "mandate.yield-route-reference.v1",
+  "agent": {
+    "erc8004_id": 1806,
+    "name": "YieldRoute"
+  },
+  "mandate": {
+    "asset": "USDT",
+    "capital_usd": "5000.00",
+    "max_risk": "high",
+    "leverage_max": "0",
+    "allowed_protocols": ["PancakeSwap", "Venus", "Lista"],
+    "max_actions_per_week": "2",
+    "broadcast_allowed": false
+  },
+  "source": {
+    "chain": "BNB Smart Chain",
+    "chain_id": 56,
+    "provider": "DefiLlama",
+    "yield_url": "https://yields.llama.fi/pools",
+    "protocol_url": "https://api.llama.fi/protocols",
+    "retrieved_at_utc": "2026-08-13T08:57:09Z",
+    "method": "public API snapshot; read-only"
+  },
+  "coverage": {
+    "matching_pools": 9,
+    "eligible_pools": 6,
+    "rejected_pools": 3
+  },
+  "decision": {
+    "status": "ROUTE_FOUND",
+    "protocol": "Lista",
+    "project": "lista-lending",
+    "pool_id": "80a280c8-8225-4232-a2a6-70e6606acd84",
+    "symbol": "USDT",
+    "observed_apy_pct": "5.01909",
+    "pool_tvl_usd": "1843875.00",
+    "estimated_gross_yield_usd_year": "250.95",
+    "transaction_attempted": false
+  },
+  "alternatives": [
+    {
+      "protocol": "Venus",
+      "project": "venus-flux",
+      "pool_id": "f45554c1-21be-4d8d-a974-d23c3ad47624",
+      "symbol": "USDT",
+      "observed_apy_pct": "2.50000",
+      "pool_tvl_usd": "2543597.00",
+      "estimated_gross_yield_usd_year": "125.00"
+    },
+    {
+      "protocol": "Venus",
+      "project": "venus-core-pool",
+      "pool_id": "9f3a6015-5045-4471-ba65-ad3dc7c38269",
+      "symbol": "USDT",
+      "observed_apy_pct": "1.91783",
+      "pool_tvl_usd": "88611341.00",
+      "estimated_gross_yield_usd_year": "95.89"
+    }
+  ],
+  "limitations": [
+    "Point-in-time third-party observation; APY is not guaranteed.",
+    "Estimated yield excludes future APY changes, gas, slippage, taxes and smart-contract loss.",
+    "This deliverable contains analysis only and did not attempt a transaction."
+  ]
+}

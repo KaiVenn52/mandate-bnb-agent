@@ -1,0 +1,56 @@
+{
+  "schema": "mandate-evidence-passport-v1",
+  "generated_at": "2026-08-13T14:30:00Z",
+  "project": {
+    "name": "MANDATE",
+    "url": "https://mandate-bnb-agent.vercel.app",
+    "network": "BSC Testnet",
+    "chain_id": 97,
+    "submission_wallet": "0xD30BbB80c863c9B94622EF92337AaD65148D2EC3"
+  },
+  "agent": {
+    "name": "YieldRoute",
+    "erc8004_id": 1806,
+    "registration_transaction": "0xe00a95305b3b28637d6de96b31b6cf0e87d84acac49a31d7b4a1f2add44a8198"
+  },
+  "erc8183": {
+    "job_id": 506,
+    "status": "COMPLETED",
+    "commerce": "0xa206c0517B6371C6638CD9e4a42Cc9f02A33B0DE",
+    "router": "0xD7d36D66d2F1B608A0F943f722D27e3744f66F25",
+    "policy": "0xd6a4217588f6b1f5657a92a3e94e6422ad771cea",
+    "test_u_token": "0xc70B8741B8B07A6d61E54fd4B20f22Fa648E5565",
+    "escrow_test_u": "0.1",
+    "final_allowance_test_u": "0",
+    "final_wallet_balance_test_u": "10",
+    "deliverable_hash": "0xd860391e80df0dec17e851d3ad8e12ef0e20044411aba687da7e366948f0f999",
+    "manifest_url": "https://mandate-bnb-agent.vercel.app/api/erc8183/yield-deliverable/506",
+    "evidence_url": "https://mandate-bnb-agent.vercel.app/evidence/yield-route-reference.json",
+    "evidence_sha256": "be4e4264f3b5d106ec9f8517c4ddf9292b8b107b92e871243d8702c9302d6d3c",
+    "transactions": [
+      {"step":1,"action":"create","block":124840213,"utc":"2026-08-13T12:34:29Z","hash":"0x354c0df6629eec36cb463d32a17b5a907af6f6691bd3630e0ae0b85c2922fd9d"},
+      {"step":2,"action":"register_policy","block":124840230,"utc":"2026-08-13T12:34:37Z","hash":"0x2bc1a33338a898eb67cdf789ef543a267922f4817149934bbdd5d42e388ee04e"},
+      {"step":3,"action":"set_budget","block":124840240,"utc":"2026-08-13T12:34:41Z","hash":"0xa6441a3dde0295099d3193683199e76f03aaced1f266f6b536fadb766bdfa22c"},
+      {"step":4,"action":"approve_exact","block":124840254,"utc":"2026-08-13T12:34:47Z","hash":"0xd003e7bdeedd9cb052ec46513d8b6ea7b8dad6bbc0a3c689fdbe2667158f0a89"},
+      {"step":5,"action":"fund","block":124840266,"utc":"2026-08-13T12:34:53Z","hash":"0xc560894d243e963531dc6848a99c18bffb9571970f06abdb308dc13c2b088061"},
+      {"step":6,"action":"submit","block":124840277,"utc":"2026-08-13T12:34:58Z","hash":"0x73f98a37fa2277e543e468d5ca28ebc737acf687baed4b2fc1380d0519d8eff1"},
+      {"step":7,"action":"settle","block":124855156,"utc":"2026-08-13T14:26:33Z","hash":"0xf423d6403c8e7926ea0e125c3b216226b95856fc836293645ef14c8ae531f043"}
+    ]
+  },
+  "termix": {
+    "report_url": "https://mandate-bnb-agent.vercel.app/evidence/MANDATE-Agent-Advantage-Report.pdf",
+    "paired_tasks": 3,
+    "includes_trading_task": true,
+    "median_human_seconds": 233.65,
+    "median_agent_seconds": 0.2718,
+    "median_speedup_x": 866.6543,
+    "average_quality_lift_points": 5.3333,
+    "observed_cash_cost_usd": 0,
+    "actual_outputs": [
+      {"task_id":"A-01","human":"https://mandate-bnb-agent.vercel.app/evidence/termix/raw/A-01-baseline.json","agent":"https://mandate-bnb-agent.vercel.app/evidence/termix/raw/A-01-agent.json"},
+      {"task_id":"A-02","human":"https://mandate-bnb-agent.vercel.app/evidence/termix/raw/A-02-baseline.json","agent":"https://mandate-bnb-agent.vercel.app/evidence/termix/raw/A-02-agent.json","verification":"https://mandate-bnb-agent.vercel.app/evidence/termix/raw/A-02-verification.json"},
+      {"task_id":"A-03","human":"https://mandate-bnb-agent.vercel.app/evidence/termix/raw/A-03-baseline.json","agent":"https://mandate-bnb-agent.vercel.app/evidence/termix/raw/A-03-agent.json"}
+    ],
+    "limitations": "Three controlled frozen tasks and one human operator; not a profitability or universal productivity claim."
+  }
+}

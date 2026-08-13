@@ -1,0 +1,21 @@
+{
+  "generated_at_utc": "2026-08-12T05:01:00Z",
+  "benchmark_version": "mandate-aar-1.0.0",
+  "hourly_labor_assumption_usd": 15,
+  "rows": [
+    {"task_id":"A-01","task":"Stablecoin yield route selection","category":"Yield optimisation","human_seconds":290.004,"agent_seconds":0.2718,"time_saved_seconds":289.7322,"speedup_x":1066.9757,"human_quality":2,"agent_quality":10,"quality_delta":8,"human_cash_cost_usd":0,"agent_cash_cost_usd":0,"human_labor_cost_at_15_usd":1.2084},
+    {"task_id":"A-02","task":"BNB/USDT grid plan safety review","category":"Trading","human_seconds":233.650,"agent_seconds":0.2696,"time_saved_seconds":233.3804,"speedup_x":866.6543,"human_quality":4,"agent_quality":10,"quality_delta":6,"human_cash_cost_usd":0,"agent_cash_cost_usd":0,"human_labor_cost_at_15_usd":0.9735},
+    {"task_id":"A-03","task":"Venus health-factor intervention","category":"Security / risk monitoring","human_seconds":226.700,"agent_seconds":0.2908,"time_saved_seconds":226.4092,"speedup_x":779.5736,"human_quality":8,"agent_quality":10,"quality_delta":2,"human_cash_cost_usd":0,"agent_cash_cost_usd":0,"human_labor_cost_at_15_usd":0.9446}
+  ],
+  "summary": {
+    "paired_tasks": 3,
+    "median_human_seconds": 233.650,
+    "median_agent_seconds": 0.2718,
+    "median_time_saved_seconds": 233.3804,
+    "median_speedup_x": 866.6543,
+    "average_quality_delta_points": 5.3333,
+    "total_modeled_human_labor_cost_usd": 3.1265,
+    "observed_agent_cash_cost_usd": 0,
+    "observed_human_cash_cost_usd": 0
+  }
+}

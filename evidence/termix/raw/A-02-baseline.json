@@ -1,0 +1,17 @@
+{
+  "task_id": "A-02",
+  "benchmark_version": "mandate-aar-1.0.0",
+  "input_sha256": "153f5f9a569877b6494132642c256c45ad864e1a14ae5263fca11827ac2c7eb2",
+  "elapsed_ms": 233650,
+  "timing_source": "browser-performance-timer; self-attested human run",
+  "quality_score": 4,
+  "quality_max": 10,
+  "output_sha256": "5a9204e5badd3bfb280ee5e94b6129ef5755eacd315dd8aada3b047f4984c4ae",
+  "output": {
+    "decision": "calm-18",
+    "metric": 18,
+    "rejected": ["turbo-40"],
+    "recommendation": "calm-18 is the safest option for the BNB/USDT grid plan. It keeps risk more controlled while still providing a workable grid setup. balanced-26 is acceptable but carries higher exposure, while turbo-40 is rejected as too aggressive for the safety requirements."
+  },
+  "recorded_at_utc": "2026-08-12T04:48:36.653Z"
+}

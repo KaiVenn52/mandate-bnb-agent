@@ -1,0 +1,2 @@
+fastapi>=0.115.0
+bnbagent[server]>=0.4.2

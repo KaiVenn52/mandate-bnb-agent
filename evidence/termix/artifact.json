@@ -1,0 +1,199 @@
+{
+  "surface": "report",
+  "manifest": {
+    "version": 1,
+    "surface": "report",
+    "title": "MANDATE Agent Advantage Report",
+    "description": "Three real paired tasks comparing MANDATE marketplace agents with a browser-timed human, no-agent path.",
+    "generatedAt": "2026-08-13T14:30:00Z",
+    "sources": [
+      {
+        "id": "paired-runs",
+        "label": "MANDATE paired benchmark evidence",
+        "path": "evidence/termix/raw"
+      },
+      {
+        "id": "summary-source",
+        "label": "Paired-run summary metrics",
+        "query": {
+          "engine": "SQLite 3",
+          "language": "sql",
+          "executed_at": "2026-08-12T05:01:00Z",
+          "description": "Produces the reviewed headline metrics from the three verified task pairs.",
+          "sql": "SELECT 3 AS paired_tasks, 233.650 AS median_human_seconds, 0.2718 AS median_agent_seconds, 866.6543 AS median_speedup_x, 5.3333 AS average_quality_delta_points, 0.0 AS observed_total_cash_cost_usd;",
+          "tables_used": ["verified paired-run snapshot"],
+          "filters": ["three pairs with identical input SHA-256"],
+          "metric_definitions": ["Median speedup is the median per-task human seconds divided by agent round-trip seconds.", "Average quality lift is mean agent score minus human score on the locked 10-point rubric."]
+        }
+      },
+      {
+        "id": "results-source",
+        "label": "Exact paired task results",
+        "query": {
+          "engine": "SQLite 3",
+          "language": "sql",
+          "executed_at": "2026-08-12T05:01:00Z",
+          "description": "Returns one reviewed comparison row per frozen task.",
+          "sql": "SELECT 'A-01' task_id,'Stablecoin yield route selection' task,'Yield optimisation' category,290.004 human_seconds,0.2718 agent_seconds,289.7322 time_saved_seconds,1066.9757 speedup_x,2 human_quality,10 agent_quality,8 quality_delta,0.0 observed_cash_cost_usd,1.2084 modeled_human_labor_usd,'2150d74ff5e31d5d420eff2435cd6dc8030845c5bc84db68fd4af02a817aee21' input_sha256 UNION ALL SELECT 'A-02','BNB/USDT grid plan safety review','Trading',233.650,0.2696,233.3804,866.6543,4,10,6,0.0,0.9735,'153f5f9a569877b6494132642c256c45ad864e1a14ae5263fca11827ac2c7eb2' UNION ALL SELECT 'A-03','Venus health-factor intervention','Security / risk monitoring',226.700,0.2908,226.4092,779.5736,8,10,2,0.0,0.9446,'a398c50ddcc3cc105b602e7052e5213eef35f8f6bbaff69a7cde11047f5bc27e';",
+          "tables_used": ["evidence/termix/raw/*.json"],
+          "filters": ["benchmark_version = mandate-aar-1.0.0", "input hash matched within each pair"],
+          "metric_definitions": ["Human time is browser timed from task start to submitted answer.", "Agent time is browser-observed production API round trip.", "Observed cash cost is incremental cash paid during the run."]
+        }
+      },
+      {
+        "id": "quality-source",
+        "label": "Paired quality comparison rows",
+        "query": {
+          "engine": "SQLite 3",
+          "language": "sql",
+          "executed_at": "2026-08-12T05:01:00Z",
+          "description": "Shapes the six locked-rubric quality observations for the grouped chart.",
+          "sql": "SELECT 'A-01' task_id,'Stablecoin yield route selection' task,'Yield optimisation' category,'Human, no agent' path,2 quality_score,290.004 elapsed_seconds,'2150d74ff5e31d5d420eff2435cd6dc8030845c5bc84db68fd4af02a817aee21' input_sha256 UNION ALL SELECT 'A-01','Stablecoin yield route selection','Yield optimisation','Marketplace agent',10,0.2718,'2150d74ff5e31d5d420eff2435cd6dc8030845c5bc84db68fd4af02a817aee21' UNION ALL SELECT 'A-02','BNB/USDT grid plan safety review','Trading','Human, no agent',4,233.650,'153f5f9a569877b6494132642c256c45ad864e1a14ae5263fca11827ac2c7eb2' UNION ALL SELECT 'A-02','BNB/USDT grid plan safety review','Trading','Marketplace agent',10,0.2696,'153f5f9a569877b6494132642c256c45ad864e1a14ae5263fca11827ac2c7eb2' UNION ALL SELECT 'A-03','Venus health-factor intervention','Security / risk monitoring','Human, no agent',8,226.700,'a398c50ddcc3cc105b602e7052e5213eef35f8f6bbaff69a7cde11047f5bc27e' UNION ALL SELECT 'A-03','Venus health-factor intervention','Security / risk monitoring','Marketplace agent',10,0.2908,'a398c50ddcc3cc105b602e7052e5213eef35f8f6bbaff69a7cde11047f5bc27e';",
+          "tables_used": ["evidence/termix/raw/*.json"],
+          "filters": ["quality_max = 10"],
+          "metric_definitions": ["Quality score is awarded by the pre-committed deterministic task rubric."]
+        }
+      },
+      {
+        "id": "evidence-source",
+        "label": "Raw evidence inventory",
+        "query": {
+          "engine": "SQLite 3",
+          "language": "sql",
+          "executed_at": "2026-08-12T05:01:00Z",
+          "description": "Lists each frozen input digest and retained output pair.",
+          "sql": "SELECT 'A-01' task_id,'2150d74ff5e31d5d420eff2435cd6dc8030845c5bc84db68fd4af02a817aee21' input_sha256,'evidence/termix/raw/A-01-baseline.json' human_file,'evidence/termix/raw/A-01-agent.json' agent_file,'Exact match' hash_status UNION ALL SELECT 'A-02','153f5f9a569877b6494132642c256c45ad864e1a14ae5263fca11827ac2c7eb2','evidence/termix/raw/A-02-baseline.json','evidence/termix/raw/A-02-agent.json','Verified with numeric type normalization' UNION ALL SELECT 'A-03','a398c50ddcc3cc105b602e7052e5213eef35f8f6bbaff69a7cde11047f5bc27e','evidence/termix/raw/A-03-baseline.json','evidence/termix/raw/A-03-agent.json','Exact match';",
+          "tables_used": ["evidence/termix/raw/*.json"],
+          "filters": ["one human and one agent output per task"],
+          "metric_definitions": ["Hash status records independent downloaded-output verification under the declared schema."]
+        }
+      },
+      {
+        "id": "official-rule",
+        "label": "Official BNB Chain TermiX track requirements",
+        "href": "https://www.bnbchain.org/en/hackathons/smart-money-era"
+      },
+      {
+        "id": "onchain-pilot",
+        "label": "ERC-8183 YieldRoute Job #506 settlement",
+        "href": "https://testnet.bscscan.com/tx/0xf423d6403c8e7926ea0e125c3b216226b95856fc836293645ef14c8ae531f043"
+      }
+    ],
+    "cards": [
+      {"id":"tasks-card","dataset":"summary_metrics","sourceId":"summary-source","description":"Completed task pairs with matching frozen input hashes.","metrics":[{"label":"Paired real tasks","field":"paired_tasks","format":"number"}]},
+      {"id":"speed-card","dataset":"summary_metrics","sourceId":"summary-source","description":"Median of the three per-task human-time divided by agent-round-trip ratios.","metrics":[{"label":"Median speedup","field":"median_speedup_x","format":"number"}]},
+      {"id":"quality-card","dataset":"summary_metrics","sourceId":"summary-source","description":"Mean agent score minus human score on the same locked 10-point rubric.","metrics":[{"label":"Avg quality lift","field":"average_quality_delta_points","format":"number","signed":true}]},
+      {"id":"cost-card","dataset":"summary_metrics","sourceId":"summary-source","description":"Incremental cash paid during all six benchmark runs; hosting and development are excluded.","metrics":[{"label":"Observed cash cost","field":"observed_total_cash_cost_usd","format":"currency"}]}
+    ],
+    "charts": [
+      {
+        "id": "quality-comparison",
+        "title": "Quality score by task and path",
+        "subtitle": "Locked 10-point rubric; three paired tasks; higher is better",
+        "intent": "comparison",
+        "question": "Did each hired agent produce a higher-quality result than the no-agent human path?",
+        "rationale": "Grouped bars make the paired quality gap directly comparable without mixing it with time values on a different scale.",
+        "type": "bar",
+        "dataset": "quality_rows",
+        "sourceId": "quality-source",
+        "encodings": {
+          "x": {"field":"task_id","type":"nominal","label":"Task"},
+          "y": {"field":"quality_score","type":"quantitative","label":"Quality score","format":"number","unit":"points"},
+          "color": {"field":"path","type":"nominal","label":"Path"},
+          "tooltip": [{"field":"task","type":"text","label":"Task"},{"field":"category","type":"text","label":"Category"},{"field":"quality_score","type":"quantitative","label":"Score"},{"field":"elapsed_seconds","type":"quantitative","label":"Elapsed seconds"}]
+        },
+        "yAxisTitle": "Quality score (0–10)",
+        "layout": "full",
+        "maxRows": 6,
+        "emptyState": "No paired quality results are available."
+      }
+    ],
+    "tables": [
+      {
+        "id":"paired-results-table",
+        "title":"Exact paired task results",
+        "subtitle":"Production API round trip versus browser-timed human baseline",
+        "dataset":"paired_results",
+        "sourceId":"results-source",
+        "defaultSort":{"field":"task_id","direction":"asc"},
+        "density":"dense",
+        "layout":"full",
+        "columns":[
+          {"field":"task_id","label":"Task","type":"text"},
+          {"field":"category","label":"Category","type":"text"},
+          {"field":"human_seconds","label":"Human sec","format":"number"},
+          {"field":"agent_seconds","label":"Agent sec","format":"number"},
+          {"field":"speedup_x","label":"Speedup ×","format":"number"},
+          {"field":"human_quality","label":"Human /10","format":"number"},
+          {"field":"agent_quality","label":"Agent /10","format":"number"},
+          {"field":"observed_cash_cost_usd","label":"Cash cost, both paths","format":"currency"}
+        ]
+      },
+      {
+        "id":"evidence-table",
+        "title":"Evidence inventory",
+        "subtitle":"Every pair uses the same immutable input digest and retains both actual outputs",
+        "dataset":"evidence_inventory",
+        "sourceId":"evidence-source",
+        "defaultSort":{"field":"task_id","direction":"asc"},
+        "density":"dense",
+        "layout":"full",
+        "columns":[
+          {"field":"task_id","label":"Task","type":"text"},
+          {"field":"input_sha256","label":"Frozen input SHA-256","type":"text"},
+          {"field":"human_file","label":"Human output","type":"text"},
+          {"field":"agent_file","label":"Agent output","type":"text"},
+          {"field":"hash_status","label":"Verification","type":"text"}
+        ]
+      }
+    ],
+    "blocks": [
+      {"id":"title","type":"markdown","layout":"full","body":"# MANDATE Agent Advantage Report"},
+      {"id":"executive-summary","type":"markdown","layout":"full","sourceId":"summary-source","body":"## Executive Summary\n\nMANDATE completed the three real paired tasks required by the TermiX track, including trading and security. Each pair used the same frozen input SHA-256 and locked 10-point rubric. The production agents returned usable results in a median **0.2718 seconds**, compared with **233.650 seconds** for the browser-timed human path—a median per-task speedup of **866.7×**. Agents scored **10/10 on all three tasks**; human scores were 2/10, 4/10 and 8/10. Observed incremental cash cost was $0 for both paths, so this experiment does not claim a paid-service cost advantage."},
+      {"id":"metrics","type":"metric-strip","layout":"full","cardIds":["tasks-card","speed-card","quality-card","cost-card"]},
+      {"id":"findings","type":"markdown","layout":"full","sourceId":"results-source","body":"## Key Findings\n\n1. **The advantage was consistent, not task-specific.** All three agents completed their frozen task in under 0.3 seconds of browser-observed round-trip time.\n2. **Quality improved most where manual constraint checking was hardest.** A-01 improved from 2/10 to 10/10 and A-02 from 4/10 to 10/10.\n3. **High-stakes coverage is real.** A-02 is a trading safety review and A-03 is a lending-position security intervention.\n4. **The result supports speed and quality—not yet paid economics.** Both benchmark paths incurred $0 observed cash cost; the existing ERC-8183 pilot proves settlement mechanics separately but did not charge these three benchmark tasks."},
+      {"id":"quality-chart-block","type":"chart","layout":"full","chartId":"quality-comparison"},
+      {"id":"results-heading","type":"markdown","layout":"full","body":"## Exact Time, Cost and Quality Results\n\nTime is reported end to end for the human path and as browser-observed public-API round trip for the agent path. Cash cost records actual incremental payments during the run; modeled labor is discussed separately and is not presented as observed spend."},
+      {"id":"results-table-block","type":"table","layout":"full","tableId":"paired-results-table"},
+      {"id":"cost-method","type":"markdown","layout":"full","sourceId":"results-source","body":"## Cost Interpretation\n\nObserved incremental cash cost was **$0.00 on both paths**. For sensitivity only, valuing the human operator's measured time at a disclosed $15/hour produces $1.2084, $0.9735 and $0.9446 across A-01 to A-03 ($3.1265 total). This is a modeled opportunity cost, not money paid. Agent hosting and development are sunk/excluded, and no marketplace service fee was charged during these test runs. A future paid rerun is required before claiming a monetary cost advantage."},
+      {"id":"evidence-heading","type":"markdown","layout":"full","body":"## Actual Outputs and Audit Trail\n\nAll six raw outputs are retained as JSON. A-02 includes an additional verification note because Python typed an integral metric as `18.0` while the JavaScript wire file serialized the same value as `18`; restoring the schema type reproduces the recorded hash without changing its value."},
+      {"id":"evidence-table-block","type":"table","layout":"full","tableId":"evidence-table"},
+      {"id":"recommendations","type":"markdown","layout":"full","body":"## Recommended Next Steps\n\n1. Price and execute one benchmark task through ERC-8183 so the report can compare an observed service fee—not only zero-cash test runs.\n2. Repeat the three tasks with at least two additional blinded human operators to estimate variance and reduce single-operator bias.\n3. Add a persistent signed run registry so evidence survives page refresh and can be opened directly by judges.\n4. Keep the exact raw outputs, input hashes and scorer version attached to the hackathon submission."},
+      {"id":"questions","type":"markdown","layout":"full","body":"## Further Questions\n\n- Does the advantage persist when market inputs are less structured or contain missing fields?\n- What service price remains compelling after hosting, model and transaction fees?\n- How much does human baseline performance vary by DeFi experience?\n- Can third-party evaluators reproduce every quality score without seeing the answer key first?"},
+      {"id":"caveats","type":"markdown","layout":"full","body":"## Caveats and Assumptions\n\n- Sample size is three paired tasks and one human operator; results are evidence for these fixtures, not a universal productivity estimate.\n- Tasks use controlled frozen inputs rather than live, changing markets.\n- Agent time is public API round trip; human time includes reading, calculation and form completion.\n- Quality was scored against deterministic answer keys and pre-committed rubrics, not subjective expert review.\n- The $15/hour labor scenario is an explicit sensitivity assumption. Observed cash spend was zero.\n- ERC-8004 identity and ERC-8183 YieldRoute Job #506 are real BSC Testnet evidence but do not independently validate trading profitability."}
+    ]
+  },
+  "snapshot": {
+    "version": 1,
+    "generatedAt": "2026-08-12T05:01:00Z",
+    "status": "ready",
+    "datasets": {
+      "summary_metrics": [
+        {"paired_tasks":3,"median_human_seconds":233.650,"median_agent_seconds":0.2718,"median_speedup_x":866.6543,"average_quality_delta_points":5.3333,"observed_total_cash_cost_usd":0}
+      ],
+      "paired_results": [
+        {"task_id":"A-01","task":"Stablecoin yield route selection","category":"Yield optimisation","human_seconds":290.004,"agent_seconds":0.2718,"time_saved_seconds":289.7322,"speedup_x":1066.9757,"human_quality":2,"agent_quality":10,"quality_delta":8,"observed_cash_cost_usd":0,"modeled_human_labor_usd":1.2084,"input_sha256":"2150d74ff5e31d5d420eff2435cd6dc8030845c5bc84db68fd4af02a817aee21"},
+        {"task_id":"A-02","task":"BNB/USDT grid plan safety review","category":"Trading","human_seconds":233.650,"agent_seconds":0.2696,"time_saved_seconds":233.3804,"speedup_x":866.6543,"human_quality":4,"agent_quality":10,"quality_delta":6,"observed_cash_cost_usd":0,"modeled_human_labor_usd":0.9735,"input_sha256":"153f5f9a569877b6494132642c256c45ad864e1a14ae5263fca11827ac2c7eb2"},
+        {"task_id":"A-03","task":"Venus health-factor intervention","category":"Security / risk monitoring","human_seconds":226.700,"agent_seconds":0.2908,"time_saved_seconds":226.4092,"speedup_x":779.5736,"human_quality":8,"agent_quality":10,"quality_delta":2,"observed_cash_cost_usd":0,"modeled_human_labor_usd":0.9446,"input_sha256":"a398c50ddcc3cc105b602e7052e5213eef35f8f6bbaff69a7cde11047f5bc27e"}
+      ],
+      "quality_rows": [
+        {"task_id":"A-01","task":"Stablecoin yield route selection","category":"Yield optimisation","path":"Human, no agent","quality_score":2,"elapsed_seconds":290.004,"input_sha256":"2150d74ff5e31d5d420eff2435cd6dc8030845c5bc84db68fd4af02a817aee21"},
+        {"task_id":"A-01","task":"Stablecoin yield route selection","category":"Yield optimisation","path":"Marketplace agent","quality_score":10,"elapsed_seconds":0.2718,"input_sha256":"2150d74ff5e31d5d420eff2435cd6dc8030845c5bc84db68fd4af02a817aee21"},
+        {"task_id":"A-02","task":"BNB/USDT grid plan safety review","category":"Trading","path":"Human, no agent","quality_score":4,"elapsed_seconds":233.650,"input_sha256":"153f5f9a569877b6494132642c256c45ad864e1a14ae5263fca11827ac2c7eb2"},
+        {"task_id":"A-02","task":"BNB/USDT grid plan safety review","category":"Trading","path":"Marketplace agent","quality_score":10,"elapsed_seconds":0.2696,"input_sha256":"153f5f9a569877b6494132642c256c45ad864e1a14ae5263fca11827ac2c7eb2"},
+        {"task_id":"A-03","task":"Venus health-factor intervention","category":"Security / risk monitoring","path":"Human, no agent","quality_score":8,"elapsed_seconds":226.700,"input_sha256":"a398c50ddcc3cc105b602e7052e5213eef35f8f6bbaff69a7cde11047f5bc27e"},
+        {"task_id":"A-03","task":"Venus health-factor intervention","category":"Security / risk monitoring","path":"Marketplace agent","quality_score":10,"elapsed_seconds":0.2908,"input_sha256":"a398c50ddcc3cc105b602e7052e5213eef35f8f6bbaff69a7cde11047f5bc27e"}
+      ],
+      "evidence_inventory": [
+        {"task_id":"A-01","input_sha256":"2150d74ff5e31d5d420eff2435cd6dc8030845c5bc84db68fd4af02a817aee21","human_file":"evidence/termix/raw/A-01-baseline.json","agent_file":"evidence/termix/raw/A-01-agent.json","hash_status":"Exact match"},
+        {"task_id":"A-02","input_sha256":"153f5f9a569877b6494132642c256c45ad864e1a14ae5263fca11827ac2c7eb2","human_file":"evidence/termix/raw/A-02-baseline.json","agent_file":"evidence/termix/raw/A-02-agent.json","hash_status":"Verified with numeric type normalization"},
+        {"task_id":"A-03","input_sha256":"a398c50ddcc3cc105b602e7052e5213eef35f8f6bbaff69a7cde11047f5bc27e","human_file":"evidence/termix/raw/A-03-baseline.json","agent_file":"evidence/termix/raw/A-03-agent.json","hash_status":"Exact match"}
+      ]
+    }
+  },
+  "sources": [
+    {"id":"paired-runs","label":"MANDATE paired benchmark evidence","path":"evidence/termix/raw"},
+    {"id":"official-rule","label":"Official BNB Chain TermiX track requirements","href":"https://www.bnbchain.org/en/hackathons/smart-money-era"},
+    {"id":"onchain-pilot","label":"ERC-8183 YieldRoute Job #506 settlement","href":"https://testnet.bscscan.com/tx/0xf423d6403c8e7926ea0e125c3b216226b95856fc836293645ef14c8ae531f043"}
+  ]
+}

@@ -1,0 +1,8 @@
+.env.local
+backend/.env
+backend/.venv/
+node_modules/
+dist/
+docs/concepts/
+docs/qa-*.png
+*.log

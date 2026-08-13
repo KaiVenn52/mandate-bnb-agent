@@ -1,0 +1,19 @@
+{
+  "task_id": "A-01",
+  "benchmark_version": "mandate-aar-1.0.0",
+  "input_sha256": "2150d74ff5e31d5d420eff2435cd6dc8030845c5bc84db68fd4af02a817aee21",
+  "elapsed_ms": 290004,
+  "timing_source": "browser-performance-timer; self-attested human run",
+  "quality_score": 2,
+  "quality_max": 10,
+  "output_sha256": "55db95e0d02b3cda2916d3c04e836eafd7557ff8a8bfd734bc9aadb3092d8748",
+  "output": {
+    "decision": "leveraged-loop",
+    "metric": 5.5,
+    "rejected": [
+      "venus-supply"
+    ],
+    "recommendation": "Going with leveraged-loop. It hits the required 5.50 metric and stays compliant. Venus-supply is ruled out for non-compliance, and the other options don’t look better on the required metric."
+  },
+  "recorded_at_utc": "2026-08-12T04:36:25.577Z"
+}

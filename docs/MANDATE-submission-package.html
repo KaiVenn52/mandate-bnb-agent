@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>MANDATE - Hackathon Submission Package</title>
+  <style>
+    :root{--ink:#16150f;--paper:#f5f0e4;--card:#fffaf0;--line:#c9bea4;--gold:#d9a600;--green:#247b51;--muted:#6d6656}*{box-sizing:border-box}html,body{width:100%;min-width:0}body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.6 Inter,Arial,sans-serif}main{display:block;width:min(1040px,calc(100% - 48px));margin:0 auto;padding:48px 0 80px}header{display:block;width:100%;border-bottom:4px solid var(--ink);padding-bottom:28px;margin-bottom:28px}.kicker{display:block;width:100%;font:12px monospace;letter-spacing:.13em;color:#876800;text-transform:uppercase;word-break:normal}.kicker br{display:none}h1{font-size:64px;letter-spacing:-.06em;line-height:.95;margin:12px 0}h2{font-size:24px;margin:0 0 12px}h3{font-size:15px;text-transform:uppercase;letter-spacing:.07em;margin:0 0 8px}.tagline{display:block;width:100%;max-width:760px;font-size:23px;margin:0;word-break:normal}.status{display:inline-block;max-width:100%;background:var(--green);color:white;padding:5px 9px;font:11px monospace;margin-top:18px}.grid{display:grid;width:100%;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.card{min-width:0;background:var(--card);border:1px solid var(--line);padding:22px;margin:16px 0}.wide{grid-column:1/-1}.metric{font:700 28px monospace}.metric small{display:block;color:var(--muted);font:11px Arial,sans-serif;margin-top:5px}a{color:#735900;overflow-wrap:anywhere}code,pre{font-family:ui-monospace,Consolas,monospace}pre{white-space:pre-wrap;background:#201f1a;color:#f8e8a6;padding:18px;overflow:auto}.truth{border-left:5px solid var(--green)}.pending{border-left:5px solid var(--gold)}ul{padding-left:20px}@media(max-width:700px){main{width:calc(100% - 32px);padding-top:28px}h1{font-size:44px}.tagline{font-size:19px}.grid{grid-template-columns:minmax(0,1fr)}.wide{grid-column:auto}}</style>
+</head>
+<body><main>
+  <header><div class="kicker">Build the Era - Main Track + TermiX Challenge</div><h1>MANDATE</h1><p class="tagline">Set the outcome. Cap the risk. Hire the proof.</p><span class="status">WORKING DEMO + COMPLETED ONCHAIN PROOF</span></header>
+
+  <section class="grid">
+    <article class="card"><h3>Live product</h3><a href="https://mandate-bnb-agent.vercel.app">mandate-bnb-agent.vercel.app</a></article>
+    <article class="card"><h3>Submission wallet</h3><code>0xD30BbB80c863c9B94622EF92337AaD65148D2EC3</code></article>
+    <article class="card"><h3>Primary proof</h3><a href="https://testnet.bscscan.com/tx/0xf423d6403c8e7926ea0e125c3b216226b95856fc836293645ef14c8ae531f043">ERC-8183 Job #506 settlement</a></article>
+    <article class="card"><h3>TermiX report</h3><a href="https://mandate-bnb-agent.vercel.app/evidence/MANDATE-Agent-Advantage-Report.pdf">Agent Advantage Report PDF</a></article>
+  </section>
+
+  <article class="card"><h2>One-line description</h2><p>An outcome-first BNB Chain agent marketplace that converts financial goals into enforceable limits, proves agent advantage, and settles verifiable work through ERC-8183.</p></article>
+
+  <article class="card"><h2>Project description</h2>
+    <p>BNB Chain has a rapidly growing agent ecosystem, but a directory of agent cards does not answer the question that matters: which agent can safely deliver a user's financial outcome? Users must compare inconsistent claims, infer hidden risk and trust that an agent will stay inside its authority.</p>
+    <p>MANDATE starts with the outcome. A user describes the goal, capital, risk ceiling, leverage, action frequency and allowed protocols in natural language. MANDATE converts that request into visible, individually editable permissions, then ranks or rejects agents across LP rebalancing, grid trading, yield optimisation and health-factor monitoring. Every rejection includes the violated constraint.</p>
+    <p>Before any wallet action, Shadow Mode compares the chosen agent with a no-agent baseline. Live YieldRoute and Venus capabilities read public BSC data and produce hash-verifiable, read-only evidence without requesting a signature or moving funds. When the user chooses to hire, ERC-8183 provides an explicit seven-step job lifecycle with an exact budget, optimistic dispute window and public deliverable hash.</p>
+    <p>The proof is live on BSC Testnet. YieldRoute Agent #1806 completed ERC-8183 Job #506 through create, policy binding, budget, exact approval, funding, deliverable submission and settlement. The 0.1 test U escrow returned to the wallet and the residual allowance is zero. Four marketplace agents are registered as ERC-8004 identities (#1804-#1807).</p>
+    <p>For TermiX, MANDATE includes three same-input task pairs covering yield, trading and security/risk monitoring. Median measured time was 233.65 seconds for the human path and 0.2718 seconds for the agent API; agents scored 10/10 on each locked rubric. Both paths had zero observed cash cost, so no paid-cost advantage is claimed.</p>
+  </article>
+
+  <section class="grid">
+    <article class="card"><div class="metric">3<small>real paired TermiX tasks</small></div></article>
+    <article class="card"><div class="metric">866.65x<small>median measured speedup</small></div></article>
+    <article class="card"><div class="metric">+5.33<small>average quality lift, points out of 10</small></div></article>
+    <article class="card"><div class="metric">7/7<small>successful ERC-8183 transactions for Job #506</small></div></article>
+  </section>
+
+  <article class="card"><h2>Evidence links</h2><ul>
+    <li><a href="https://mandate-bnb-agent.vercel.app/evidence/evidence-passport-506.json">Machine-readable Evidence Passport</a></li>
+    <li><a href="https://mandate-bnb-agent.vercel.app/api/erc8183/yield-deliverable/506">Public SDK-compatible deliverable manifest</a></li>
+    <li><a href="https://mandate-bnb-agent.vercel.app/evidence/yield-route-reference.json">SHA-256-bound YieldRoute evidence</a></li>
+    <li><a href="https://mandate-bnb-agent.vercel.app/evidence/agent-advantage-report.html">Interactive Agent Advantage Report</a></li>
+    <li><a href="https://www.bnbchain.org/en/hackathons/smart-money-era">Official track requirements</a></li>
+  </ul></article>
+
+  <article class="card truth"><h2>Truth boundaries</h2><ul><li>BSC Testnet only for state-changing evidence.</li><li>Live capabilities are read-only analysis, not mainnet trades.</li><li>Historical candidate metrics outside the verified benchmark remain labelled sample data.</li><li>Three tasks and one human operator do not establish universal productivity or trading profitability.</li></ul></article>
+  <article class="card pending"><h2>External actions still gated</h2><ul><li>Public source repository URL: <strong>pending owner approval</strong>.</li><li>Demo video URL: <strong>pending recording/upload and owner approval</strong>.</li><li>Official form submission: <strong>not submitted</strong>.</li></ul></article>
+
+  <article class="card"><h2>Team</h2><p>Kai Venn - solo builder; product, design and engineering.</p></article>
+</main></body></html>

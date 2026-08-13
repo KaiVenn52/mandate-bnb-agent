@@ -1,0 +1,10 @@
+{
+  "raw_file": "A-02-baseline.json",
+  "verification_status": "verified after schema-preserving number normalization",
+  "wire_metric": 18,
+  "server_typed_metric": 18.0,
+  "reason": "JSON/JavaScript serializes an integral Number as 18 while the Pydantic server field was typed float and canonicalized as 18.0.",
+  "sha256_after_restoring_server_float_type": "5a9204e5badd3bfb280ee5e94b6129ef5755eacd315dd8aada3b047f4984c4ae",
+  "matches_recorded_output_sha256": true,
+  "data_values_changed": false
+}

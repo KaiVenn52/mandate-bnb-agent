@@ -1,0 +1,23 @@
+{
+  "task_id": "A-02",
+  "benchmark_version": "mandate-aar-1.0.0",
+  "agent_id": 1805,
+  "input_sha256": "153f5f9a569877b6494132642c256c45ad864e1a14ae5263fca11827ac2c7eb2",
+  "server_compute_ms": 0.0201,
+  "quality_score": 10,
+  "quality_max": 10,
+  "output": {
+    "decision": "balanced-26",
+    "metric": 3.4,
+    "rejected": [
+      {
+        "id": "turbo-40",
+        "net_pnl_pct": 4.8,
+        "reasons": ["drawdown-cap-exceeded", "activity-cap-exceeded"]
+      }
+    ],
+    "recommendation": "Select balanced-26; it has the best fee-adjusted return without breaching the 5% drawdown or 12-trade caps."
+  },
+  "client_roundtrip_ms": 269.6,
+  "recorded_at_utc": "2026-08-12T04:59:36.287Z"
+}
