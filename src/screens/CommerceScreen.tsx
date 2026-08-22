@@ -3,9 +3,11 @@ import { CheckCircle2, ExternalLink, FileCheck2, LoaderCircle, LockKeyhole, Shie
 import { formatUnits, keccak256, parseEventLogs, stringToHex, zeroAddress } from 'viem'
 import { useAccount, usePublicClient, useWalletClient } from 'wagmi'
 import { bscTestnet } from 'wagmi/chains'
+import { useSearchParams } from 'react-router-dom'
+import { getCategory } from '../catalog'
 import { U_TOKEN_ADDRESS } from '../services/uFaucet'
 import {
-  buildYieldDeliverableManifest,
+  buildMarketplaceDeliverableManifest,
   commerceAbi,
   type CommerceJob,
   ERC8183_BUDGET,
@@ -20,42 +22,56 @@ import {
   YIELD_REFERENCE_PATH,
   YIELD_REFERENCE_SHA256,
 } from '../services/erc8183'
+import { loadMandateDraft } from '../services/mandateDraft'
+import { authorizationFromMandate } from '../services/mandateAuthorization'
 
-const STORAGE_KEY = 'mandate:erc8183-yield-route:v1'
-const expectedWallet = (
-  import.meta.env.VITE_SUBMISSION_WALLET_ADDRESS ?? '0xD30BbB80c863c9B94622EF92337AaD65148D2EC3'
-).toLowerCase()
-
+const STORAGE_KEY = 'mandate:erc8183-marketplace-job:v2'
 type ChainState = { job: CommerceJob; policy: `0x${string}`; allowance: bigint; policyAllowed: boolean }
 type ActionName = 'create' | 'register' | 'budget' | 'approve' | 'fund' | 'submit' | 'settle'
 
-const loadJobId = () => {
-  const stored = localStorage.getItem(STORAGE_KEY)
+const loadJobId = (key: string) => {
+  const stored = localStorage.getItem(key)
   return stored && /^\d+$/.test(stored) ? BigInt(stored) : undefined
 }
 
 const actionCopy: Record<ActionName, { title: string; detail: string }> = {
-  create: { title: 'Create YieldRoute proof job', detail: 'Creates an OPEN ERC-8183 job for the public live-data report. No tokens move.' },
+  create: { title: 'Create agent hire job', detail: 'Creates an OPEN ERC-8183 job for the selected provider and this exact mandate. No tokens move.' },
   register: { title: 'Bind optimistic policy', detail: 'Registers the official Router policy. No tokens move.' },
   budget: { title: 'Set 0.1 U budget', detail: 'Records the exact mandate ceiling. No tokens move.' },
   approve: { title: 'Approve exactly 0.1 U', detail: 'One exact ERC-20 allowance to AgenticCommerce. Never unlimited.' },
   fund: { title: 'Fund escrow with 0.1 U', detail: 'Moves 0.1 test U into the official ERC-8183 escrow.' },
-  submit: { title: 'Submit YieldRoute deliverable', detail: 'Anchors the live report manifest hash and public retrieval URL.' },
+  submit: { title: 'Submit agent deliverable', detail: 'Anchors the category result manifest hash and public retrieval URL.' },
   settle: { title: 'Settle after dispute window', detail: 'Permissionless settlement after the current 15-minute optimistic window.' },
 }
 
 export function CommerceScreen() {
   const { address, chainId, isConnected } = useAccount()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const category = getCategory(searchParams.get('category'))
+  const agent = category.agents.find((item) => item.id === searchParams.get('agent')) ?? category.agents[0]
+  const draft = loadMandateDraft()
+  const authorization = authorizationFromMandate(category, agent, draft)
+  const mandatePrompt = draft?.categoryId === category.id ? draft.prompt : category.prompt
   const walletClient = useWalletClient()
   const publicClient = usePublicClient({ chainId: bscTestnet.id })
-  const [jobId, setJobId] = useState<bigint | undefined>(loadJobId)
+  const [jobId, setJobId] = useState<bigint | undefined>()
   const [chainState, setChainState] = useState<ChainState>()
   const [activeAction, setActiveAction] = useState<ActionName>()
   const [latestHash, setLatestHash] = useState<`0x${string}`>()
   const [error, setError] = useState('')
   const [now, setNow] = useState(() => BigInt(Math.floor(Date.now() / 1000)))
 
-  const validWallet = Boolean(isConnected && address?.toLowerCase() === expectedWallet && chainId === bscTestnet.id)
+  const storageKey = `${STORAGE_KEY}:${category.id}:${agent.id}`
+  const queryJobId = searchParams.get('jobId')
+  const validQueryJobId = queryJobId && /^\d+$/.test(queryJobId) ? BigInt(queryJobId) : undefined
+  const isTestnetWallet = Boolean(isConnected && address && chainId === bscTestnet.id)
+
+  useEffect(() => {
+    setJobId(validQueryJobId ?? loadJobId(storageKey))
+    setChainState(undefined)
+    setLatestHash(undefined)
+    setError('')
+  }, [storageKey, validQueryJobId])
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(BigInt(Math.floor(Date.now() / 1000))), 30_000)
@@ -63,20 +79,21 @@ export function CommerceScreen() {
   }, [])
 
   const refresh = useCallback(async () => {
-    if (!publicClient || !address || jobId === undefined) return
+    if (!publicClient || jobId === undefined) return
     try {
-      const [job, policy, allowance, policyAllowed] = await Promise.all([
+      const [jobResult, policy, policyAllowed] = await Promise.all([
         publicClient.readContract({ address: ERC8183_COMMERCE_ADDRESS, abi: commerceAbi, functionName: 'getJob', args: [jobId] }),
         publicClient.readContract({ address: ERC8183_ROUTER_ADDRESS, abi: routerAbi, functionName: 'jobPolicy', args: [jobId] }),
-        publicClient.readContract({ address: U_TOKEN_ADDRESS, abi: exactApprovalAbi, functionName: 'allowance', args: [address, ERC8183_COMMERCE_ADDRESS] }),
         publicClient.readContract({ address: ERC8183_ROUTER_ADDRESS, abi: routerAbi, functionName: 'policyWhitelist', args: [ERC8183_POLICY_ADDRESS] }),
       ])
-      setChainState({ job: job as CommerceJob, policy, allowance, policyAllowed })
+      const job = jobResult as CommerceJob
+      const allowance = await publicClient.readContract({ address: U_TOKEN_ADDRESS, abi: exactApprovalAbi, functionName: 'allowance', args: [job.client, ERC8183_COMMERCE_ADDRESS] })
+      setChainState({ job, policy, allowance, policyAllowed })
       setError('')
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Unable to read ERC-8183 state.')
     }
-  }, [address, jobId, publicClient])
+  }, [jobId, publicClient])
 
   useEffect(() => { void refresh() }, [refresh])
 
@@ -102,21 +119,45 @@ export function CommerceScreen() {
     : undefined
   const remainingSeconds = settlementAt && settlementAt > now ? Number(settlementAt - now) : 0
 
+  const walletRole = !address || !chainState
+    ? undefined
+    : address.toLowerCase() === chainState.job.client.toLowerCase()
+      ? 'client'
+      : address.toLowerCase() === chainState.job.provider.toLowerCase()
+        ? 'provider'
+        : 'observer'
+
+  const canSignAction = (action: ActionName) => {
+    if (!isTestnetWallet || !address || !agent.providerAddress) return false
+    if (action === 'create') return address.toLowerCase() !== agent.providerAddress.toLowerCase()
+    if (action === 'submit') return walletRole === 'provider'
+    if (action === 'settle') return true
+    return walletRole === 'client'
+  }
+
   const broadcast = async (action: ActionName) => {
-    if (!walletClient.data || !publicClient || !address || !validWallet) return
+    if (!walletClient.data || !publicClient || !address || !canSignAction(action)) return
     setActiveAction(action)
     setError('')
     try {
       let hash: `0x${string}`
       if (action === 'create') {
         const negotiatedAt = Math.floor(Date.now() / 1000)
+        if (!agent.providerAddress) throw new Error('The selected provider does not have a verified BSC identity.')
         const description = JSON.stringify({
           version: 1,
           negotiated_at: negotiatedAt,
-          task: 'Run YieldRoute against a live public BSC stablecoin yield snapshot, apply the 5,000 USDT high-risk no-leverage mandate, and return a hash-verifiable read-only recommendation.',
+          task: mandatePrompt,
+          category: category.id,
+          agent: { id: agent.id, name: agent.name, provider: agent.providerAddress },
           terms: {
-            deliverables: ['YieldRoute JSON evidence', 'SDK-compatible manifest', 'on-chain deliverable hash', 'public retrieval URL'],
-            quality_standards: ['live public data snapshot', 'no live asset execution', 'bounded 0.1 U test budget', 'truthful limitations'],
+            capital_ceiling: authorization.capital,
+            risk_ceiling: draft?.constraints.riskMax ?? 'category default',
+            leverage_ceiling: draft?.constraints.leverageMax ?? 0,
+            protocols: authorization.protocols,
+            activity_ceiling: draft ? `${draft.constraints.actionCap}/${draft.constraints.actionPeriod}` : 'category default',
+            deliverables: ['category decision evidence', 'SDK-compatible manifest', 'on-chain deliverable hash', 'public retrieval URL'],
+            quality_standards: ['bounded decision', 'no live asset execution', 'exact 0.1 U test service budget', 'truthful evidence mode'],
             success_criteria: ['job funded', 'deliverable submitted', 'optimistic policy settles'],
           },
           price: ERC8183_BUDGET.toString(),
@@ -127,15 +168,20 @@ export function CommerceScreen() {
           address: ERC8183_COMMERCE_ADDRESS,
           abi: commerceAbi,
           functionName: 'createJob',
-          args: [address, ERC8183_ROUTER_ADDRESS, BigInt(negotiatedAt + 259_200), description, ERC8183_ROUTER_ADDRESS],
+          args: [agent.providerAddress, ERC8183_ROUTER_ADDRESS, BigInt(negotiatedAt + 259_200), description, ERC8183_ROUTER_ADDRESS],
         })
         hash = await walletClient.data.writeContract({ ...request.request, chain: bscTestnet })
         const receipt = await publicClient.waitForTransactionReceipt({ hash })
         const [created] = parseEventLogs({ abi: commerceAbi, eventName: 'JobCreated', logs: receipt.logs, strict: false })
         const createdId = created?.args.jobId
         if (createdId === undefined) throw new Error('JobCreated event was not found in the confirmed receipt.')
-        localStorage.setItem(STORAGE_KEY, createdId.toString())
+        localStorage.setItem(storageKey, createdId.toString())
         setJobId(createdId)
+        const nextParams = new URLSearchParams(searchParams)
+        nextParams.set('category', category.id)
+        nextParams.set('agent', agent.id)
+        nextParams.set('jobId', createdId.toString())
+        setSearchParams(nextParams, { replace: true })
       } else {
         if (jobId === undefined) throw new Error('No job ID is available.')
         if (action === 'register') {
@@ -151,10 +197,13 @@ export function CommerceScreen() {
           const request = await publicClient.simulateContract({ account: address, address: ERC8183_COMMERCE_ADDRESS, abi: commerceAbi, functionName: 'fund', args: [jobId, ERC8183_BUDGET, '0x'] })
           hash = await walletClient.data.writeContract({ ...request.request, chain: bscTestnet })
         } else if (action === 'submit') {
-          const manifest = buildYieldDeliverableManifest(jobId)
+          const manifest = buildMarketplaceDeliverableManifest(jobId, category.id)
           const deliverableHash = keccak256(stringToHex(stableStringify(manifest)))
-          const deliverableUrl = `${window.location.origin}/api/erc8183/yield-deliverable/${jobId}`
-          const optParams = stringToHex(JSON.stringify({ deliverable_url: deliverableUrl, evidence_sha256: YIELD_REFERENCE_SHA256 }))
+          const deliverableUrl = `${window.location.origin}/api/erc8183/marketplace-deliverable/${category.id}/${jobId}`
+          const optParams = stringToHex(JSON.stringify({
+            deliverable_url: deliverableUrl,
+            ...(category.id === 'yield' ? { evidence_sha256: YIELD_REFERENCE_SHA256 } : {}),
+          }))
           const request = await publicClient.simulateContract({ account: address, address: ERC8183_COMMERCE_ADDRESS, abi: commerceAbi, functionName: 'submit', args: [jobId, deliverableHash, optParams] })
           hash = await walletClient.data.writeContract({ ...request.request, chain: bscTestnet })
         } else {
@@ -186,22 +235,22 @@ export function CommerceScreen() {
   return (
     <section className="commerce-screen page-gutter">
       <div className="commerce-heading">
-        <span className="section-kicker">YIELDROUTE PROOF JOB · BSC TESTNET</span>
-        <h1>Anchor a real agent result</h1>
-        <p>One real YieldRoute report, one public evidence file and seven explicit ERC-8183 steps. Every write is simulated before Bitget receives a signing request.</p>
+        <span className="section-kicker">{category.label.toUpperCase()} HIRE · BSC TESTNET</span>
+        <h1>Hire {agent.name} onchain</h1>
+        <p>Your connected wallet becomes the client, Agent #{agent.id} is the separate provider, and seven explicit ERC-8183 steps create a public service receipt. Client and provider sign only their own protocol actions; every write is simulated first.</p>
       </div>
 
       <div className="yield-proof-source">
         <FileCheck2 size={19} />
-        <div><strong>Evidence is fixed before the job is created</strong><p>Lista Lending USDT · 5.01909% observed APY · 5,000 USDT mandate · analysis only</p></div>
-        <a href={YIELD_REFERENCE_PATH} target="_blank" rel="noreferrer">Open public JSON <ExternalLink size={13} /></a>
-        <code>{YIELD_REFERENCE_SHA256}</code>
+        <div><strong>Service terms are fixed before the job is created</strong><p>{mandatePrompt} · analysis/decision service only</p></div>
+        <a href={category.id === 'yield' ? YIELD_REFERENCE_PATH : `/api/erc8183/marketplace-deliverable/${category.id}/${jobId ?? 0}`} target="_blank" rel="noreferrer">Open public evidence <ExternalLink size={13} /></a>
+        <code>{category.id === 'yield' ? YIELD_REFERENCE_SHA256 : `${category.id} · deterministic category deliverable`}</code>
       </div>
 
       <div className="registration-guard" role="status">
         <ShieldCheck size={18} />
-        <div><strong>Hard transaction boundaries</strong><p>Wallet 0xD30B…2EC3 · Chain 97 · Budget 0.1 test U · Exact approval only · Current policy whitelist verified</p></div>
-        <span className={validWallet ? 'guard-ready' : 'guard-blocked'}>{validWallet ? 'WALLET VERIFIED' : 'CONNECT VERIFIED WALLET'}</span>
+        <div><strong>Hard transaction boundaries</strong><p>Client {address ? `${address.slice(0, 6)}…${address.slice(-4)}` : 'your wallet'} · Provider Agent #{agent.id} · Chain 97 · Budget 0.1 test U · Exact approval only</p></div>
+        <span className={isTestnetWallet ? 'guard-ready' : 'guard-blocked'}>{isTestnetWallet ? `${walletRole?.toUpperCase() ?? 'CLIENT'} WALLET READY` : 'CONNECT BSC TESTNET WALLET'}</span>
       </div>
 
       <div className="commerce-summary">
@@ -220,9 +269,15 @@ export function CommerceScreen() {
               <span className="commerce-step-index">{complete ? <CheckCircle2 size={18} /> : `0${index + 1}`}</span>
               <div><strong>{actionCopy[step].title}</strong><p>{actionCopy[step].detail}</p></div>
               {current ? (
-                <button className="button button-primary" type="button" disabled={!validWallet || Boolean(activeAction)} onClick={() => broadcast(step)}>
-                  {activeAction === step ? <><LoaderCircle className="spin" size={16} /> Confirming…</> : `Sign step ${index + 1}`}
-                </button>
+                canSignAction(step) ? (
+                  <button className="button button-primary" type="button" disabled={Boolean(activeAction)} onClick={() => broadcast(step)}>
+                    {activeAction === step ? <><LoaderCircle className="spin" size={16} /> Confirming…</> : `Sign step ${index + 1}`}
+                  </button>
+                ) : (
+                  <span className="commerce-step-state">
+                    {step === 'submit' ? 'WAITING FOR PROVIDER' : step === 'create' && isTestnetWallet ? 'USE A SEPARATE CLIENT WALLET' : 'CLIENT WALLET REQUIRED'}
+                  </span>
+                )
               ) : <span className="commerce-step-state">{complete ? 'CONFIRMED' : 'LOCKED'}</span>}
             </article>
           )

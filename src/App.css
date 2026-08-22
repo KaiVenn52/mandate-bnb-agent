@@ -309,6 +309,8 @@
 .identity-verified { color: var(--success) !important; display: flex; align-items: center; gap: 6px; }
 .contract-body { padding: 15px; }
 .contract-body > h3, .transaction-simulation h3 { color: var(--primary); text-transform: uppercase; font-size: 10px; letter-spacing: .05em; }
+.contract-title-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.contract-title-row h3 { color: var(--primary); text-transform: uppercase; font-size: 10px; letter-spacing: .05em; margin: 0; }
 .contract-terms { display: grid; grid-template-columns: 1fr 1fr; gap: 38px; margin-top: 14px; }
 .contract-terms dl, .transaction-simulation dl, .proof-receipt dl { margin: 0; }
 .contract-terms dl > div, .transaction-simulation dl > div, .proof-receipt dl > div { display: grid; grid-template-columns: 150px 1fr; gap: 12px; min-height: 27px; align-items: start; font-size: 11px; }
@@ -325,6 +327,7 @@ dd { margin: 0; color: var(--text); }
 .contract-actions { min-height: 58px; padding: 8px 14px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .gateway-result { border-top: 1px solid var(--border); color: var(--text-muted); font-size: 11px; line-height: 1.5; padding: 10px 14px; }
 .activation-confirmed { color: var(--success); display: inline-flex; gap: 7px; align-items: center; font-size: 12px; }
+.activation-next-actions { display: flex; align-items: center; justify-content: flex-end; gap: 12px; flex-wrap: wrap; }
 
 .transaction-simulation { padding: 15px; }
 .simulation-heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }

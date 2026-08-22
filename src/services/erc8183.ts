@@ -1,3 +1,5 @@
+import type { CategoryId } from '../catalog'
+
 export const ERC8183_COMMERCE_ADDRESS = '0xa206c0517B6371C6638CD9e4a42Cc9f02A33B0DE' as const
 export const ERC8183_ROUTER_ADDRESS = '0xD7d36D66d2F1B608A0F943f722D27e3744f66F25' as const
 // Canonical current testnet policy from apex-contracts/scripts/addresses.ts.
@@ -153,3 +155,34 @@ export const buildYieldDeliverableManifest = (jobId: bigint) => ({
     sdk: 'bnbagent-0.4.2',
   },
 })
+
+const marketplaceDeliverables: Record<Exclude<CategoryId, 'yield'>, { agentId: string; content: string; evidenceMode: string }> = {
+  rebalancing: {
+    agentId: '1804',
+    content: 'RangeGuard completed a bounded LP rebalancing plan against the disclosed marketplace category fixture. Decision: NO_ACTION. No LP position was delegated and no asset transaction was attempted.',
+    evidenceMode: 'controlled-category-proof',
+  },
+  grid: {
+    agentId: '1805',
+    content: 'GridPilot completed the frozen BNB/USDT grid safety review. Decision: balanced-26. The higher-return turbo plan was rejected for exceeding drawdown and activity caps. No asset transaction was attempted.',
+    evidenceMode: 'verified-termix-fixture',
+  },
+  health: {
+    agentId: '1807',
+    content: 'LiqShield completed the frozen Venus health-factor intervention. Decision: repay-1600. Borrowing and no-action were rejected by the bounded policy. No asset transaction was attempted.',
+    evidenceMode: 'verified-termix-fixture',
+  },
+}
+
+export const buildMarketplaceDeliverableManifest = (jobId: bigint, category: CategoryId) => {
+  if (category === 'yield') return buildYieldDeliverableManifest(jobId)
+  const deliverable = marketplaceDeliverables[category]
+  return {
+    version: 1,
+    job_id: Number(jobId),
+    chain_id: 97,
+    contracts: { commerce: ERC8183_COMMERCE_ADDRESS, router: ERC8183_ROUTER_ADDRESS, policy: ERC8183_POLICY_ADDRESS },
+    response: { content: deliverable.content, content_type: 'application/json' },
+    metadata: { agent_id: deliverable.agentId, category, evidence_mode: deliverable.evidenceMode, sdk: 'bnbagent-0.4.2' },
+  }
+}

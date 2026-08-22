@@ -27,6 +27,7 @@ flowchart LR
 | Recommendation to activation | Candidates that exceed a hard limit are marked ineligible with explicit reasons. |
 | Analysis to transaction | Live YieldRoute and Venus runs are read-only; they cannot request token approval or move funds. |
 | Wallet to ERC-8183 | Every state-changing step is simulated first and requires a separate wallet confirmation. |
+| ERC-8183 roles | The evaluator wallet is the client; only the registered provider wallet can submit. The shareable job URL carries the job ID across that handoff. |
 | Token approval | Exactly 0.1 test U, never unlimited; Job #506 finished with zero residual allowance. |
 | Result to evidence | The submitted deliverable hash binds a public manifest and a SHA-256-verified evidence snapshot. |
 
@@ -47,4 +48,3 @@ flowchart LR
 | Router | `0xD7d36D66d2F1B608A0F943f722D27e3744f66F25` |
 | Optimistic policy | `0xd6a4217588f6b1f5657a92a3e94e6422ad771cea` |
 | Test U | `0xc70B8741B8B07A6d61E54fd4B20f22Fa648E5565` |
-

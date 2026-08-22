@@ -7,7 +7,6 @@ import {
   Check,
   CheckCircle2,
   Copy,
-  ExternalLink,
   FileCheck2,
   ShieldCheck,
   Trash2,
@@ -16,14 +15,16 @@ import {
 import { getCategory } from '../catalog'
 import { fetchGatewayHealth, previewJob } from '../services/jobGateway'
 import { loadMandateDraft } from '../services/mandateDraft'
+import { authorizationFromMandate } from '../services/mandateAuthorization'
 
 type ActivationState = 'review' | 'signing' | 'active' | 'revoked'
 
 const timeline = [
-  ['CREATED', 'Mandate created', '14:32:11', '0x9c1d…e4b7f2'],
-  ['FUNDED', 'Capital reserved', '14:32:28', '0x3a7b…9d1c2e'],
-  ['DELIVERED', 'Yield route delivered', '21:48:57', '0x7f2e…a8b4c3'],
-  ['SETTLED', 'Results settled', '21:49:12', '0x1d4a…c9e8f0'],
+  ['CREATE', 'Client creates job', 'CLIENT', 'Not broadcast'],
+  ['BIND', 'Client binds policy', 'CLIENT', 'Not broadcast'],
+  ['FUND', 'Client funds escrow', 'CLIENT', 'Not broadcast'],
+  ['DELIVER', 'Agent submits result', 'PROVIDER', 'Not broadcast'],
+  ['SETTLE', 'Policy settles result', 'PERMISSIONLESS', 'Not broadcast'],
 ]
 
 export function ActivateScreen() {
@@ -31,8 +32,8 @@ export function ActivateScreen() {
   const [searchParams] = useSearchParams()
   const category = getCategory(searchParams.get('category'))
   const agent = category.agents.find((item) => item.id === searchParams.get('agent')) ?? category.agents[0]
-  const auth = category.authorization
   const draft = loadMandateDraft()
+  const auth = authorizationFromMandate(category, agent, draft)
   const mandatePrompt = draft?.categoryId === category.id ? draft.prompt : category.prompt
   const [state, setState] = useState<ActivationState>('review')
   const [copied, setCopied] = useState('')
@@ -114,7 +115,10 @@ export function ActivateScreen() {
           </div>
 
           <div className="contract-body">
-            <h3 id="contract-title">Your mandate</h3>
+            <div className="contract-title-row">
+              <h3 id="contract-title">Your mandate</h3>
+              <span className="verified-label">{auth.source === 'parsed-mandate' ? 'FROM YOUR INPUT' : 'CATEGORY TEMPLATE'}</span>
+            </div>
             <div className="contract-terms">
               <dl>
                 <div><dt>Goal</dt><dd>{auth.goal}</dd></div>
@@ -148,7 +152,18 @@ export function ActivateScreen() {
               <button className="button button-primary" type="button" onClick={activate}>Preview activation <ArrowRight size={17} /></button>
             )}
             {state === 'signing' && <button className="button button-primary" type="button" disabled aria-busy="true">Preparing ERC-8183 job…</button>}
-            {state === 'active' && <span className="activation-confirmed"><CheckCircle2 size={17} /> Preview prepared</span>}
+            {state === 'active' && (
+              <div className="activation-next-actions">
+                <span className="activation-confirmed"><CheckCircle2 size={17} /> Preview prepared</span>
+                {agent.providerAddress ? (
+                  <button className="button button-primary" type="button" onClick={() => navigate(`/commerce?category=${category.id}&agent=${agent.id}`)}>
+                    Continue to onchain hire <ArrowRight size={17} />
+                  </button>
+                ) : (
+                  <span className="muted">This sample provider cannot be hired onchain.</span>
+                )}
+              </div>
+            )}
             {state === 'revoked' && <span className="muted">No agent permissions remain.</span>}
           </div>
           {gatewayMessage ? <div className="gateway-result" role="status">{gatewayMessage}</div> : null}
@@ -168,7 +183,7 @@ export function ActivateScreen() {
           <dl>
             <div><dt>Network</dt><dd>Chain ID 97 <CheckCircle2 size={15} /></dd></div>
             <div><dt>Allowance check</dt><dd>Not checked</dd></div>
-            <div><dt>Daily spend headroom</dt><dd className="mono">$50.00</dd></div>
+            <div><dt>Service spend ceiling</dt><dd className="mono">{auth.maxSpend}</dd></div>
           </dl>
           <div className="simulation-note"><ShieldCheck size={18} /><p>The agent cannot exceed these encoded limits. This preview never asks you to sign blind.</p></div>
         </aside>
@@ -196,30 +211,30 @@ export function ActivateScreen() {
           <div className="execution-grid">
             <div className="job-timeline">
               <h3>Job timeline (ERC-8183)</h3>
-              <div className="timeline-head"><span>Step</span><span>Status</span><span>Timestamp</span><span>Tx hash</span><span>Verification</span></div>
-              {timeline.map(([step, status, time, hash], index) => (
+              <div className="timeline-head"><span>Step</span><span>Action</span><span>Signer</span><span>Transaction</span><span>Status</span></div>
+              {timeline.map(([step, status, signer, transaction], index) => (
                 <div className="timeline-row" key={step}>
                   <span><i>{index + 1}</i><strong>{step}</strong></span>
-                  <span>{status}</span><span className="mono">{time}</span>
-                  <button type="button" className="copy-hash mono" onClick={() => copyValue(hash)}>{hash} {copied === hash ? <Check size={13} /> : <Copy size={13} />}</button>
-                  <span className="muted"><Check size={14} /> Preview</span>
+                  <span>{status}</span><span className="mono">{signer}</span>
+                  <span className="mono muted">{transaction}</span>
+                  <span className="muted">UPCOMING</span>
                 </div>
               ))}
             </div>
 
             <aside className="proof-receipt">
-              <div className="receipt-heading"><h3>MANDATE PREVIEW #004821</h3><span>NOT BROADCAST</span></div>
+              <div className="receipt-heading"><h3>MANDATE PERMISSION PREVIEW</h3><span>NOT BROADCAST</span></div>
               <dl>
                 <div><dt>Agent</dt><dd>{agent.name} · {agent.id}</dd></div>
                 <div><dt>Result</dt><dd className="mono">{agent.shadow.primary}</dd></div>
                 <div><dt>Baseline</dt><dd className="mono">{agent.shadow.baseline}</dd></div>
                 <div><dt>Agent Advantage</dt><dd className="mono positive">{agent.shadow.advantage}</dd></div>
                 <div><dt>Cost</dt><dd className="mono">{agent.shadow.cost}</dd></div>
-                <div><dt>Jobs</dt><dd className="mono">ERC-8183 #4821</dd></div>
-                <div><dt>Evidence</dt><dd>3 transactions</dd></div>
+                <div><dt>Job</dt><dd className="mono">Not created</dd></div>
+                <div><dt>Evidence</dt><dd>No onchain receipt yet</dd></div>
               </dl>
               <div className="receipt-actions">
-                <a className="button button-outline" href="https://testnet.bscscan.com" target="_blank" rel="noreferrer">Open BSC explorer <ExternalLink size={15} /></a>
+                {agent.providerAddress ? <button className="button button-outline" type="button" onClick={() => navigate(`/commerce?category=${category.id}&agent=${agent.id}`)}>Open hire workflow <ArrowRight size={15} /></button> : null}
                 <button className="button button-secondary" type="button" onClick={() => navigate('/evidence')}><FileCheck2 size={15} /> View evidence</button>
               </div>
             </aside>

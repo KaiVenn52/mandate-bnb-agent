@@ -26,19 +26,25 @@ Run live YieldRoute and show current observed APY, liquidity, protocol trend, ca
 
 **Narration:** "YieldRoute reads public BSC market data, applies the hard limits and produces a hash-verifiable recommendation. This run is read-only: no signature, approval or asset movement."
 
-## 1:32-1:57 - Measured agent advantage
+## 1:32-1:50 - Permission review and hire path
+
+Run Shadow Mode, open Review permissions, then Continue to onchain hire. Point to the connected evaluator wallet as client and Agent #1806 as the separate provider.
+
+**Narration:** "The same limits now control eligibility, permission review and the immutable job description. The client funds; only the registered provider can submit; settlement is permissionless after the dispute window."
+
+## 1:50-2:10 - Measured agent advantage
 
 Open Evidence. Show the headline figures and the three task rows: yield, trading and Venus risk monitoring.
 
 **Narration:** "For TermiX, we ran three tasks both ways on identical frozen inputs. The median human time was 233.65 seconds versus 0.2718 seconds for the agent API. Agents scored 10 out of 10 on every locked rubric; the average quality lift was 5.33 points. Both paths had zero observed cash cost, so we do not claim a paid-cost advantage."
 
-## 1:57-2:25 - Onchain proof
+## 2:10-2:28 - Onchain proof
 
 Open the Job #506 Evidence Passport, then the BscScan settlement transaction. Briefly show the seven transaction hashes and public deliverable manifest.
 
 **Narration:** "Job 506 proves the complete ERC-8183 lifecycle on BSC Testnet: create, bind policy, set budget, exact approval, fund, submit and settle. The 0.1 test U escrow returned, residual allowance is zero, and the onchain deliverable binds this public evidence file."
 
-## 2:25-2:35 - Close
+## 2:28-2:35 - Close
 
 Return to the product.
 
@@ -50,4 +56,3 @@ Return to the product.
 - Preload Evidence and BscScan tabs; cut all network waits.
 - Do not connect a mainnet wallet or show recovery information.
 - Do not claim automated mainnet trading or guaranteed returns.
-

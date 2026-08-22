@@ -8,7 +8,9 @@
 4. Build the mandate and open Yield Optimisation.
 5. Confirm SteadyPath is eligible while riskier or leveraged candidates show explicit rejection reasons.
 6. Run live YieldRoute. This is read-only and requests no wallet signature.
-7. Open Evidence and inspect the Agent Advantage Report.
+7. Run Shadow Mode, open Review permissions and confirm that capital, risk, leverage, protocol, activity and service-spend limits match the original mandate.
+8. Continue to the onchain hire page. Without signing, inspect the separate client/provider roles and seven-step ERC-8183 lifecycle.
+9. Open Evidence and inspect the Agent Advantage Report.
 
 ## Proof path (pre-completed; no transaction required)
 
@@ -30,4 +32,3 @@
 
 - Historical candidate mandates, capital observed and profitability-like card metrics outside the verified benchmark.
 - MANDATE does not claim mainnet execution, guaranteed yield or a profitable trading record.
-

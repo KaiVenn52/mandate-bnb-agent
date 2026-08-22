@@ -20,6 +20,9 @@ export type MandateDraft = {
     actionPeriod: 'day' | 'week' | 'month'
     actionCapSpecified: boolean
     protocols: string[]
+    spendCapUsd: number | null
+    spendCapPeriod: 'day' | 'week' | 'month' | 'total'
+    spendCapSpecified: boolean
   }
   updatedAt: string
 }
@@ -52,7 +55,9 @@ function inferCategory(prompt: string, fallback: CategoryId): CategoryId {
 
 function extractCapital(prompt: string): { amount: string; numericAmount: number | null; asset: string } {
   const assetAmount = prompt.match(/(?:[$€£]\s*)?([\d,.]+)\s*(USDT|USDC|BNB|USD|ETH|BTCB|BTC)\b/i)
-  const currencyAmount = prompt.match(/([$€£])\s*([\d,.]+)/)
+  const rawCurrencyAmount = prompt.match(/([$€£])\s*([\d,.]+)/)
+  const currencyContext = rawCurrencyAmount?.index === undefined ? '' : prompt.slice(Math.max(0, rawCurrencyAmount.index - 32), rawCurrencyAmount.index)
+  const currencyAmount = /(?:spend|cost|fee|gas)\D{0,24}$/i.test(currencyContext) ? undefined : rawCurrencyAmount
   const amount = (assetAmount?.[1] ?? currencyAmount?.[2])?.replace(/,$/, '') ?? 'Not specified'
   const currencyAsset = currencyAmount?.[1] === '€' ? 'EUR' : currencyAmount?.[1] === '£' ? 'GBP' : 'USD'
   const asset = assetAmount?.[2]?.toUpperCase() ?? (currencyAmount ? currencyAsset : (prompt.match(/\b(USDT|USDC|BNB|ETH|BTCB|BTC)\b/i)?.[1]?.toUpperCase() ?? 'Any asset'))
@@ -99,6 +104,18 @@ function extractProtocols(prompt: string): string {
   return protocols.length ? protocols.join(', ') : 'No protocol specified'
 }
 
+function extractSpendCap(prompt: string): { amount: number | null; period: 'day' | 'week' | 'month' | 'total'; specified: boolean } {
+  const match = prompt.match(/(?:spend|cost|fee|gas)(?:\s+no\s+more\s+than|\s+at\s+most|\s+up\s+to|\s*(?:cap|max(?:imum)?|limit)?\s*(?:of|at|≤|<=)?)?\s*\$\s*([\d,.]+)(?:\s*(?:a|per|\/)?\s*(day|week|month))?/i)
+  if (!match) return { amount: null, period: 'total', specified: false }
+  const amount = Number(match[1].replace(/,/g, ''))
+  if (!Number.isFinite(amount) || amount < 0) return { amount: null, period: 'total', specified: false }
+  return {
+    amount,
+    period: (match[2]?.toLowerCase() ?? 'total') as 'day' | 'week' | 'month' | 'total',
+    specified: true,
+  }
+}
+
 function canonicalPrompt(input: {
   goal: string
   capitalAmount: number | null
@@ -108,12 +125,18 @@ function canonicalPrompt(input: {
   actionCap: number
   actionPeriod: 'day' | 'week' | 'month'
   protocols: string[]
+  spendCapUsd: number | null
+  spendCapPeriod: 'day' | 'week' | 'month' | 'total'
 }) {
-  const capital = input.capitalAmount === null ? 'Capital not specified' : `Capital ${input.capitalAmount} ${input.asset}`
+  const goalContainsCapital = input.capitalAmount !== null && new RegExp(`${String(input.capitalAmount).replace('.', '\\.')}\\s*${input.asset}`, 'i').test(input.goal)
+  const capital = input.capitalAmount === null ? ' Capital not specified.' : goalContainsCapital ? '' : ` Capital ${input.capitalAmount} ${input.asset}.`
   const risk = `${input.risk[0].toUpperCase()}${input.risk.slice(1)} risk`
   const leverage = input.leverage === 0 ? 'No leverage' : `${input.leverage}x leverage`
   const protocols = input.protocols.length ? `Allowed protocols: ${input.protocols.join(', ')}` : 'No protocol specified'
-  return `${input.goal}. ${capital}. ${risk}. ${leverage}. Max ${input.actionCap} actions per ${input.actionPeriod}. ${protocols}.`
+  const spend = input.spendCapUsd === null
+    ? ''
+    : ` Spend no more than $${input.spendCapUsd}${input.spendCapPeriod === 'total' ? ' total' : ` per ${input.spendCapPeriod}`}.`
+  return `${input.goal}.${capital} ${risk}. ${leverage}. Max ${input.actionCap} actions per ${input.actionPeriod}. ${protocols}.${spend}`
 }
 
 export function editMandateField(draft: MandateDraft, label: EditableMandateField, rawValue: string): string {
@@ -128,6 +151,8 @@ export function editMandateField(draft: MandateDraft, label: EditableMandateFiel
     actionCap: draft.constraints.actionCap,
     actionPeriod: draft.constraints.actionPeriod,
     protocols: [...draft.constraints.protocols],
+    spendCapUsd: draft.constraints.spendCapUsd,
+    spendCapPeriod: draft.constraints.spendCapPeriod,
   }
 
   if (label === 'Goal') {
@@ -186,6 +211,7 @@ export function parseMandate(prompt: string, fallback: CategoryId): MandateDraft
   const leverage = extractLeverage(prompt)
   const frequency = extractFrequency(prompt, categoryId)
   const protocols = extractProtocols(prompt)
+  const spend = extractSpendCap(prompt)
   const fields: ParsedField[] = [
     { label: 'Goal', value: outcome(prompt, categoryId) },
     { label: 'Capital', value: capital.amount === 'Not specified' ? capital.amount : `${capital.amount} ${capital.asset}` },
@@ -215,6 +241,9 @@ export function parseMandate(prompt: string, fallback: CategoryId): MandateDraft
       actionPeriod: frequency.period,
       actionCapSpecified: frequency.specified,
       protocols: protocols === 'No protocol specified' ? [] : protocols.split(', '),
+      spendCapUsd: spend.amount,
+      spendCapPeriod: spend.period,
+      spendCapSpecified: spend.specified,
     },
     updatedAt: new Date().toISOString(),
   }

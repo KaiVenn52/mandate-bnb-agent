@@ -43,10 +43,10 @@
 ## Final quality gate
 
 - [x] Every unverified historical metric remains explicitly labelled demo/sample
-- [ ] No shortened placeholder hash links to an explorer homepage
+- [x] No shortened placeholder hash links to an explorer homepage
 - [ ] Empty, loading, error, disconnected-wallet, wrong-network, rejected-signature states tested
-- [ ] 375px, 768px, 1280px, and 1440px layouts checked
+- [x] 375px, 768px, 1280px, and 1440px layouts checked across Discover, Results, Permission Review, Commerce, and Evidence
 - [ ] Fresh-clone setup instructions pass
 - [ ] 3-minute demo recorded and uploaded (owner action)
-- [ ] Public GitHub repository created and linked (owner approval required)
+- [x] Public GitHub repository created and linked
 - [ ] Official submission form sent (owner approval required)

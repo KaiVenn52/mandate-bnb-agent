@@ -41,6 +41,24 @@ ERC8183_COMMERCE_ADDRESS = "0xa206c0517B6371C6638CD9e4a42Cc9f02A33B0DE"
 ERC8183_ROUTER_ADDRESS = "0xD7d36D66d2F1B608A0F943f722D27e3744f66F25"
 ERC8183_POLICY_ADDRESS = "0xd6a4217588f6b1f5657a92a3e94e6422ad771cea"
 
+MARKETPLACE_DELIVERABLES = {
+    "rebalancing": {
+        "agent_id": "1804",
+        "content": "RangeGuard completed a bounded LP rebalancing plan against the disclosed marketplace category fixture. Decision: NO_ACTION. No LP position was delegated and no asset transaction was attempted.",
+        "evidence_mode": "controlled-category-proof",
+    },
+    "grid": {
+        "agent_id": "1805",
+        "content": "GridPilot completed the frozen BNB/USDT grid safety review. Decision: balanced-26. The higher-return turbo plan was rejected for exceeding drawdown and activity caps. No asset transaction was attempted.",
+        "evidence_mode": "verified-termix-fixture",
+    },
+    "health": {
+        "agent_id": "1807",
+        "content": "LiqShield completed the frozen Venus health-factor intervention. Decision: repay-1600. Borrowing and no-action were rejected by the bounded policy. No asset transaction was attempted.",
+        "evidence_mode": "verified-termix-fixture",
+    },
+}
+
 
 class JobRequest(BaseModel):
     provider: str = Field(pattern=r"^0x[a-fA-F0-9]{40}$")
@@ -152,6 +170,38 @@ def erc8183_yield_deliverable(job_id: int) -> dict[str, Any]:
         return build_yield_deliverable(job_id)
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
+
+
+@app.get("/erc8183/marketplace-deliverable/{category}/{job_id}")
+def erc8183_marketplace_deliverable(category: str, job_id: int) -> dict[str, Any]:
+    """Public deterministic deliverable used by each marketplace hire path."""
+    if job_id < 0:
+        raise HTTPException(422, "job_id must be non-negative")
+    if category == "yield":
+        return build_yield_deliverable(job_id)
+    deliverable = MARKETPLACE_DELIVERABLES.get(category)
+    if not deliverable:
+        raise HTTPException(404, "Unknown marketplace category")
+    return {
+        "version": 1,
+        "job_id": job_id,
+        "chain_id": 97,
+        "contracts": {
+            "commerce": ERC8183_COMMERCE_ADDRESS,
+            "router": ERC8183_ROUTER_ADDRESS,
+            "policy": ERC8183_POLICY_ADDRESS,
+        },
+        "response": {
+            "content": deliverable["content"],
+            "content_type": "application/json",
+        },
+        "metadata": {
+            "agent_id": deliverable["agent_id"],
+            "category": category,
+            "evidence_mode": deliverable["evidence_mode"],
+            "sdk": "bnbagent-0.4.2",
+        },
+    }
 
 
 @app.get("/benchmarks")

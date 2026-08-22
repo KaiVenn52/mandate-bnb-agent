@@ -50,11 +50,7 @@ export function ResultsScreen() {
   const personalisedAnnualised = capitalisedAdvantage(category.id, selected.shadow.advantage, draft?.constraints.capitalAmount)
   const linkedActivity = selected.registrationTxHash
     ? [{ hash: selected.registrationTxHash, label: `ERC-8004 Agent #${selected.id} registration` }]
-    : [
-        { hash: '0x1a2b…7f9c', label: 'Simulated swap' },
-        { hash: '0x3c4d…2ab1', label: 'Protocol deposit' },
-        { hash: '0x6e7f…8c3a', label: 'Position read' },
-      ]
+    : []
   const registry = useQuery({
     queryKey: ['erc-8004-registry-snapshot'],
     queryFn: ({ signal }) => fetchRegistrySnapshot(signal),
@@ -135,7 +131,7 @@ export function ResultsScreen() {
             <div className="registry-state" title={registry.error instanceof Error ? registry.error.message : undefined}>
               <span className={`network-dot ${registry.isError ? 'is-error' : ''}`} />
               <span className="mono">
-                {registry.isPending ? 'SYNCING ERC-8004' : registry.isError ? 'REGISTRY FALLBACK' : `LIVE · CHAIN ${registry.data.chainId}`}
+                {registry.isPending ? 'SYNCING ERC-8004' : registry.isError ? 'REGISTRY FALLBACK' : `LIVE REGISTRY · CHAIN ${registry.data.chainId}`}
               </span>
             </div>
           </div>
@@ -240,7 +236,9 @@ export function ResultsScreen() {
                   {shadowStatus === 'complete' ? (
                     <div className="shadow-actions">
                       <button className="button button-secondary compact-button" type="button" onClick={runShadow}><RefreshCw size={16} /> Run again</button>
-                      <button className="button button-primary compact-button" type="button" onClick={() => navigate(`/activate?category=${category.id}&agent=${selected.id}`)}>Review permissions <ArrowRight size={16} /></button>
+                      <button className="button button-primary compact-button" type="button" onClick={() => navigate(`/activate?category=${category.id}&agent=${selected.id}`)}>
+                        {selected.providerAddress ? 'Review permissions' : 'Preview sample permissions'} <ArrowRight size={16} />
+                      </button>
                     </div>
                   ) : (
                     <button className="button button-primary shadow-run-button" type="button" onClick={runShadow} disabled={shadowStatus === 'running'} aria-busy={shadowStatus === 'running'}>
@@ -289,8 +287,9 @@ export function ResultsScreen() {
           </section>
           <section className="evidence-section">
             <h3>Linked activity</h3>
+            {linkedActivity.length === 0 ? <div className="provenance-note"><p>No onchain activity is claimed for this sample provider.</p></div> : null}
             {linkedActivity.map(({ hash, label }) => (
-              <a className="transaction-row" href={selected.registrationTxHash ? `https://testnet.bscscan.com/tx/${hash}` : 'https://testnet.bscscan.com'} target="_blank" rel="noreferrer" key={hash}>
+              <a className="transaction-row" href={`https://testnet.bscscan.com/tx/${hash}`} target="_blank" rel="noreferrer" key={hash}>
                 <span className="mono">{`${hash.slice(0, 8)}…${hash.slice(-6)}`}</span><small>{label}</small><ExternalLink size={13} />
               </a>
             ))}

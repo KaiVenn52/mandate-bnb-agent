@@ -50,7 +50,7 @@ export type CategorySheet = {
   metrics: Array<{
     label: string
     value: string
-    source: 'ONCHAIN SAMPLE' | 'DERIVED SAMPLE'
+    source: 'HISTORICAL SAMPLE' | 'DERIVED SAMPLE'
   }>
   riskRule: string
 }

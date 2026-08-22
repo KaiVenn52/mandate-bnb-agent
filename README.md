@@ -9,6 +9,7 @@ MANDATE is an outcome-first BNB Chain agent marketplace. A user states an object
 - **Different marketplace primitive:** outcome -> evidence -> permission -> execution, rather than an agent-card directory.
 - **Decision-grade data:** complete flows and category-specific scoreboards for LP rebalancing, grid trading, yield optimisation, and health-factor monitoring.
 - **Safe before signing:** mandate limits, protocol allowlists, spend ceilings, expiry, and revoke remain visible before any transaction.
+- **Mandate-native matching:** asset, capital, protocol, leverage, risk, activity and service-spend ceilings now flow from the user's text into eligibility, permission review and the immutable ERC-8183 job description.
 - **Partner-track fit:** Shadow Mode produces the A/B structure required by the TermiX Agent Advantage Report.
 - **Reproducible benchmark lab:** three versioned, frozen tasks expose public inputs, locked rubrics, input hashes, real agent runs, and human-only baseline worksheets.
 - **Standards-native:** live BSC ERC-8004 registry discovery plus a guarded BNB Agent SDK gateway for the ERC-8183 job lifecycle.
@@ -22,8 +23,8 @@ MANDATE is an outcome-first BNB Chain agent marketplace. A user states an object
 - The four reference identities are live on BSC Testnet as ERC-8004 Agents #1804-#1807. Marketplace candidate performance remains labelled demo data; the three completed TermiX measurements are separately hash-verified.
 - **Updated TermiX status:** the Evidence page now uses three completed, same-input task pairs; unrelated historical category scorecards remain explicitly labelled sample data.
 - ERC-8183 YieldRoute Job #506 completed the full current-policy lifecycle with an exact 0.1 test U escrow and zero residual allowance; all seven transaction links are in `docs/onchain-evidence.md`.
-- Activation is labelled **PREVIEW MODE** and does not broadcast from the browser.
-- Preview activation now validates the request through the local Python gateway when it is available.
+- Permission review is a non-broadcast preview. A verified candidate can then continue into the real BSC Testnet hire flow.
+- The public hire path supports a separate evaluator/client wallet: the client creates and funds, the registered provider submits, and settlement is permissionless after the optimistic window. The `jobId` stays in the shareable URL across the wallet handoff.
 - The configured submission wallet is `0xD30BbB80c863c9B94622EF92337AaD65148D2EC3`; its BSC Testnet readiness is shown live on the Evidence page.
 - The gateway can broadcast only after the operator enables live mode, configures the encrypted SDK wallet, and passes server-side budget/provider policy checks.
 
@@ -80,9 +81,9 @@ User mandate
 
 ## Submission-critical status
 
-- Complete: four ERC-8004 identities, fully settled YieldRoute ERC-8183 Job #506, three recorded TermiX A/B pairs, a public Agent Advantage Report, and live read-only YieldRoute and Venus capabilities.
+- Complete: public source, four ERC-8004 identities, fully settled YieldRoute ERC-8183 Job #506, three recorded TermiX A/B pairs, a public Agent Advantage Report, live read-only YieldRoute and Venus capabilities, and an evaluator-wallet-to-provider ERC-8183 hire path.
 - Honest boundary: marketplace candidate history outside the verified benchmark and Job #506 remains clearly labelled sample data. MANDATE does not claim mainnet execution or profitability.
-- Remaining external actions: publish the source repository, record/upload the demo video, and submit the official form. Each requires owner approval.
+- Remaining external actions: record/upload the demo video and submit the official form. Each requires owner approval.
 
 ## Public evidence endpoints
 
@@ -90,9 +91,10 @@ User mandate
 - `POST /api/benchmarks/{task_id}/agent-run` — raw deterministic agent output and measured compute time
 - `POST /api/benchmarks/{task_id}/baseline-score` — scores a browser-timed human answer without fabricating a baseline
 - `GET /api/erc8183/yield-deliverable/506` — canonical SDK-compatible YieldRoute deliverable
+- `GET /api/erc8183/marketplace-deliverable/{category}/{jobId}` — canonical category deliverable used by the four hire paths
 - `GET /evidence/evidence-passport-506.json` — machine-readable identity, benchmark and transaction evidence
 - `GET /evidence/MANDATE-Agent-Advantage-Report.pdf` — required TermiX report
 
-Before final submission, publish the source repository, add the final demo-video URL, and obtain owner approval for the submission form.
+Before final submission, add the final demo-video URL and obtain owner approval for the submission form.
 
 See [submission-checklist.md](docs/submission-checklist.md), [onchain-runbook.md](docs/onchain-runbook.md), and [demo-script.md](docs/demo-script.md).
