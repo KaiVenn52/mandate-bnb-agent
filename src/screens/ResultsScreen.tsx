@@ -42,6 +42,8 @@ export function ResultsScreen() {
   const draft = loadMandateDraft()
   const mandateSummary = draft?.categoryId === category.id ? draft.summary : category.summary
   const agents = matchAgents(category, draft)
+  const eligibleCount = agents.filter((agent) => agent.status === 'satisfies').length
+  const noEligibleAgents = eligibleCount === 0
   const [selectedId, setSelectedId] = useState(agents[0].id)
   const [shadowStatus, setShadowStatus] = useState<ShadowStatus>('idle')
   const [progress, setProgress] = useState(0)
@@ -122,9 +124,12 @@ export function ResultsScreen() {
         <div className="results-main">
           <div className="list-header">
             <div>
-              <h2>Top recommendations</h2>
+              <h2>{noEligibleAgents ? 'No eligible agent found' : 'Top recommendations'}</h2>
               <p>
-                Your saved limits rank the disclosed candidates below. The live ERC-8004 registry total{' '}
+                {noEligibleAgents
+                  ? `All ${agents.length} disclosed candidates violate at least one hard limit. Your mandate has not been weakened.`
+                  : `${eligibleCount} of ${agents.length} disclosed candidates satisfy every parsed hard limit.`}{' '}
+                The live ERC-8004 registry total{' '}
                 ({registry.data ? registry.data.total.toLocaleString() : 'syncing'}) is ecosystem context.
               </p>
             </div>
@@ -136,9 +141,21 @@ export function ResultsScreen() {
             </div>
           </div>
 
-          <div className="agent-table" role="radiogroup" aria-label="Recommended agents">
+          {noEligibleAgents ? (
+            <section className="no-match-panel" role="status" aria-labelledby="no-match-title">
+              <AlertTriangle size={22} aria-hidden="true" />
+              <div>
+                <span className="section-kicker">HARD LIMITS PRESERVED</span>
+                <h2 id="no-match-title">We will not recommend a non-compliant agent.</h2>
+                <p>Review the rejection reasons below. Edit only the constraint you actually want to change, then rebuild the mandate to run matching again.</p>
+              </div>
+              <button className="button button-primary" type="button" onClick={() => navigate('/')}>Edit &amp; rebuild mandate <ArrowRight size={16} /></button>
+            </section>
+          ) : null}
+
+          <div className="agent-table" role="radiogroup" aria-label={noEligibleAgents ? 'Excluded agents' : 'Recommended agents'}>
             <div className="agent-table-head" aria-hidden="true">
-              <span>Recommendation</span>
+              <span>{noEligibleAgents ? 'Excluded candidate' : 'Recommendation'}</span>
               {category.tableColumns.map((column) => <span key={column.key}>{column.label}</span>)}
               <span>Status</span>
             </div>
@@ -160,7 +177,7 @@ export function ResultsScreen() {
                   <span className="agent-identity">
                     <span className="radio-mark" aria-hidden="true" />
                     <span>
-                      <small>{agent.recommendation} · {agent.fit}% personalised fit</small>
+                      <small>{agent.status === 'violates' ? 'Excluded' : agent.recommendation} · {agent.fit}% personalised fit</small>
                       <strong>{agent.name}</strong>
                       <em>{agent.matchReason}</em>
                       {agent.estimatedOutcome ? <em className="agent-outcome">{agent.estimatedOutcome}</em> : null}
@@ -185,7 +202,7 @@ export function ResultsScreen() {
             })}
           </div>
 
-          <section className="shadow-panel" aria-labelledby="shadow-title">
+          {!noEligibleAgents ? <section className="shadow-panel" aria-labelledby="shadow-title">
             <div className="shadow-heading">
               <div>
                 <h2 id="shadow-title">Shadow Mode comparison</h2>
@@ -249,7 +266,7 @@ export function ResultsScreen() {
                 </div>
               </>
             )}
-          </section>
+          </section> : null}
           {category.id === 'yield' && draft?.categoryId === 'yield' ? <LiveYieldRoute draft={draft} /> : null}
         </div>
 

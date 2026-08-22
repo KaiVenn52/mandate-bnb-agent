@@ -226,6 +226,11 @@
 .results-main, .results-layout, .agent-table, .shadow-panel, .comparison-grid { min-width: 0; max-width: 100%; }
 .list-header { display: flex; justify-content: space-between; gap: 20px; align-items: end; margin-bottom: 11px; }
 .list-header > span { font-size: 11px; }
+.no-match-panel { background: var(--danger-soft); border: 1px solid color-mix(in srgb, var(--danger) 35%, var(--border)); color: var(--danger); display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; margin-bottom: 12px; padding: 16px; }
+.no-match-panel > svg { align-self: start; margin-top: 2px; }
+.no-match-panel h2 { color: var(--text); font-size: 16px; margin-top: 5px; }
+.no-match-panel p { color: var(--text-muted); font-size: 12px; line-height: 1.55; margin-top: 5px; max-width: 720px; }
+.no-match-panel .button { white-space: nowrap; }
 .agent-table { border: 1px solid var(--border); overflow: hidden; }
 .agent-table-head, .agent-row { display: grid; grid-template-columns: minmax(290px, 1.7fr) 1fr .75fr .55fr .6fr 1.1fr; align-items: center; }
 .agent-table-head { min-height: 36px; color: var(--text-faint); font-size: 10px; padding: 0 14px; border-bottom: 1px solid var(--border); }
@@ -630,6 +635,8 @@ dd { margin: 0; color: var(--text); }
   .mandate-summary { align-items: center; flex-wrap: wrap; gap: 8px; padding: 12px; white-space: normal; }
   .mandate-summary > svg { margin-right: 2px; }
   .mandate-summary .button { margin-left: 0; width: 100%; }
+  .no-match-panel { grid-template-columns: auto minmax(0, 1fr); }
+  .no-match-panel .button { grid-column: 1 / -1; width: 100%; }
   .agent-table { overflow: hidden; }
   .agent-table-head { display: none; }
   .agent-row { min-width: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 18px; padding: 16px 14px; }
