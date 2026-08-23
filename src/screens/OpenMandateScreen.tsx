@@ -109,7 +109,7 @@ export function OpenMandateScreen() {
       </div>
 
       <div className="open-mandate-flow" aria-label="Open mandate workflow">
-        <div className="is-complete"><CheckCircle2 size={18} /><span><small>01</small><strong>Mandate built</strong><p>{mandate.prompt}</p></span></div>
+        <div className="is-complete"><CheckCircle2 size={18} /><span><small>01</small><strong>Mandate created</strong><p>{mandate.prompt}</p></span></div>
         <div className="is-complete"><Search size={18} /><span><small>02</small><strong>Marketplace searched</strong><p>No disclosed provider passed every hard limit.</p></span></div>
         <div className={job ? 'is-complete' : 'is-current'}><Radio size={18} /><span><small>03</small><strong>Open mandate</strong><p>{job ? `Public Job #${jobId} is waiting for provider proposals.` : 'Publish an unassigned job for provider discovery and offchain bidding.'}</p></span></div>
       </div>

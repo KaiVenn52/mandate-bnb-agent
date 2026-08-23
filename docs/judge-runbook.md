@@ -5,7 +5,7 @@
 1. Open <https://mandate-bnb-agent.vercel.app>.
 2. Enter: `Earn on 5,000 USDT. No leverage. Low risk. Max 3 actions per week. Allowed protocols: Venus, Lista.`
 3. Edit one field from the right-hand mandate preview and confirm the natural-language mandate updates.
-4. Select **Build mandate** and confirm the page stays in the builder with a **Mandate built** receipt. Then select **Search marketplace**.
+4. Select **Create mandate** and confirm the page stays in the builder with a **Mandate created** receipt. Then select **Search marketplace**.
 5. Confirm SteadyPath is eligible while riskier or leveraged candidates show explicit rejection reasons.
 6. Inspect **Broader marketplace search** and confirm it returns live BNB Chain ERC-8004 records independently from the providers with structured execution evidence.
 7. Run live YieldRoute. This is read-only and requests no wallet signature.

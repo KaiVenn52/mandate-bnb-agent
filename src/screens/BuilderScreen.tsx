@@ -108,12 +108,12 @@ export function BuilderScreen() {
             </div>
             {!isBuilt ? (
               <button className="button button-primary build-button" type="submit">
-                Build mandate <ArrowRight size={19} aria-hidden="true" />
+                Create mandate <ArrowRight size={19} aria-hidden="true" />
               </button>
             ) : (
               <div className="mandate-built-card" role="status">
                 <CheckCircle2 size={20} aria-hidden="true" />
-                <div><strong>Mandate built</strong><p>Your limits are saved independently from any agent.</p></div>
+                <div><strong>Mandate created</strong><p>Your limits are saved independently from any agent.</p></div>
                 <button className="button button-primary" type="button" onClick={() => navigate(`/results?category=${parsed.categoryId}`)}>Search marketplace <ScanSearch size={17} /></button>
               </div>
             )}
@@ -147,7 +147,7 @@ export function BuilderScreen() {
         <aside className="mandate-preview" aria-label="Live mandate preview">
           <div className="section-heading">
             <div>
-              <h2>{isBuilt ? 'Built mandate' : 'Draft mandate preview'}</h2>
+              <h2>{isBuilt ? 'Created mandate' : 'Draft mandate preview'}</h2>
               <p>{isBuilt ? 'Saved independently from marketplace candidates.' : 'Natural language becomes bounded permissions.'}</p>
             </div>
           </div>

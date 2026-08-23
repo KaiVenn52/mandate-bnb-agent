@@ -10,7 +10,7 @@ MANDATE is an outcome-first BNB Chain agent marketplace. A user states an object
 - **Decision-grade data:** complete flows and category-specific scoreboards for LP rebalancing, grid trading, yield optimisation, and health-factor monitoring.
 - **Safe before signing:** mandate limits, protocol allowlists, spend ceilings, expiry, and revoke remain visible before any transaction.
 - **Mandate-native matching:** asset, capital, protocol, leverage, risk, activity and service-spend ceilings now flow from the user's text into eligibility, permission review and the immutable ERC-8183 job description.
-- **Build is not selection:** building saves a provider-independent mandate first. Marketplace search happens only when the user asks for it; a zero-match result never weakens the limits or forces a choice.
+- **Mandate creation is not agent creation:** creating a mandate saves a provider-independent requirement first. Marketplace search happens only when the user asks for it; a zero-match result never weakens the limits or forces a choice.
 - **Open demand, not a fake fourth agent:** when every disclosed provider is excluded, the client can publish an unfunded ERC-8183 job with `provider = address(0)`. Providers bid offchain and the client must explicitly assign one before funding.
 - **Partner-track fit:** Shadow Mode produces the A/B structure required by the TermiX Agent Advantage Report.
 - **Reproducible benchmark lab:** three versioned, frozen tasks expose public inputs, locked rubrics, input hashes, real agent runs, and human-only baseline worksheets.
