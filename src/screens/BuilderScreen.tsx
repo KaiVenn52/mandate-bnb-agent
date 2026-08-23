@@ -28,7 +28,7 @@ export function BuilderScreen() {
   const [categoryId, setCategoryId] = useState<CategoryId>(savedDraft?.categoryId ?? 'yield')
   const category = categories[categoryId]
   const [prompt, setPrompt] = useState(savedDraft?.prompt ?? category.prompt)
-  const [isBuilding, setIsBuilding] = useState(false)
+  const [isBuilt, setIsBuilt] = useState(Boolean(savedDraft))
   const [error, setError] = useState('')
   const [editingField, setEditingField] = useState<EditableMandateField | null>(null)
   const [editValue, setEditValue] = useState('')
@@ -37,6 +37,7 @@ export function BuilderScreen() {
   const parsed = useMemo(() => parseMandate(prompt, categoryId), [prompt, categoryId])
 
   const startFieldEdit = (label: EditableMandateField, value: string) => {
+    setIsBuilt(false)
     const editableValue = label === 'Risk'
       ? parsed.constraints.riskMax
       : label === 'Leverage'
@@ -56,6 +57,7 @@ export function BuilderScreen() {
     try {
       const nextPrompt = editMandateField(parsed, editingField, editValue)
       setPrompt(nextPrompt)
+      setIsBuilt(false)
       setCategoryId(parseMandate(nextPrompt, categoryId).categoryId)
       setEditingField(null)
       setEditError('')
@@ -72,9 +74,8 @@ export function BuilderScreen() {
       return
     }
     setError('')
-    setIsBuilding(true)
     saveMandateDraft(parsed)
-    window.setTimeout(() => navigate(`/results?category=${parsed.categoryId}`), 700)
+    setIsBuilt(true)
   }
 
   return (
@@ -92,7 +93,7 @@ export function BuilderScreen() {
                 id="mandate-prompt"
                 ref={promptRef}
                 value={prompt}
-                onChange={(event) => setPrompt(event.target.value)}
+                onChange={(event) => { setPrompt(event.target.value); setIsBuilt(false) }}
                 aria-invalid={error ? 'true' : undefined}
                 aria-describedby={error ? 'mandate-error' : 'mandate-hint'}
                 maxLength={500}
@@ -105,10 +106,17 @@ export function BuilderScreen() {
                 {error || 'Include capital, time horizon, risk limits, and forbidden actions.'}
               </p>
             </div>
-            <button className="button button-primary build-button" type="submit" disabled={isBuilding} aria-busy={isBuilding}>
-              {isBuilding ? 'Building mandate…' : 'Build mandate'}
-              {!isBuilding && <ArrowRight size={19} aria-hidden="true" />}
-            </button>
+            {!isBuilt ? (
+              <button className="button button-primary build-button" type="submit">
+                Build mandate <ArrowRight size={19} aria-hidden="true" />
+              </button>
+            ) : (
+              <div className="mandate-built-card" role="status">
+                <CheckCircle2 size={20} aria-hidden="true" />
+                <div><strong>Mandate built</strong><p>Your limits are saved independently from any agent.</p></div>
+                <button className="button button-primary" type="button" onClick={() => navigate(`/results?category=${parsed.categoryId}`)}>Search marketplace <ScanSearch size={17} /></button>
+              </div>
+            )}
           </form>
 
           <div className="quick-routes" aria-label="Example mandates">
@@ -120,6 +128,7 @@ export function BuilderScreen() {
                 onClick={() => {
                   setCategoryId(id)
                   setPrompt(categories[id].prompt)
+                  setIsBuilt(false)
                   setError('')
                 }}
               >
@@ -138,8 +147,8 @@ export function BuilderScreen() {
         <aside className="mandate-preview" aria-label="Live mandate preview">
           <div className="section-heading">
             <div>
-              <h2>Live mandate preview</h2>
-              <p>Natural language becomes bounded permissions.</p>
+              <h2>{isBuilt ? 'Built mandate' : 'Draft mandate preview'}</h2>
+              <p>{isBuilt ? 'Saved independently from marketplace candidates.' : 'Natural language becomes bounded permissions.'}</p>
             </div>
           </div>
           <div className="preview-fields">

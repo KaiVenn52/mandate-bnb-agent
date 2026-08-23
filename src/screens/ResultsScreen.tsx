@@ -147,9 +147,12 @@ export function ResultsScreen() {
               <div>
                 <span className="section-kicker">HARD LIMITS PRESERVED</span>
                 <h2 id="no-match-title">We will not recommend a non-compliant agent.</h2>
-                <p>Review the rejection reasons below. Edit only the constraint you actually want to change, then rebuild the mandate to run matching again.</p>
+                <p>Review the rejection reasons below. Keep the requirement intact and publish it as an open mandate, or edit only a constraint you genuinely want to change before searching again.</p>
               </div>
-              <button className="button button-primary" type="button" onClick={() => navigate('/')}>Edit &amp; rebuild mandate <ArrowRight size={16} /></button>
+              <div className="no-match-actions">
+                <button className="button button-secondary" type="button" onClick={() => navigate('/')}>Edit mandate</button>
+                <button className="button button-primary" type="button" onClick={() => navigate(`/open-mandate?category=${category.id}`)}>Publish open mandate <ArrowRight size={16} /></button>
+              </div>
             </section>
           ) : null}
 

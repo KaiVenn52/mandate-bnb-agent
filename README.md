@@ -10,6 +10,8 @@ MANDATE is an outcome-first BNB Chain agent marketplace. A user states an object
 - **Decision-grade data:** complete flows and category-specific scoreboards for LP rebalancing, grid trading, yield optimisation, and health-factor monitoring.
 - **Safe before signing:** mandate limits, protocol allowlists, spend ceilings, expiry, and revoke remain visible before any transaction.
 - **Mandate-native matching:** asset, capital, protocol, leverage, risk, activity and service-spend ceilings now flow from the user's text into eligibility, permission review and the immutable ERC-8183 job description.
+- **Build is not selection:** building saves a provider-independent mandate first. Marketplace search happens only when the user asks for it; a zero-match result never weakens the limits or forces a choice.
+- **Open demand, not a fake fourth agent:** when every disclosed provider is excluded, the client can publish an unfunded ERC-8183 job with `provider = address(0)`. Providers bid offchain and the client must explicitly assign one before funding.
 - **Partner-track fit:** Shadow Mode produces the A/B structure required by the TermiX Agent Advantage Report.
 - **Reproducible benchmark lab:** three versioned, frozen tasks expose public inputs, locked rubrics, input hashes, real agent runs, and human-only baseline worksheets.
 - **Standards-native:** live BSC ERC-8004 registry discovery plus a guarded BNB Agent SDK gateway for the ERC-8183 job lifecycle.
@@ -24,6 +26,8 @@ MANDATE is an outcome-first BNB Chain agent marketplace. A user states an object
 - **Updated TermiX status:** the Evidence page now uses three completed, same-input task pairs; unrelated historical category scorecards remain explicitly labelled sample data.
 - ERC-8183 YieldRoute Job #506 completed the full current-policy lifecycle with an exact 0.1 test U escrow and zero residual allowance; all seven transaction links are in `docs/onchain-evidence.md`.
 - Permission review is a non-broadcast preview. A verified candidate can then continue into the real BSC Testnet hire flow.
+- The current marketplace UI discloses three reference candidates per category. It does not claim that these are the whole ERC-8004 registry. If none passes, Open Mandate preserves the exact requirement as a real unassigned BSC Testnet ERC-8183 job.
+- Open Mandate publication is live and gas-only: it creates an unfunded job and moves no test U. Provider proposal collection and `setProvider` remain an offchain/client handoff before the existing funded hire lifecycle.
 - The public hire path supports a separate evaluator/client wallet: the client creates and funds, the registered provider submits, and settlement is permissionless after the optimistic window. The `jobId` stays in the shareable URL across the wallet handoff.
 - The configured submission wallet is `0xD30BbB80c863c9B94622EF92337AaD65148D2EC3`; its BSC Testnet readiness is shown live on the Evidence page.
 - The gateway can broadcast only after the operator enables live mode, configures the encrypted SDK wallet, and passes server-side budget/provider policy checks.
@@ -69,7 +73,11 @@ Never put wallet secrets in `VITE_*` environment variables. The SDK wallet stays
 ## Architecture
 
 ```text
-User mandate
+User requirement
+  -> Build provider-independent mandate
+      -> Search disclosed marketplace candidates
+          -> eligible match -> Shadow Mode + permission review
+          -> no eligible match -> publish unfunded Open Mandate
   -> Match + category risk gates
       -> 8004scan public API (live BSC registry discovery)
       -> Shadow Mode (agent vs identical baseline)

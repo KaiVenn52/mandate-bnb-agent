@@ -4,11 +4,14 @@
 
 ```mermaid
 flowchart LR
-  U[User outcome and hard limits] --> P[Mandate parser]
+  U[User outcome and hard limits] --> P[Build provider-independent mandate]
   P --> G[Constraint and risk gates]
-  G --> D[Four-category discovery]
-  D --> R[Agent ranking and rejection reasons]
-  R --> S[Read-only Shadow Mode]
+  G --> D[Search disclosed providers]
+  D --> R{Eligible provider?}
+  R -->|Yes| S[Read-only Shadow Mode]
+  R -->|No| O[Publish unfunded ERC-8183 Open Mandate]
+  O --> Q[Offchain provider proposals]
+  Q --> V[Client assigns provider before funding]
   S --> A[Bounded permission review]
   A --> J[ERC-8183 job lifecycle]
   J --> E[Evidence Passport]
@@ -24,7 +27,9 @@ flowchart LR
 | Boundary | Enforcement |
 |---|---|
 | Natural language to permissions | Parsed capital, risk, leverage, action and protocol limits remain visible and individually editable. |
+| Mandate build to provider search | Building stores the requirement independently. Search is a separate user action and cannot mutate hard limits. |
 | Recommendation to activation | Candidates that exceed a hard limit are marked ineligible with explicit reasons. |
+| No match to open demand | No candidate is invented and no hard limit is relaxed. The client may create an unfunded ERC-8183 job with the zero address provider, then explicitly assign a provider before funding. |
 | Analysis to transaction | Live YieldRoute and Venus runs are read-only; they cannot request token approval or move funds. |
 | Wallet to ERC-8183 | Every state-changing step is simulated first and requires a separate wallet confirmation. |
 | ERC-8183 roles | The evaluator wallet is the client; only the registered provider wallet can submit. The shareable job URL carries the job ID across that handoff. |

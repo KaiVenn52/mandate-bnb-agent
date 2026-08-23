@@ -7,6 +7,7 @@ import { ActivateScreen } from './screens/ActivateScreen'
 import { EvidenceScreen } from './screens/EvidenceScreen'
 import { FaucetScreen } from './screens/FaucetScreen'
 import { CommerceScreen } from './screens/CommerceScreen'
+import { OpenMandateScreen } from './screens/OpenMandateScreen'
 import './App.css'
 
 const RegistrationScreen = lazy(() =>
@@ -34,6 +35,7 @@ export default function App() {
           <Route path="/register" element={<Suspense fallback={<div className="route-loading">Loading registration…</div>}><RegistrationScreen /></Suspense>} />
           <Route path="/faucet" element={<FaucetScreen />} />
           <Route path="/commerce" element={<CommerceScreen />} />
+          <Route path="/open-mandate" element={<OpenMandateScreen />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AppShell>
