@@ -7,14 +7,22 @@ export type RegistrySnapshot = {
 
 export type RegistryAgentDiscovery = {
   tokenId: string
+  agentId: string
   name: string
   description: string
+  ownerAddress: string | null
+  agentWallet: string | null
   supportedProtocols: string[]
+  mcpEndpoint: string | null
+  a2aEndpoint: string | null
   totalScore: number
   similarityScore: number | null
   isVerified: boolean
   endpointVerified: boolean
+  isActive: boolean
+  healthScore: number | null
   totalFeedbacks: number
+  createdTxHash: string | null
 }
 
 type RegistryResponse = {
@@ -26,19 +34,34 @@ type RegistryResponse = {
   }
 }
 
+type RegistryAgentPayload = {
+  token_id?: string | number
+  agent_id?: string
+  name?: string
+  description?: string
+  owner_address?: string
+  agent_wallet?: string
+  supported_protocols?: string[]
+  mcp_server?: string
+  a2a_endpoint?: string
+  total_score?: number
+  similarity_score?: number
+  is_verified?: boolean
+  is_endpoint_verified?: boolean
+  is_active?: boolean
+  health_score?: number
+  total_feedbacks?: number
+  created_tx_hash?: string
+}
+
 type RegistrySearchResponse = {
   success: boolean
-  data: Array<{
-    token_id?: string | number
-    name?: string
-    description?: string
-    supported_protocols?: string[]
-    total_score?: number
-    similarity_score?: number
-    is_verified?: boolean
-    is_endpoint_verified?: boolean
-    total_feedbacks?: number
-  }>
+  data: RegistryAgentPayload[]
+}
+
+type RegistryAgentResponse = {
+  success: boolean
+  data: RegistryAgentPayload
 }
 
 const API_BASE = import.meta.env.VITE_8004SCAN_API_BASE ?? 'https://8004scan.io/api/v1/public'
@@ -68,15 +91,36 @@ export async function searchRegistryAgents(query: string, signal?: AbortSignal):
 
   return payload.data
     .filter((agent) => agent.token_id !== undefined && agent.name)
-    .map((agent) => ({
-      tokenId: String(agent.token_id),
-      name: agent.name ?? `Agent #${agent.token_id}`,
-      description: agent.description?.trim() || 'No capability description supplied.',
-      supportedProtocols: agent.supported_protocols ?? [],
-      totalScore: agent.total_score ?? 0,
-      similarityScore: agent.similarity_score ?? null,
-      isVerified: Boolean(agent.is_verified),
-      endpointVerified: Boolean(agent.is_endpoint_verified),
-      totalFeedbacks: agent.total_feedbacks ?? 0,
-    }))
+    .map(normalizeRegistryAgent)
+}
+
+function normalizeRegistryAgent(agent: RegistryAgentPayload): RegistryAgentDiscovery {
+  return {
+    tokenId: String(agent.token_id),
+    agentId: agent.agent_id ?? `56:unknown:${agent.token_id}`,
+    name: agent.name ?? `Agent #${agent.token_id}`,
+    description: agent.description?.trim() || 'No capability description supplied.',
+    ownerAddress: agent.owner_address ?? null,
+    agentWallet: agent.agent_wallet ?? null,
+    supportedProtocols: agent.supported_protocols ?? [],
+    mcpEndpoint: agent.mcp_server ?? null,
+    a2aEndpoint: agent.a2a_endpoint ?? null,
+    totalScore: agent.total_score ?? 0,
+    similarityScore: agent.similarity_score ?? null,
+    isVerified: Boolean(agent.is_verified),
+    endpointVerified: Boolean(agent.is_endpoint_verified),
+    isActive: agent.is_active !== false,
+    healthScore: agent.health_score ?? null,
+    totalFeedbacks: agent.total_feedbacks ?? 0,
+    createdTxHash: agent.created_tx_hash ?? null,
+  }
+}
+
+export async function fetchRegistryAgent(tokenId: string, signal?: AbortSignal): Promise<RegistryAgentDiscovery> {
+  if (!/^\d+$/.test(tokenId)) throw new Error('Invalid ERC-8004 token ID.')
+  const response = await fetch(`${API_BASE}/agents/56/${tokenId}`, { signal })
+  if (!response.ok) throw new Error(`ERC-8004 agent lookup returned ${response.status}`)
+  const payload = (await response.json()) as RegistryAgentResponse
+  if (!payload.success) throw new Error('ERC-8004 agent lookup did not return a successful response')
+  return normalizeRegistryAgent(payload.data)
 }

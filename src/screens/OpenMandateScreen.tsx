@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft, CheckCircle2, ExternalLink, LoaderCircle, Radio, Search, ShieldCheck } from 'lucide-react'
 import { parseEventLogs, zeroAddress } from 'viem'
 import { useAccount, usePublicClient, useWalletClient } from 'wagmi'
@@ -7,6 +8,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { getCategory } from '../catalog'
 import { commerceAbi, type CommerceJob, ERC8183_COMMERCE_ADDRESS, ERC8183_ROUTER_ADDRESS, jobStatusLabels } from '../services/erc8183'
 import { loadMandateDraft } from '../services/mandateDraft'
+import { fetchRegistryAgent } from '../services/agentRegistry'
 
 const storageKey = (address: string, category: string) => `mandate:open-job:v1:${address.toLowerCase()}:${category}`
 
@@ -20,6 +22,14 @@ export function OpenMandateScreen() {
   const walletClient = useWalletClient()
   const publicClient = usePublicClient({ chainId: bscTestnet.id })
   const queryJobId = searchParams.get('jobId')
+  const candidateTokenId = searchParams.get('candidate')
+  const candidate = useQuery({
+    queryKey: ['erc-8004-agent', candidateTokenId],
+    queryFn: ({ signal }) => fetchRegistryAgent(candidateTokenId ?? '', signal),
+    enabled: Boolean(candidateTokenId && /^\d+$/.test(candidateTokenId)),
+    staleTime: 5 * 60_000,
+    retry: 1,
+  })
   const [jobId, setJobId] = useState<bigint | undefined>(() => queryJobId && /^\d+$/.test(queryJobId) ? BigInt(queryJobId) : undefined)
   const [job, setJob] = useState<CommerceJob>()
   const [latestHash, setLatestHash] = useState<`0x${string}`>()
@@ -62,6 +72,13 @@ export function OpenMandateScreen() {
         service_budget_ceiling: '0.1 test U',
         bidding: 'offchain-provider-proposals; client-assigns-provider-before-funding',
         evidence_requirements: ['ERC-8004 identity', 'bounded decision', 'public deliverable manifest', 'onchain deliverable hash'],
+        invited_candidate: candidateTokenId ? {
+          chain_id: 56,
+          token_id: candidateTokenId,
+          name: candidate.data?.name ?? null,
+          owner: candidate.data?.ownerAddress ?? null,
+          acceptance_required_before_assignment: true,
+        } : null,
       })
       const request = await publicClient.simulateContract({
         account: address,
@@ -110,7 +127,7 @@ export function OpenMandateScreen() {
 
       <div className="open-mandate-flow" aria-label="Open mandate workflow">
         <div className="is-complete"><CheckCircle2 size={18} /><span><small>01</small><strong>Mandate created</strong><p>{mandate.prompt}</p></span></div>
-        <div className="is-complete"><Search size={18} /><span><small>02</small><strong>Marketplace searched</strong><p>No disclosed provider passed every hard limit.</p></span></div>
+        <div className="is-complete"><Search size={18} /><span><small>02</small><strong>{candidateTokenId ? 'External candidate reviewed' : 'Marketplace searched'}</strong><p>{candidateTokenId ? `ERC-8004 Agent #${candidateTokenId} was discovered, but must accept every hard limit.` : 'No verified provider passed every hard limit.'}</p></span></div>
         <div className={job ? 'is-complete' : 'is-current'}><Radio size={18} /><span><small>03</small><strong>Open mandate</strong><p>{job ? `Public Job #${jobId} is waiting for provider proposals.` : 'Publish an unassigned job for provider discovery and offchain bidding.'}</p></span></div>
       </div>
 
@@ -121,6 +138,7 @@ export function OpenMandateScreen() {
           <p>{mandate.prompt}</p>
         </div>
         <dl>
+          {candidateTokenId ? <div><dt>Invited candidate</dt><dd>{candidate.data ? `${candidate.data.name} · ERC-8004 #${candidateTokenId}` : `ERC-8004 #${candidateTokenId}`}</dd></div> : null}
           <div><dt>Client</dt><dd className="mono">{job ? job.client : address ?? 'Connect wallet'}</dd></div>
           <div><dt>Provider</dt><dd className="mono">{providerUnassigned ? 'UNASSIGNED' : job?.provider}</dd></div>
           <div><dt>Status</dt><dd>{job ? jobStatusLabels[job.status] ?? `STATE ${job.status}` : 'NOT PUBLISHED'}</dd></div>

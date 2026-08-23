@@ -13,6 +13,9 @@ import './App.css'
 const RegistrationScreen = lazy(() =>
   import('./screens/RegistrationScreen').then((module) => ({ default: module.RegistrationScreen })),
 )
+const RegistryAgentScreen = lazy(() =>
+  import('./screens/RegistryAgentScreen').then((module) => ({ default: module.RegistryAgentScreen })),
+)
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -36,6 +39,7 @@ export default function App() {
           <Route path="/faucet" element={<FaucetScreen />} />
           <Route path="/commerce" element={<CommerceScreen />} />
           <Route path="/open-mandate" element={<OpenMandateScreen />} />
+          <Route path="/registry-agent/:tokenId" element={<Suspense fallback={<div className="route-loading">Loading registry agent…</div>}><RegistryAgentScreen /></Suspense>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AppShell>

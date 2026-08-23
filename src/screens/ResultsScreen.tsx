@@ -22,6 +22,7 @@ import { fetchRegistrySnapshot, searchRegistryAgents } from '../services/agentRe
 import { loadMandateDraft } from '../services/mandateDraft'
 import { matchAgents } from '../services/agentMatching'
 import { LiveYieldRoute } from '../components/LiveYieldRoute'
+import { RegistryDiscoveryPanel } from '../components/RegistryDiscoveryPanel'
 
 type ShadowStatus = 'idle' | 'running' | 'complete'
 
@@ -131,6 +132,14 @@ export function ResultsScreen() {
 
       <div className="results-layout">
         <div className="results-main">
+          <RegistryDiscoveryPanel
+            categoryId={category.id}
+            registryTotal={registry.data?.total}
+            agents={discoveries.data}
+            isPending={discoveries.isPending}
+            error={discoveries.error}
+          />
+
           <div className="list-header">
             <div>
               <h2>{noEligibleAgents ? 'No verified provider passes every limit' : 'Verified execution providers'}</h2>
@@ -212,42 +221,6 @@ export function ResultsScreen() {
               )
             })}
           </div>
-
-          <section className="registry-discovery" aria-labelledby="registry-discovery-title">
-            <div className="registry-discovery-heading">
-              <div>
-                <span className="section-kicker">LIVE ERC-8004 DISCOVERY · CHAIN 56</span>
-                <h2 id="registry-discovery-title">Broader marketplace search</h2>
-                <p>
-                  Semantic search across {registry.data ? registry.data.total.toLocaleString() : 'the live registry'} identities. These are real registry records, not additional verified recommendations.
-                </p>
-              </div>
-              <span className="discovery-count">{discoveries.isPending ? 'SEARCHING' : discoveries.isError ? 'UNAVAILABLE' : `${discoveries.data.length} FOUND`}</span>
-            </div>
-
-            {discoveries.isError ? (
-              <div className="inline-error"><AlertTriangle size={18} /><div><strong>Live discovery unavailable</strong><p>{discoveries.error instanceof Error ? discoveries.error.message : 'Try the search again later.'}</p></div></div>
-            ) : discoveries.isPending ? (
-              <div className="discovery-loading"><RefreshCw className="spin" size={17} /> Searching agent names, descriptions and declared services…</div>
-            ) : discoveries.data.length ? (
-              <div className="discovery-grid">
-                {discoveries.data.map((agent) => (
-                  <article className="discovery-card" key={agent.tokenId}>
-                    <div className="discovery-card-top"><span className="mono">AGENT #{agent.tokenId}</span><span>{Math.round((agent.similarityScore ?? 0) * 100)}% semantic relevance</span></div>
-                    <h3>{agent.name}</h3>
-                    <p>{agent.description}</p>
-                    <div className="discovery-tags">
-                      {agent.supportedProtocols.map((protocol) => <span key={protocol}>{protocol}</span>)}
-                      {agent.endpointVerified ? <span className="is-positive">Endpoint verified</span> : <span>Endpoint unverified</span>}
-                    </div>
-                    <div className="discovery-proof"><span>Registry score {agent.totalScore.toFixed(1)}</span><span>{agent.totalFeedbacks} feedback</span></div>
-                    <div className="discovery-gate"><ShieldCheck size={15} /><span>Discovery only — capital, risk, leverage and price limits are not structured enough to approve automatically.</span></div>
-                    <a href={`https://8004scan.io/agents/56/${agent.tokenId}`} target="_blank" rel="noreferrer">Inspect registry record <ExternalLink size={14} /></a>
-                  </article>
-                ))}
-              </div>
-            ) : <div className="empty-state">No semantically relevant ERC-8004 record was returned. Publish the unchanged requirement as an Open Mandate.</div>}
-          </section>
 
           {!noEligibleAgents ? <section className="shadow-panel" aria-labelledby="shadow-title">
             <div className="shadow-heading">

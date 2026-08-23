@@ -30,6 +30,7 @@ flowchart LR
 | Mandate build to provider search | Building stores the requirement independently. Search is a separate user action and cannot mutate hard limits. |
 | Recommendation to activation | Candidates that exceed a hard limit are marked ineligible with explicit reasons. |
 | Registry discovery to recommendation | Live ERC-8004 semantic hits remain discovery-only unless their metadata contains enough structured, verifiable limits for the mandate gate. Registry identity or textual similarity alone never becomes execution approval. |
+| External identity to invitation | The detail flow records the candidate's BNB Chain ERC-8004 identity in an unfunded Open Mandate. It does not assign the provider or move funds before explicit acceptance. |
 | No match to open demand | No candidate is invented and no hard limit is relaxed. The client may create an unfunded ERC-8183 job with the zero address provider, then explicitly assign a provider before funding. |
 | Analysis to transaction | Live YieldRoute and Venus runs are read-only; they cannot request token approval or move funds. |
 | Wallet to ERC-8183 | Every state-changing step is simulated first and requires a separate wallet confirmation. |
