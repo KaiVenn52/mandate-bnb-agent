@@ -6,8 +6,8 @@
 flowchart LR
   U[User outcome and hard limits] --> P[Build provider-independent mandate]
   P --> G[Constraint and risk gates]
-  G --> D[Search disclosed providers]
-  D --> R{Eligible provider?}
+  G --> D[Search structured providers plus live ERC-8004 index]
+  D --> R{Verified eligible provider?}
   R -->|Yes| S[Read-only Shadow Mode]
   R -->|No| O[Publish unfunded ERC-8183 Open Mandate]
   O --> Q[Offchain provider proposals]
@@ -29,6 +29,7 @@ flowchart LR
 | Natural language to permissions | Parsed capital, risk, leverage, action and protocol limits remain visible and individually editable. |
 | Mandate build to provider search | Building stores the requirement independently. Search is a separate user action and cannot mutate hard limits. |
 | Recommendation to activation | Candidates that exceed a hard limit are marked ineligible with explicit reasons. |
+| Registry discovery to recommendation | Live ERC-8004 semantic hits remain discovery-only unless their metadata contains enough structured, verifiable limits for the mandate gate. Registry identity or textual similarity alone never becomes execution approval. |
 | No match to open demand | No candidate is invented and no hard limit is relaxed. The client may create an unfunded ERC-8183 job with the zero address provider, then explicitly assign a provider before funding. |
 | Analysis to transaction | Live YieldRoute and Venus runs are read-only; they cannot request token approval or move funds. |
 | Wallet to ERC-8183 | Every state-changing step is simulated first and requires a separate wallet confirmation. |

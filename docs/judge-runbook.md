@@ -7,10 +7,11 @@
 3. Edit one field from the right-hand mandate preview and confirm the natural-language mandate updates.
 4. Select **Build mandate** and confirm the page stays in the builder with a **Mandate built** receipt. Then select **Search marketplace**.
 5. Confirm SteadyPath is eligible while riskier or leveraged candidates show explicit rejection reasons.
-6. Run live YieldRoute. This is read-only and requests no wallet signature.
-7. Run Shadow Mode, open Review permissions and confirm that capital, risk, leverage, protocol, activity and service-spend limits match the original mandate.
-8. Continue to the onchain hire page. Without signing, inspect the separate client/provider roles and seven-step ERC-8183 lifecycle.
-9. Open Evidence and inspect the Agent Advantage Report.
+6. Inspect **Broader marketplace search** and confirm it returns live BNB Chain ERC-8004 records independently from the providers with structured execution evidence.
+7. Run live YieldRoute. This is read-only and requests no wallet signature.
+8. Run Shadow Mode, open Review permissions and confirm that capital, risk, leverage, protocol, activity and service-spend limits match the original mandate.
+9. Continue to the onchain hire page. Without signing, inspect the separate client/provider roles and seven-step ERC-8183 lifecycle.
+10. Open Evidence and inspect the Agent Advantage Report.
 
 ## Hard no-match path (about 1 minute, no wallet required)
 

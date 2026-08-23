@@ -236,6 +236,24 @@
 .no-match-panel p { color: var(--text-muted); font-size: 12px; line-height: 1.55; margin-top: 5px; max-width: 720px; }
 .no-match-panel .button { white-space: nowrap; }
 .no-match-actions { align-items: center; display: flex; gap: 8px; }
+.registry-discovery { border-top: 1px solid var(--border); margin-top: 26px; padding-top: 24px; }
+.registry-discovery-heading { align-items: end; display: flex; gap: 20px; justify-content: space-between; margin-bottom: 14px; }
+.registry-discovery-heading h2 { font-size: 20px; margin: 7px 0 5px; }
+.registry-discovery-heading p { color: var(--text-muted); font-size: 12px; line-height: 1.55; max-width: 720px; }
+.discovery-count { border: 1px solid var(--border); color: var(--text-muted); flex: none; font-family: var(--mono); font-size: 10px; padding: 7px 9px; }
+.discovery-loading, .empty-state { align-items: center; border: 1px solid var(--border); color: var(--text-muted); display: flex; font-size: 12px; gap: 8px; min-height: 74px; padding: 18px; }
+.discovery-grid { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.discovery-card { background: color-mix(in srgb, var(--surface) 94%, var(--accent)); border: 1px solid var(--border); display: flex; flex-direction: column; min-width: 0; padding: 16px; }
+.discovery-card-top, .discovery-proof { color: var(--text-muted); display: flex; font-size: 10px; gap: 10px; justify-content: space-between; }
+.discovery-card h3 { font-size: 16px; margin: 11px 0 6px; }
+.discovery-card > p { color: var(--text-muted); display: -webkit-box; font-size: 12px; line-height: 1.5; min-height: 54px; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+.discovery-tags { display: flex; flex-wrap: wrap; gap: 5px; margin: 12px 0; }
+.discovery-tags span { border: 1px solid var(--border); color: var(--text-muted); font-family: var(--mono); font-size: 9px; padding: 4px 6px; }
+.discovery-tags .is-positive { border-color: var(--success); color: var(--success); }
+.discovery-proof { border-top: 1px solid var(--border); padding-top: 10px; }
+.discovery-gate { align-items: flex-start; background: var(--warning-soft); color: var(--text-muted); display: flex; font-size: 10px; gap: 7px; line-height: 1.45; margin: 12px 0; padding: 9px; }
+.discovery-gate svg { color: var(--accent-dark); flex: none; }
+.discovery-card > a { align-items: center; color: var(--text); display: inline-flex; font-size: 11px; gap: 5px; margin-top: auto; text-decoration: underline; text-underline-offset: 3px; }
 .agent-table { border: 1px solid var(--border); overflow: hidden; }
 .agent-table-head, .agent-row { display: grid; grid-template-columns: minmax(290px, 1.7fr) 1fr .75fr .55fr .6fr 1.1fr; align-items: center; }
 .agent-table-head { min-height: 36px; color: var(--text-faint); font-size: 10px; padding: 0 14px; border-bottom: 1px solid var(--border); }
@@ -668,6 +686,8 @@ dd { margin: 0; color: var(--text); }
   .no-match-panel { grid-template-columns: auto minmax(0, 1fr); }
   .no-match-actions { grid-column: 1 / -1; width: 100%; }
   .no-match-actions .button { flex: 1; white-space: normal; }
+  .registry-discovery-heading { align-items: flex-start; flex-direction: column; gap: 10px; }
+  .discovery-grid { grid-template-columns: 1fr; }
   .mandate-built-card { grid-template-columns: auto minmax(0, 1fr); }
   .mandate-built-card .button { grid-column: 1 / -1; width: 100%; }
   .agent-table { overflow: hidden; }

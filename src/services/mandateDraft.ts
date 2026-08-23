@@ -201,7 +201,20 @@ export function editMandateField(draft: MandateDraft, label: EditableMandateFiel
 
 function outcome(prompt: string, categoryId: CategoryId): string {
   const firstSentence = prompt.trim().split(/[!?\n]|\.(?:\s+|$)/)[0]?.trim()
-  return firstSentence && firstSentence.length <= 72 ? firstSentence : categories[categoryId].label
+  if (!firstSentence || firstSentence.length > 72) return categories[categoryId].builderFields[0].value
+
+  // Capital is a permission boundary, not the outcome. Remove an amount/asset
+  // phrase before presenting the goal so "Earn on 5,000 USDT" does not make
+  // Goal and Capital appear to be the same field.
+  const withoutCapital = firstSentence
+    .replace(/\b(?:on|with|using)\s+(?:[$€£]\s*)?[\d,.]+\s*(?:USDT|USDC|BNB|USD|ETH|BTCB|BTC)\b/ig, '')
+    .replace(/(?:[$€£]\s*)?[\d,.]+\s*(?:USDT|USDC|BNB|USD|ETH|BTCB|BTC)\b/ig, '')
+    .replace(/\s+/g, ' ')
+    .replace(/\b(?:on|with|using)\s*$/i, '')
+    .trim()
+
+  if (categoryId === 'yield' && /^(?:earn|generate|make)$/i.test(withoutCapital)) return 'Earn yield'
+  return withoutCapital || categories[categoryId].builderFields[0].value
 }
 
 export function parseMandate(prompt: string, fallback: CategoryId): MandateDraft {
