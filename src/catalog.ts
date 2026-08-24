@@ -234,25 +234,28 @@ export const categories: Record<CategoryId, CategoryConfig> = {
   },
 }
 
-const verifiedOwner = '0xD30BbB80c863c9B94622EF92337AaD65148D2EC3' as const
+// ERC-8004 identities were registered by the project owner, while ERC-8183
+// work is fulfilled by a separate provider wallet. Keeping those roles
+// separate makes every TermiX hire independently verifiable onchain.
+const verifiedServiceProvider = '0x34ABe1790E6d67E25c7616799C2C6B7336932c7e' as const
 Object.assign(categories.rebalancing.agents[0], {
   id: '1804',
-  providerAddress: verifiedOwner,
+  providerAddress: verifiedServiceProvider,
   registrationTxHash: '0x6347892a3647919efde0b145698771678b42b24c8d717df7f2b8588919f96d60',
 })
 Object.assign(categories.grid.agents[0], {
   id: '1805',
-  providerAddress: verifiedOwner,
+  providerAddress: verifiedServiceProvider,
   registrationTxHash: '0x9aff5b7f4ef4ad2236d4c1b3821f4cd63882de540c476a7ffe13c33e1d8d4542',
 })
 Object.assign(categories.yield.agents[0], {
   id: '1806',
-  providerAddress: verifiedOwner,
+  providerAddress: verifiedServiceProvider,
   registrationTxHash: '0xe00a95305b3b28637d6de96b31b6cf0e87d84acac49a31d7b4a1f2add44a8198',
 })
 Object.assign(categories.health.agents[0], {
   id: '1807',
-  providerAddress: verifiedOwner,
+  providerAddress: verifiedServiceProvider,
   registrationTxHash: '0x27237dab5509726b660be6e2d13d13296cc34a2c33312b01f1f8cd1f69261100',
 })
 

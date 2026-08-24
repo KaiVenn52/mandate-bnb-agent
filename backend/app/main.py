@@ -283,6 +283,28 @@ def benchmark_agent_run(task_id: str, request: HireBackedRunRequest) -> dict[str
     return {**run_agent(task_id), "marketplace_hire": hire}
 
 
+@app.get("/benchmarks/{task_id}/hire-deliverable/{job_id}")
+def benchmark_hire_deliverable(task_id: str, job_id: int) -> dict[str, Any]:
+    """Return the stable result that an independently hired provider anchors.
+
+    The variable server timing is intentionally excluded so the canonical JSON
+    has the same keccak256 before submission and during later reviewer checks.
+    """
+    if task_id not in TASKS:
+        raise HTTPException(404, "Unknown benchmark task")
+    try:
+        hire = verify_hired_job(job_id, task_id)
+    except HireVerificationError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    result = run_agent(task_id)
+    result.pop("server_compute_ms", None)
+    return {
+        **result,
+        "marketplace_hire": hire,
+        "hash_canonicalization": "recursive-key-sorted compact JSON, then keccak256(UTF-8)",
+    }
+
+
 @app.post("/agents/venus-risk/run")
 def venus_risk_run(request: VenusRiskRequest) -> dict[str, Any]:
     """Run a read-only agent against a pinned live BNB Chain block."""

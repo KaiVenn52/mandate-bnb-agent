@@ -101,6 +101,7 @@ User requirement
 
 - `GET /api/benchmarks` — all frozen inputs, rubrics, versions, and SHA-256 digests
 - `POST /api/benchmarks/{task_id}/agent-run` — requires `{ "job_id": ... }`; verifies a funded, separate-provider ERC-8183 hire before returning agent output
+- `GET /api/benchmarks/{task_id}/hire-deliverable/{job_id}` — stable, hire-verified A-01/A-02/A-03 output whose canonical JSON hash is submitted by the independent provider
 - `POST /api/benchmarks/{task_id}/baseline-score` — scores a browser-timed human answer without fabricating a baseline
 - `GET /api/erc8183/yield-deliverable/506` — canonical SDK-compatible YieldRoute deliverable
 - `GET /api/erc8183/marketplace-deliverable/{category}/{jobId}` — canonical category deliverable used by the four hire paths

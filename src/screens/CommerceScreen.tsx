@@ -19,13 +19,17 @@ import {
   jobStatusLabels,
   routerAbi,
   stableStringify,
-  YIELD_REFERENCE_PATH,
   YIELD_REFERENCE_SHA256,
 } from '../services/erc8183'
 import { loadMandateDraft } from '../services/mandateDraft'
 import { authorizationFromMandate } from '../services/mandateAuthorization'
 
-const STORAGE_KEY = 'mandate:erc8183-marketplace-job:v2'
+const STORAGE_KEY = 'mandate:erc8183-marketplace-job:v3'
+const TERMIX_TASK_BY_CATEGORY = {
+  yield: 'A-01',
+  grid: 'A-02',
+  health: 'A-03',
+} as const
 type ChainState = { job: CommerceJob; policy: `0x${string}`; allowance: bigint; policyAllowed: boolean }
 type ActionName = 'create' | 'register' | 'budget' | 'approve' | 'fund' | 'submit' | 'settle'
 
@@ -130,6 +134,14 @@ export function CommerceScreen() {
         : 'observer'
   const isExternalProvider = Boolean(chainState && agent.providerAddress && chainState.job.provider.toLowerCase() !== agent.providerAddress.toLowerCase())
   const externalDeliverableReady = /^0x[0-9a-fA-F]{64}$/.test(externalDeliverableHash) && /^https:\/\//i.test(externalDeliverableUrl)
+  const termixTaskId = category.id in TERMIX_TASK_BY_CATEGORY
+    ? TERMIX_TASK_BY_CATEGORY[category.id as keyof typeof TERMIX_TASK_BY_CATEGORY]
+    : undefined
+  const publicDeliverableUrl = jobId === undefined
+    ? undefined
+    : termixTaskId
+      ? `/api/benchmarks/${termixTaskId}/hire-deliverable/${jobId}`
+      : `/api/erc8183/marketplace-deliverable/${category.id}/${jobId}`
 
   const canSignAction = (action: ActionName) => {
     if (!isTestnetWallet || !address || !agent.providerAddress) return false
@@ -202,12 +214,29 @@ export function CommerceScreen() {
           hash = await walletClient.data.writeContract({ ...request.request, chain: bscTestnet })
         } else if (action === 'submit') {
           if (isExternalProvider && !externalDeliverableReady) throw new Error('External provider must supply its own bytes32 deliverable hash and public HTTPS retrieval URL.')
-          const manifest = buildMarketplaceDeliverableManifest(jobId, category.id)
-          const deliverableHash = isExternalProvider ? externalDeliverableHash as `0x${string}` : keccak256(stringToHex(stableStringify(manifest)))
-          const deliverableUrl = isExternalProvider ? externalDeliverableUrl : `${window.location.origin}/api/erc8183/marketplace-deliverable/${category.id}/${jobId}`
+          let deliverableHash: `0x${string}`
+          let deliverableUrl: string
+          if (isExternalProvider) {
+            deliverableHash = externalDeliverableHash as `0x${string}`
+            deliverableUrl = externalDeliverableUrl
+          } else if (termixTaskId) {
+            deliverableUrl = `${window.location.origin}/api/benchmarks/${termixTaskId}/hire-deliverable/${jobId}`
+            const response = await fetch(deliverableUrl, { headers: { Accept: 'application/json' } })
+            if (!response.ok) {
+              const detail = await response.text()
+              throw new Error(`The independent hire is not eligible for a TermiX deliverable yet (${response.status}): ${detail}`)
+            }
+            const deliverable = await response.json() as unknown
+            deliverableHash = keccak256(stringToHex(stableStringify(deliverable)))
+          } else {
+            const manifest = buildMarketplaceDeliverableManifest(jobId, category.id)
+            deliverableHash = keccak256(stringToHex(stableStringify(manifest)))
+            deliverableUrl = `${window.location.origin}/api/erc8183/marketplace-deliverable/${category.id}/${jobId}`
+          }
           const optParams = stringToHex(JSON.stringify({
             deliverable_url: deliverableUrl,
-            ...(category.id === 'yield' ? { evidence_sha256: YIELD_REFERENCE_SHA256 } : {}),
+            ...(termixTaskId ? { termix_task_id: termixTaskId, hash_canonicalization: 'recursive-key-sorted compact JSON, then keccak256(UTF-8)' } : {}),
+            ...(category.id === 'yield' && !termixTaskId ? { evidence_sha256: YIELD_REFERENCE_SHA256 } : {}),
           }))
           const request = await publicClient.simulateContract({ account: address, address: ERC8183_COMMERCE_ADDRESS, abi: commerceAbi, functionName: 'submit', args: [jobId, deliverableHash, optParams] })
           hash = await walletClient.data.writeContract({ ...request.request, chain: bscTestnet })
@@ -248,8 +277,8 @@ export function CommerceScreen() {
       <div className="yield-proof-source">
         <FileCheck2 size={19} />
         <div><strong>Service terms are fixed before the job is created</strong><p>{mandatePrompt} · analysis/decision service only</p></div>
-        <a href={category.id === 'yield' ? YIELD_REFERENCE_PATH : `/api/erc8183/marketplace-deliverable/${category.id}/${jobId ?? 0}`} target="_blank" rel="noreferrer">Open public evidence <ExternalLink size={13} /></a>
-        <code>{category.id === 'yield' ? YIELD_REFERENCE_SHA256 : `${category.id} · deterministic category deliverable`}</code>
+        {publicDeliverableUrl ? <a href={publicDeliverableUrl} target="_blank" rel="noreferrer">Open hire-backed deliverable <ExternalLink size={13} /></a> : <span>Created after funding</span>}
+        <code>{termixTaskId ? `${termixTaskId} · independent hire required` : category.id === 'yield' ? YIELD_REFERENCE_SHA256 : `${category.id} · deterministic category deliverable`}</code>
       </div>
 
       <div className="registration-guard" role="status">
