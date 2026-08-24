@@ -1,2 +1,2 @@
 fastapi==0.141.1
-bnbagent[server]==0.4.2
+bnbagent==0.4.2
