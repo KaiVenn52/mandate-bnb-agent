@@ -23,6 +23,10 @@ export const commerceAbi = [
     inputs: [{ name: 'jobId', type: 'uint256' }, { name: 'amount', type: 'uint256' }, { name: 'optParams', type: 'bytes' }], outputs: [],
   },
   {
+    type: 'function', name: 'setProvider', stateMutability: 'nonpayable',
+    inputs: [{ name: 'jobId', type: 'uint256' }, { name: 'provider', type: 'address' }, { name: 'optParams', type: 'bytes' }], outputs: [],
+  },
+  {
     type: 'function', name: 'fund', stateMutability: 'nonpayable',
     inputs: [{ name: 'jobId', type: 'uint256' }, { name: 'expectedBudget', type: 'uint256' }, { name: 'optParams', type: 'bytes' }], outputs: [],
   },

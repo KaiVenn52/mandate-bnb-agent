@@ -24,6 +24,7 @@ export type BenchmarkRun = {
   output: Record<string, unknown>
   client_roundtrip_ms?: number
   recorded_at_utc?: string
+  marketplace_hire?: { chain_id: number; job_id: number; client: string; provider: string; budget_wei: number; status: number; explorer_url: string }
 }
 
 const apiBase = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '')
@@ -32,7 +33,13 @@ async function jsonRequest<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${apiBase}${path}`, init)
   if (!response.ok) {
     const message = await response.text()
-    throw new Error(message || `Request failed (${response.status})`)
+    try {
+      const parsed = JSON.parse(message) as { detail?: string }
+      throw new Error(parsed.detail || `Request failed (${response.status})`)
+    } catch (reason) {
+      if (reason instanceof Error && reason.message !== 'Unexpected end of JSON input' && !reason.message.startsWith('Unexpected token')) throw reason
+      throw new Error(message || `Request failed (${response.status})`)
+    }
   }
   const contentType = response.headers.get('content-type') ?? ''
   if (!contentType.includes('application/json')) {
@@ -46,9 +53,9 @@ export async function loadBenchmarks(): Promise<BenchmarkTask[]> {
   return data.tasks
 }
 
-export async function runBenchmarkAgent(taskId: string): Promise<BenchmarkRun> {
+export async function runBenchmarkAgent(taskId: string, jobId: number): Promise<BenchmarkRun> {
   const started = performance.now()
-  const result = await jsonRequest<BenchmarkRun>(`/benchmarks/${taskId}/agent-run`, { method: 'POST' })
+  const result = await jsonRequest<BenchmarkRun>(`/benchmarks/${taskId}/agent-run`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ job_id: jobId }) })
   return {
     ...result,
     client_roundtrip_ms: Math.round((performance.now() - started) * 10) / 10,

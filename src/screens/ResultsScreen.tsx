@@ -22,6 +22,8 @@ import { fetchRegistrySnapshot, searchRegistryAgents } from '../services/agentRe
 import { loadMandateDraft } from '../services/mandateDraft'
 import { matchAgents } from '../services/agentMatching'
 import { LiveYieldRoute } from '../components/LiveYieldRoute'
+import { LiveMarketAgent } from '../components/LiveMarketAgent'
+import { LiveVenusAgent } from '../components/LiveVenusAgent'
 import { RegistryDiscoveryPanel } from '../components/RegistryDiscoveryPanel'
 
 type ShadowStatus = 'idle' | 'running' | 'complete'
@@ -42,7 +44,11 @@ export function ResultsScreen() {
   const category = getCategory(searchParams.get('category'))
   const draft = loadMandateDraft()
   const mandateSummary = draft?.categoryId === category.id ? draft.summary : category.summary
-  const agents = matchAgents(category, draft)
+  // Only identities backed by an onchain registration and a callable MANDATE
+  // service are inventory. The remaining catalog rows are benchmark fixtures,
+  // never marketplace recommendations.
+  const inventoryCategory = { ...category, agents: category.agents.filter((agent) => agent.providerAddress && agent.registrationTxHash) }
+  const agents = matchAgents(inventoryCategory, draft)
   const eligibleCount = agents.filter((agent) => agent.status === 'satisfies').length
   const noEligibleAgents = eligibleCount === 0
   const [selectedId, setSelectedId] = useState(agents[0].id)
@@ -142,11 +148,11 @@ export function ResultsScreen() {
 
           <div className="list-header">
             <div>
-              <h2>{noEligibleAgents ? 'No verified provider passes every limit' : 'Verified execution providers'}</h2>
+              <h2>{noEligibleAgents ? 'No callable provider passes every limit' : 'Callable onchain provider'}</h2>
               <p>
                 {noEligibleAgents
-                  ? `All ${agents.length} providers with structured execution evidence violate at least one hard limit. Your mandate has not been weakened.`
-                  : `${eligibleCount} of ${agents.length} providers with structured execution evidence satisfy every parsed hard limit.`}{' '}
+                  ? `The registered callable provider violates at least one hard limit. Your mandate has not been weakened.`
+                  : `The registered callable provider satisfies every parsed hard limit. Run its live capability below before hiring it.`}{' '}
                 A separate semantic search runs across the live ERC-8004 index below.
               </p>
             </div>
@@ -288,6 +294,9 @@ export function ResultsScreen() {
             )}
           </section> : null}
           {category.id === 'yield' && draft?.categoryId === 'yield' ? <LiveYieldRoute draft={draft} /> : null}
+          {category.id === 'rebalancing' && draft?.categoryId === 'rebalancing' ? <LiveMarketAgent categoryId="rebalancing" draft={draft} /> : null}
+          {category.id === 'grid' && draft?.categoryId === 'grid' ? <LiveMarketAgent categoryId="grid" draft={draft} /> : null}
+          {category.id === 'health' && draft?.categoryId === 'health' ? <LiveVenusAgent /> : null}
         </div>
 
         <aside className="evidence-sidebar" aria-label="Evidence for selected agent">

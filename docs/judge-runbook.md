@@ -12,7 +12,7 @@
 8. Run live YieldRoute. This is read-only and requests no wallet signature.
 9. Run Shadow Mode, open Review permissions and confirm that capital, risk, leverage, protocol, activity and service-spend limits match the original mandate.
 10. Continue to the onchain hire page. Without signing, inspect the separate client/provider roles and seven-step ERC-8183 lifecycle.
-11. Open Evidence and inspect the Agent Advantage Report.
+11. Open Evidence and inspect the hire-gated Agent Advantage Evidence Lab. Do not present the archived August PDF as the final report.
 
 ## Hard no-match path (about 1 minute, no wallet required)
 
@@ -28,7 +28,7 @@
 - ERC-8183 Job #506 settlement: <https://testnet.bscscan.com/tx/0xf423d6403c8e7926ea0e125c3b216226b95856fc836293645ef14c8ae531f043>
 - Public manifest: <https://mandate-bnb-agent.vercel.app/api/erc8183/yield-deliverable/506>
 - Yield evidence snapshot: <https://mandate-bnb-agent.vercel.app/evidence/yield-route-reference.json>
-- TermiX Agent Advantage Report: <https://mandate-bnb-agent.vercel.app/evidence/MANDATE-Agent-Advantage-Report.pdf>
+- TermiX report: pending regeneration after three verified independent funded hires.
 
 ## What is real
 

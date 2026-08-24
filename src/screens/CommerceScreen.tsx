@@ -59,6 +59,8 @@ export function CommerceScreen() {
   const [activeAction, setActiveAction] = useState<ActionName>()
   const [latestHash, setLatestHash] = useState<`0x${string}`>()
   const [error, setError] = useState('')
+  const [externalDeliverableHash, setExternalDeliverableHash] = useState('')
+  const [externalDeliverableUrl, setExternalDeliverableUrl] = useState('')
   const [now, setNow] = useState(() => BigInt(Math.floor(Date.now() / 1000)))
 
   const storageKey = `${STORAGE_KEY}:${category.id}:${agent.id}`
@@ -126,11 +128,13 @@ export function CommerceScreen() {
       : address.toLowerCase() === chainState.job.provider.toLowerCase()
         ? 'provider'
         : 'observer'
+  const isExternalProvider = Boolean(chainState && agent.providerAddress && chainState.job.provider.toLowerCase() !== agent.providerAddress.toLowerCase())
+  const externalDeliverableReady = /^0x[0-9a-fA-F]{64}$/.test(externalDeliverableHash) && /^https:\/\//i.test(externalDeliverableUrl)
 
   const canSignAction = (action: ActionName) => {
     if (!isTestnetWallet || !address || !agent.providerAddress) return false
     if (action === 'create') return address.toLowerCase() !== agent.providerAddress.toLowerCase()
-    if (action === 'submit') return walletRole === 'provider'
+    if (action === 'submit') return walletRole === 'provider' && (!isExternalProvider || externalDeliverableReady)
     if (action === 'settle') return true
     return walletRole === 'client'
   }
@@ -197,9 +201,10 @@ export function CommerceScreen() {
           const request = await publicClient.simulateContract({ account: address, address: ERC8183_COMMERCE_ADDRESS, abi: commerceAbi, functionName: 'fund', args: [jobId, ERC8183_BUDGET, '0x'] })
           hash = await walletClient.data.writeContract({ ...request.request, chain: bscTestnet })
         } else if (action === 'submit') {
+          if (isExternalProvider && !externalDeliverableReady) throw new Error('External provider must supply its own bytes32 deliverable hash and public HTTPS retrieval URL.')
           const manifest = buildMarketplaceDeliverableManifest(jobId, category.id)
-          const deliverableHash = keccak256(stringToHex(stableStringify(manifest)))
-          const deliverableUrl = `${window.location.origin}/api/erc8183/marketplace-deliverable/${category.id}/${jobId}`
+          const deliverableHash = isExternalProvider ? externalDeliverableHash as `0x${string}` : keccak256(stringToHex(stableStringify(manifest)))
+          const deliverableUrl = isExternalProvider ? externalDeliverableUrl : `${window.location.origin}/api/erc8183/marketplace-deliverable/${category.id}/${jobId}`
           const optParams = stringToHex(JSON.stringify({
             deliverable_url: deliverableUrl,
             ...(category.id === 'yield' ? { evidence_sha256: YIELD_REFERENCE_SHA256 } : {}),
@@ -236,8 +241,8 @@ export function CommerceScreen() {
     <section className="commerce-screen page-gutter">
       <div className="commerce-heading">
         <span className="section-kicker">{category.label.toUpperCase()} HIRE · BSC TESTNET</span>
-        <h1>Hire {agent.name} onchain</h1>
-        <p>Your connected wallet becomes the client, Agent #{agent.id} is the separate provider, and seven explicit ERC-8183 steps create a public service receipt. Client and provider sign only their own protocol actions; every write is simulated first.</p>
+        <h1>{isExternalProvider ? 'Complete the Open Mandate hire' : `Hire ${agent.name} onchain`}</h1>
+        <p>Your connected wallet becomes the client, the assigned address is the separate provider, and explicit ERC-8183 steps create a public service receipt. Client and provider sign only their own protocol actions; every write is simulated first.</p>
       </div>
 
       <div className="yield-proof-source">
@@ -249,7 +254,7 @@ export function CommerceScreen() {
 
       <div className="registration-guard" role="status">
         <ShieldCheck size={18} />
-        <div><strong>Hard transaction boundaries</strong><p>Client {address ? `${address.slice(0, 6)}…${address.slice(-4)}` : 'your wallet'} · Provider Agent #{agent.id} · Chain 97 · Budget 0.1 test U · Exact approval only</p></div>
+        <div><strong>Hard transaction boundaries</strong><p>Client {address ? `${address.slice(0, 6)}…${address.slice(-4)}` : 'your wallet'} · Provider {chainState ? `${chainState.job.provider.slice(0, 6)}…${chainState.job.provider.slice(-4)}` : `Agent #${agent.id}`} · Chain 97 · Budget 0.1 test U · Exact approval only</p></div>
         <span className={isTestnetWallet ? 'guard-ready' : 'guard-blocked'}>{isTestnetWallet ? `${walletRole?.toUpperCase() ?? 'CLIENT'} WALLET READY` : 'CONNECT BSC TESTNET WALLET'}</span>
       </div>
 
@@ -259,6 +264,15 @@ export function CommerceScreen() {
         <div><small>Escrow budget</small><strong>0.1 U</strong></div>
         <div><small>Current allowance</small><strong>{chainState ? `${formatUnits(chainState.allowance, 18)} U` : '0 U'}</strong></div>
       </div>
+
+      {isExternalProvider && chainState?.job.status === 1 ? (
+        <section className="open-mandate-contract" aria-labelledby="external-deliverable-title">
+          <div><span className="section-kicker">PROVIDER-OWNED DELIVERABLE</span><h2 id="external-deliverable-title">Submit the accepted provider's real output</h2><p>MANDATE will not fabricate evidence for an external agent. The assigned provider must connect its wallet and supply a public HTTPS result plus the exact bytes32 hash it produced.</p></div>
+          <label>Public deliverable URL<input type="url" placeholder="https://provider.example/result/506.json" value={externalDeliverableUrl} onChange={(event) => setExternalDeliverableUrl(event.target.value)} /></label>
+          <label>Deliverable hash (bytes32)<input className="mono" placeholder="0x + 64 hexadecimal characters" value={externalDeliverableHash} onChange={(event) => setExternalDeliverableHash(event.target.value.trim())} spellCheck={false} /></label>
+          <div className={`registration-guard ${externalDeliverableReady ? '' : 'is-blocked'}`}><ShieldCheck size={18} /><div><strong>{externalDeliverableReady ? 'External evidence is structurally ready' : 'Waiting for valid provider evidence'}</strong><p>The provider transaction will still be simulated before the wallet can broadcast it.</p></div></div>
+        </section>
+      ) : null}
 
       <div className="commerce-steps">
         {steps.map((step, index) => {

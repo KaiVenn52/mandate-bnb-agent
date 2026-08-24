@@ -64,7 +64,9 @@ type RegistryAgentResponse = {
   data: RegistryAgentPayload
 }
 
-const API_BASE = import.meta.env.VITE_8004SCAN_API_BASE ?? 'https://8004scan.io/api/v1/public'
+// Browser traffic goes through the same-origin allowlisted cache so one judge
+// session cannot exhaust 8004scan's anonymous global quota.
+const API_BASE = `${(import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '')}/registry`
 
 export async function fetchRegistrySnapshot(signal?: AbortSignal): Promise<RegistrySnapshot> {
   const response = await fetch(`${API_BASE}/agents?page=1&limit=1&chainId=56`, { signal })

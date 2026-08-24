@@ -22,11 +22,11 @@
 - [x] Trading/high-stakes task included
 - [x] Same-input methodology and evidence policy documented
 - [x] Three frozen inputs, pre-committed rubrics, and public agent-run API implemented
-- [x] Record agent and no-agent runs from identical snapshots
-- [x] Replace draft time, cost, and quality values
-- [x] Attach raw outputs, timestamps, and evaluator rubric
+- [ ] Record three independent funded ERC-8183 agent hires and paired no-agent runs
+- [ ] Replace archived baseline values with hire-backed time, cost, and quality values
+- [ ] Attach job IDs, raw outputs, timestamps, service cost, and evaluator rubric
 - [ ] Record and attach the final demo / evidence screen recording (owner action)
-- [x] Export the final report to PDF and include it in the website build
+- [ ] Regenerate and export the final hire-backed report to PDF
 
 ## Evidence bundle per A/B task
 

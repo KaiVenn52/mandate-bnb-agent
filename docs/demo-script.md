@@ -36,7 +36,7 @@ Run Shadow Mode, open Review permissions, then Continue to onchain hire. Point t
 
 Open Evidence. Show the headline figures and the three task rows: yield, trading and Venus risk monitoring.
 
-**Narration:** "For TermiX, we ran three tasks both ways on identical frozen inputs. The median human time was 233.65 seconds versus 0.2718 seconds for the agent API. Agents scored 10 out of 10 on every locked rubric; the average quality lift was 5.33 points. Both paths had zero observed cash cost, so we do not claim a paid-cost advantage."
+**Narration:** "For TermiX, the evidence lab refuses direct API runs. Each agent path now requires a funded ERC-8183 job with a separate provider and matching category. The old three-pair comparison remains an archived baseline; we will regenerate the final report after three independent hires."
 
 ## 2:10-2:28 - Onchain proof
 

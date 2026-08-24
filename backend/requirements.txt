@@ -1,5 +1,4 @@
-bnbagent[server]>=0.1.0
-fastapi>=0.115.0
-uvicorn[standard]>=0.34.0
-pydantic-settings>=2.8.0
-
+bnbagent[server]==0.4.2
+fastapi==0.141.1
+uvicorn[standard]==0.52.1
+pydantic-settings==2.15.0

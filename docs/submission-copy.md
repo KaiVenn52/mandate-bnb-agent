@@ -22,7 +22,7 @@ Before any wallet action, Shadow Mode compares the chosen agent with a no-agent 
 
 The proof is live on BSC Testnet. YieldRoute Agent #1806 completed ERC-8183 Job #506 through create, policy binding, budget, exact approval, funding, deliverable submission and settlement. The 0.1 test U escrow returned to the wallet and the residual allowance is zero. Four marketplace agents are registered as ERC-8004 identities (#1804-#1807).
 
-For the TermiX challenge, MANDATE includes an Agent Advantage Report with three real same-input task pairs covering yield, trading and security/risk monitoring. Median measured time was 233.65 seconds for the human path and 0.2718 seconds for the marketplace agent API; agents scored 10/10 on each locked rubric. Both paths had zero observed cash cost, so no paid-cost advantage is claimed. Historical candidate metrics outside these verified runs remain explicitly labelled sample data.
+For the TermiX challenge, MANDATE now gates each agent run behind a verified funded ERC-8183 job with separate client/provider wallets and a matching task category. The three August direct-API comparisons are archived reproducible baselines, not qualifying marketplace hires. Do not submit the final Agent Advantage Report until three independent hire-backed task pairs covering yield, trading and security/risk monitoring have been recorded and the report has been regenerated.
 
 ## What makes it different
 
@@ -40,7 +40,7 @@ For the TermiX challenge, MANDATE includes an Agent Advantage Report with three 
 - Live app: <https://mandate-bnb-agent.vercel.app>
 - Judge runbook: <https://mandate-bnb-agent.vercel.app/evidence/evidence-passport-506.json>
 - Job #506 settlement: <https://testnet.bscscan.com/tx/0xf423d6403c8e7926ea0e125c3b216226b95856fc836293645ef14c8ae531f043>
-- Agent Advantage Report: <https://mandate-bnb-agent.vercel.app/evidence/MANDATE-Agent-Advantage-Report.pdf>
+- Agent Advantage Report: pending regeneration after three verified independent hires; do not link the archived August PDF.
 - Submission wallet: `0xD30BbB80c863c9B94622EF92337AaD65148D2EC3`
 - Source code: <https://github.com/KaiVenn52/mandate-bnb-agent>
 - Demo video: `[ADD VIDEO URL AFTER RECORDING AND OWNER APPROVAL]`

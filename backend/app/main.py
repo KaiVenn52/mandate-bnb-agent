@@ -1,8 +1,7 @@
-"""MANDATE's guarded BNB Agent SDK gateway.
+"""MANDATE's read-only agent and evidence gateway.
 
-Preview is the default. Mutating ERC-8183 calls require an encrypted SDK wallet,
-an explicit live flag, and a provider allowlist. This keeps secrets server-side
-and makes accidental demo-wallet broadcasts impossible.
+The server never holds a transaction signer. ERC-8183 mutations are simulated
+client-side and require the correct connected client or provider wallet.
 """
 
 from __future__ import annotations
@@ -11,18 +10,21 @@ import os
 import time
 from typing import Any
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from .benchmarks import BENCHMARK_VERSION, TASKS, public_task, run_agent, score_baseline
+from .market_agents import MarketDataError, run_grid_agent, run_rebalancing_agent
+from .hire_verifier import HireVerificationError, verify_hired_job
+from .registry_proxy import RegistryProxyError, fetch_registry
+from .rate_limit import RateLimitMiddleware
 from .venus_agent import ChainReadError, run_venus_risk_agent
 from .yield_agent import YieldDataError, build_yield_deliverable, run_yield_route_agent
 
 
 NETWORK = os.getenv("NETWORK", "bsc-testnet")
 OPERATOR_ADDRESS = os.getenv("MANDATE_OPERATOR_ADDRESS", "")
-LIVE = os.getenv("MANDATE_LIVE_TRANSACTIONS", "false").lower() == "true"
 MAX_BUDGET = int(os.getenv("MANDATE_MAX_BUDGET_WEI", "1000000000000000000"))
 ALLOWED_PROVIDERS = {
     address.strip().lower()
@@ -100,7 +102,26 @@ class YieldRouteRequest(BaseModel):
     max_actions_per_week: int = Field(default=2, ge=1, le=100)
 
 
+class RebalancingRequest(BaseModel):
+    capital_usd: float = Field(gt=0, le=100_000_000)
+    max_rebalances_per_day: int = Field(default=2, ge=1, le=24)
+    max_gas_drag_pct: float = Field(default=20, gt=0, le=100)
+    target_width_pct: float = Field(default=15, ge=2, le=50)
+
+
+class GridRequest(BaseModel):
+    capital_usd: float = Field(gt=0, le=100_000_000)
+    max_drawdown_pct: float = Field(default=5, gt=0, le=50)
+    max_orders_per_day: int = Field(default=12, ge=1, le=100)
+    grid_levels: int = Field(default=7, ge=3, le=24)
+
+
+class HireBackedRunRequest(BaseModel):
+    job_id: int = Field(gt=0)
+
+
 app = FastAPI(title="MANDATE BNB Agent Gateway", version="0.1.0")
+app.add_middleware(RateLimitMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=WEB_ORIGINS,
@@ -122,13 +143,18 @@ def health() -> dict[str, Any]:
     return {
         "ok": True,
         "network": NETWORK,
-        "live": LIVE,
+        "live": False,
         "liveData": True,
         "executionMode": "live-read-only; transactional writes guarded",
         "sdk": "bnbagent",
         "standards": ["ERC-8004", "ERC-8183"],
         "operatorAddress": OPERATOR_ADDRESS or None,
-        "agents": {"venusRisk": "/agents/venus-risk/run", "yieldRoute": "/agents/yield-route/run"},
+        "agents": {
+            "rebalancing": "/agents/rebalancing/run",
+            "grid": "/agents/grid/run",
+            "yieldRoute": "/agents/yield-route/run",
+            "venusRisk": "/agents/venus-risk/run",
+        },
     }
 
 
@@ -208,9 +234,35 @@ def erc8183_marketplace_deliverable(category: str, job_id: int) -> dict[str, Any
 def benchmark_index() -> dict[str, Any]:
     return {
         "version": BENCHMARK_VERSION,
-        "status": "three paired runs complete; live agents runnable",
+        "status": "legacy paired measurements available; new agent runs require a verified marketplace hire",
         "tasks": [public_task(task_id) for task_id in TASKS],
     }
+
+
+@app.get("/registry/agents")
+def registry_agents() -> dict[str, Any]:
+    try:
+        return fetch_registry("/agents", {"page": "1", "limit": "1", "chainId": "56"}, ttl_seconds=120)
+    except RegistryProxyError as exc:
+        raise HTTPException(503, str(exc)) from exc
+
+
+@app.get("/registry/agents/search")
+def registry_search(q: str = Query(min_length=3, max_length=500)) -> dict[str, Any]:
+    try:
+        return fetch_registry("/agents/search", {"q": q, "chainId": "56", "limit": "10", "semanticWeight": "0.65"}, ttl_seconds=300)
+    except RegistryProxyError as exc:
+        raise HTTPException(503, str(exc)) from exc
+
+
+@app.get("/registry/agents/56/{token_id}")
+def registry_agent(token_id: int) -> dict[str, Any]:
+    if token_id <= 0:
+        raise HTTPException(422, "Invalid ERC-8004 token ID")
+    try:
+        return fetch_registry(f"/agents/56/{token_id}", {}, ttl_seconds=300)
+    except RegistryProxyError as exc:
+        raise HTTPException(503, str(exc)) from exc
 
 
 @app.get("/benchmarks/{task_id}")
@@ -221,10 +273,14 @@ def benchmark_task(task_id: str) -> dict[str, Any]:
 
 
 @app.post("/benchmarks/{task_id}/agent-run")
-def benchmark_agent_run(task_id: str) -> dict[str, Any]:
+def benchmark_agent_run(task_id: str, request: HireBackedRunRequest) -> dict[str, Any]:
     if task_id not in TASKS:
         raise HTTPException(404, "Unknown benchmark task")
-    return run_agent(task_id)
+    try:
+        hire = verify_hired_job(request.job_id, task_id)
+    except HireVerificationError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    return {**run_agent(task_id), "marketplace_hire": hire}
 
 
 @app.post("/agents/venus-risk/run")
@@ -254,6 +310,32 @@ def yield_route_run(request: YieldRouteRequest) -> dict[str, Any]:
         raise HTTPException(503, f"Live yield data read failed: {exc}") from exc
 
 
+@app.post("/agents/rebalancing/run")
+def rebalancing_run(request: RebalancingRequest) -> dict[str, Any]:
+    try:
+        return run_rebalancing_agent(
+            capital_usd=request.capital_usd,
+            max_rebalances_per_day=request.max_rebalances_per_day,
+            max_gas_drag_pct=request.max_gas_drag_pct,
+            target_width_pct=request.target_width_pct,
+        )
+    except MarketDataError as exc:
+        raise HTTPException(503, f"Live PancakeSwap market read failed: {exc}") from exc
+
+
+@app.post("/agents/grid/run")
+def grid_run(request: GridRequest) -> dict[str, Any]:
+    try:
+        return run_grid_agent(
+            capital_usd=request.capital_usd,
+            max_drawdown_pct=request.max_drawdown_pct,
+            max_orders_per_day=request.max_orders_per_day,
+            grid_levels=request.grid_levels,
+        )
+    except MarketDataError as exc:
+        raise HTTPException(503, f"Live BNB/USDT market read failed: {exc}") from exc
+
+
 @app.post("/benchmarks/{task_id}/baseline-score")
 def benchmark_baseline_score(task_id: str, submission: BaselineOutput) -> dict[str, Any]:
     if task_id not in TASKS:
@@ -267,7 +349,7 @@ def benchmark_baseline_score(task_id: str, submission: BaselineOutput) -> dict[s
 def preview_job(request: JobRequest) -> JobPreview:
     validate_policy(request)
     return JobPreview(
-        mode="live-ready" if LIVE else "preview",
+        mode="wallet-signature-required",
         network=NETWORK,
         provider=request.provider,
         description=request.description,
@@ -276,54 +358,3 @@ def preview_job(request: JobRequest) -> JobPreview:
         lifecycle=["create", "register", "set-budget", "fund"],
         broadcast=False,
     )
-
-
-@app.post("/jobs/execute")
-def execute_job(request: JobRequest) -> dict[str, Any]:
-    validate_policy(request)
-    if not LIVE:
-        raise HTTPException(409, "Live transactions are disabled; use /jobs/preview")
-    if not os.getenv("WALLET_PASSWORD"):
-        raise HTTPException(503, "Encrypted wallet is not configured")
-
-    # Imported lazily so read-only preview mode works without wallet setup.
-    from dataclasses import replace
-
-    from bnbagent import ERC8183Client, EVMWalletProvider
-    from bnbagent.config import resolve_network
-
-    wallet = EVMWalletProvider(
-        password=os.environ["WALLET_PASSWORD"],
-        private_key=os.getenv("PRIVATE_KEY") or None,
-    )
-    network_config = resolve_network(NETWORK)
-    if NETWORK == "bsc-testnet":
-        # apex-contracts rotated the policy before bnbagent 0.4.2 updated its
-        # preset. Pin the canonical upstream deployment registry explicitly.
-        network_config = replace(
-            network_config, policy_contract=ERC8183_POLICY_ADDRESS
-        )
-    client = ERC8183Client(wallet, network=network_config)
-    expired_at = int(time.time()) + request.duration_seconds
-
-    created = client.create_job(
-        provider=request.provider,
-        expired_at=expired_at,
-        description=request.description,
-    )
-    job_id = created["jobId"]
-    registered = client.register_job(job_id)
-    budgeted = client.set_budget(job_id, request.budget_wei)
-    funded = client.fund(job_id, request.budget_wei, approve_floor=0)
-
-    return {
-        "live": True,
-        "network": NETWORK,
-        "jobId": job_id,
-        "transactions": {
-            "create": created,
-            "register": registered,
-            "setBudget": budgeted,
-            "fund": funded,
-        },
-    }

@@ -1,6 +1,6 @@
 # MANDATE Agent Advantage benchmark protocol
 
-Status: **all 3 human baselines and all 3 agent outputs recorded, hash-checked, summarized, and packaged into the local Agent Advantage Report**.
+Status: **three human/direct-API baselines are archived and hash-checked; 0/3 independent marketplace hires have been recorded. The final qualifying report is pending**.
 
 ## Official qualification rule
 
@@ -20,7 +20,7 @@ Source checked 2026-08-12: <https://www.bnbchain.org/en/hackathons/smart-money-e
 | A-02 | Trading | `153f5f9a569877b6494132642c256c45ad864e1a14ae5263fca11827ac2c7eb2` | `balanced-26` | 10 points |
 | A-03 | Security/risk monitoring | `a398c50ddcc3cc105b602e7052e5213eef35f8f6bbaff69a7cde11047f5bc27e` | `repay-1600` | 10 points |
 
-The inputs, constraints, candidate rows, and rubric are returned by `GET /api/benchmarks`. The versioned agent implementation is run by `POST /api/benchmarks/{task_id}/agent-run`.
+The inputs, constraints, candidate rows, and rubric are returned by `GET /api/benchmarks`. `POST /api/benchmarks/{task_id}/agent-run` requires a funded ERC-8183 Job ID and rejects zero providers, self-hires, zero budgets, non-funded jobs, and category mismatches.
 
 ## A/B controls
 
@@ -33,9 +33,9 @@ The inputs, constraints, candidate rows, and rubric are returned by `GET /api/be
 - Agent cost must include marketplace service price and chain fees if hired onchain. Human cost is elapsed time multiplied by a disclosed hourly labour assumption. Test U and tBNB are reported separately from USD and are never presented as real monetary spend.
 - Any intervention, failed run, retry, or revealed answer invalidates that attempt and must be disclosed.
 
-## Completed qualification evidence
+## Archived baseline evidence (not yet qualifying)
 
-A real person completed all three no-agent worksheets before the agent results were revealed. All six output bundles are retained under `evidence/termix/raw`, and the Evidence page now reports the measured 3/3 result. The canonical local report is `evidence/termix/agent-advantage-report.html`; its embedded data queries were executed against SQLite and matched every report snapshot row. PDF export and final screen recording remain submission-packaging tasks.
+A real person completed all three no-agent worksheets before the direct API results were revealed. All six historical bundles are retained under `evidence/termix/raw`. They remain useful reproducibility baselines, but none contains an independent marketplace hire. The archived HTML/PDF must be regenerated only after three hire-backed outputs are recorded.
 
 ## Recorded runs
 

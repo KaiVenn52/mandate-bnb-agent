@@ -34,21 +34,18 @@ export function EvidenceScreen() {
     <section className="evidence-screen page-gutter">
       <div className="report-heading">
         <div>
-          <span className="section-kicker">VERIFIED PAIRED RUNS · 12 AUG 2026</span>
-          <h1>Agent Advantage Report</h1>
-          <p>Measured agent performance against the same task completed without an agent.</p>
+          <span className="section-kicker">LEGACY PAIRED BASELINE · NEW HIRE-BACKED RUNS REQUIRED</span>
+          <h1>Agent Advantage Evidence Lab</h1>
+          <p>The August A/B measurements remain reproducible comparison data, but they did not hire each agent through a separate ERC-8183 marketplace job. They are not represented as TermiX-qualifying evidence.</p>
         </div>
-        <div className="report-actions">
-          <a className="button button-outline" href="/evidence/agent-advantage-report.html" target="_blank" rel="noreferrer"><Download size={16} /> Open verified report</a>
-          <a className="button button-outline" href="/evidence/MANDATE-Agent-Advantage-Report.pdf" target="_blank" rel="noreferrer">PDF</a>
-        </div>
+        <div className="report-actions"><span className="button button-outline"><Download size={16} /> Final report unlocks after 3 verified hires</span></div>
       </div>
 
       <section className="yield-proof-source" aria-label="Completed ERC-8183 evidence">
         <FileCheck2 size={20} />
         <div>
-          <strong>YieldRoute ERC-8183 Job #506 - COMPLETED</strong>
-          <p>Seven successful BSC Testnet writes, exact 0.1 test U escrow returned, zero residual allowance, and a public SHA-256-bound deliverable.</p>
+          <strong>YieldRoute ERC-8183 Job #506 - COMPLETED LIFECYCLE PROOF</strong>
+          <p>Seven successful BSC Testnet writes, exact 0.1 test U escrow returned, zero residual allowance, and a public SHA-256-bound deliverable. Client and provider were the same wallet, so this proves mechanics—not an independent TermiX hire.</p>
         </div>
         <a href="/evidence/evidence-passport-506.json" target="_blank" rel="noreferrer">Open Evidence Passport <ExternalLink size={13} /></a>
         <code>Settlement: 0xf423d6403c8e7926ea0e125c3b216226b95856fc836293645ef14c8ae531f043</code>
@@ -71,11 +68,11 @@ export function EvidenceScreen() {
       </section>
 
       <div className="report-meta">
-        <div><small>Report</small><strong className="mono">AAR-2026-0812</strong></div>
-        <div><small>Evaluation window</small><strong>12 Aug 2026 · completed</strong></div>
-        <div><small>Recorded A/B tasks</small><strong className="mono">3 / 3</strong></div>
+        <div><small>Archived baseline</small><strong className="mono">AAR-2026-0812</strong></div>
+        <div><small>Qualification status</small><strong>0 / 3 independent hires</strong></div>
+        <div><small>Legacy A/B tasks</small><strong className="mono">3 / 3</strong></div>
         <div><small>High-stakes categories</small><strong>Trading + security</strong></div>
-        <span className="report-verified"><ShieldCheck size={17} /> Raw pairs hash-verified</span>
+        <span className="report-verified"><ShieldCheck size={17} /> Raw pairs verified · hire status excluded</span>
       </div>
 
       <div className="report-summary">
@@ -91,7 +88,7 @@ export function EvidenceScreen() {
       <section className="ab-report" aria-labelledby="ab-title">
         <div className="ab-header">
           <div><h2 id="ab-title">Recorded A/B task results</h2><p>Identical frozen input and pre-committed 10-point rubric on both paths.</p></div>
-          <span className="mono muted">TermiX evidence · 3 paired tasks complete</span>
+          <span className="mono muted">Legacy baseline · not yet TermiX-qualified</span>
         </div>
         <div className="ab-table-head" aria-hidden="true">
           <span>Task</span><span>Agent path</span><span>Human path</span><span>Quality rubric</span><span>Evidence</span>
@@ -99,7 +96,7 @@ export function EvidenceScreen() {
         {advantageTasks.map((task, index) => (
           <article className="ab-row" key={task.id}>
             <div className="ab-task"><small className="mono">{task.id}</small><strong>{task.task}</strong><span>{task.category}</span></div>
-            <div><small>Marketplace agent</small><strong className="mono">{task.agentTime}</strong><span>{task.agentCost}</span></div>
+            <div><small>Direct agent API (legacy)</small><strong className="mono">{task.agentTime}</strong><span>{task.agentCost}</span></div>
             <div><small>Human, no agent</small><strong className="mono">{task.baselineTime}</strong><span>{task.baselineCost}</span></div>
             <div><strong>{task.qualityDelta}</strong><span>Same locked 10-point rubric</span></div>
             <div><span>{task.evidence}</span><a href="#benchmark-lab-title">Re-run evidence lab</a></div>
@@ -110,7 +107,7 @@ export function EvidenceScreen() {
 
       <section className="methodology">
         <div><h2>Methodology</h2><p>Each pair used the same frozen JSON input and SHA-256 digest. Human time ran from task start to submitted answer; agent time is the browser-observed production API round trip. Quality used a category-specific rubric locked before either path ran.</p></div>
-        <div><h2>Evidence policy</h2><p>Onchain facts link to transactions. Derived metrics expose their inputs. Self-reported claims are labelled and excluded from the verified advantage calculation.</p></div>
+        <div><h2>Evidence policy</h2><p>Onchain facts link to transactions. Derived metrics expose their inputs. A new agent run is accepted only after the backend verifies a funded job, separate client/provider wallets and matching task category on BSC Testnet.</p></div>
       </section>
     </section>
   )
