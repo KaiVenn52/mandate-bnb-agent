@@ -84,7 +84,7 @@ export function CommerceScreen() {
     return () => window.clearInterval(timer)
   }, [])
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (): Promise<CommerceJob | undefined> => {
     if (!publicClient || jobId === undefined) return
     try {
       const [jobResult, policy, policyAllowed] = await Promise.all([
@@ -96,12 +96,27 @@ export function CommerceScreen() {
       const allowance = await publicClient.readContract({ address: U_TOKEN_ADDRESS, abi: exactApprovalAbi, functionName: 'allowance', args: [job.client, ERC8183_COMMERCE_ADDRESS] })
       setChainState({ job, policy, allowance, policyAllowed })
       setError('')
+      return job
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Unable to read ERC-8183 state.')
+      return undefined
     }
   }, [jobId, publicClient])
 
   useEffect(() => { void refresh() }, [refresh])
+
+  useEffect(() => {
+    if (jobId === undefined) return
+    const timer = window.setInterval(() => { void refresh() }, 15_000)
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible') void refresh()
+    }
+    document.addEventListener('visibilitychange', refreshWhenVisible)
+    return () => {
+      window.clearInterval(timer)
+      document.removeEventListener('visibilitychange', refreshWhenVisible)
+    }
+  }, [jobId, refresh])
 
   const nextAction = useMemo<ActionName | 'waiting' | 'complete'>(() => {
     if (jobId === undefined || !chainState) return jobId === undefined ? 'create' : 'waiting'
@@ -249,6 +264,16 @@ export function CommerceScreen() {
       }
       setLatestHash(hash)
     } catch (caught) {
+      // Settlement is permissionless. Another wallet or keeper can complete
+      // the job between our last read and this simulation. In that race, the
+      // correct result is COMPLETED—not a frightening revert banner.
+      if (action === 'settle') {
+        const latestJob = await refresh()
+        if (latestJob?.status === 3) {
+          setError('')
+          return
+        }
+      }
       setError(caught instanceof Error ? caught.message : 'Transaction failed or was rejected.')
     } finally {
       setActiveAction(undefined)
