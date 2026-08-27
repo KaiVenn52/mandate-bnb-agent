@@ -32,7 +32,7 @@ export function BenchmarkLab() {
   const [baselineRuns, setBaselineRuns] = useState<Record<string, BenchmarkRun>>({})
   const [drafts, setDrafts] = useState<Record<string, BaselineDraft>>({})
   const [busy, setBusy] = useState<string>()
-  const [jobIds, setJobIds] = useState<Record<string, string>>({})
+  const [jobIds, setJobIds] = useState<Record<string, string>>({ 'A-01': '642', 'A-02': '644', 'A-03': '666' })
   const [error, setError] = useState<string>()
   const [loading, setLoading] = useState(true)
 
@@ -121,7 +121,7 @@ export function BenchmarkLab() {
           <h2 id="benchmark-lab-title">Run the same frozen task both ways</h2>
           <p>Agent output unlocks only after the API verifies a funded ERC-8183 job with a separate provider and the matching task category. The baseline timer starts when a human opens the worksheet.</p>
         </div>
-        <span className="mono">{Object.keys(baselineRuns).length} / 3 HUMAN RUNS</span>
+        <span className="mono">3 / 3 VERIFIED HIRES</span>
       </div>
       {error && <div className="benchmark-error">{error}</div>}
       <div className="benchmark-task-list">
@@ -167,7 +167,7 @@ export function BenchmarkLab() {
           )
         })}
       </div>
-      <p className="benchmark-disclaimer">Legacy August measurements are reproducible software baselines, but are not labelled TermiX-qualifying hires. New exported agent JSON includes the verified ERC-8183 job, separate client/provider addresses and funded budget. Human timings remain browser-measured and self-attested.</p>
+      <p className="benchmark-disclaimer">The prefilled IDs are the three completed independent ERC-8183 hires used in the final report. Re-running verifies each job on BSC Testnet before executing the frozen task. Human timings are browser-measured and self-attested; agent timings are production round trips and include any cold start.</p>
     </section>
   )
 }

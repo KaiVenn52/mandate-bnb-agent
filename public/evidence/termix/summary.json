@@ -1,21 +1,108 @@
 {
-  "generated_at_utc": "2026-08-12T05:01:00Z",
-  "benchmark_version": "mandate-aar-1.0.0",
-  "hourly_labor_assumption_usd": 15,
+  "generated_at_utc": "2026-08-26T18:31:48.437941+00:00",
+  "benchmark_version": "mandate-aar-1.1.0-hire-backed",
+  "network": "BSC Testnet",
+  "chain_id": 97,
+  "client": "0xD30BbB80c863c9B94622EF92337AaD65148D2EC3",
+  "provider": "0x34ABe1790E6d67E25c7616799C2C6B7336932c7e",
   "rows": [
-    {"task_id":"A-01","task":"Stablecoin yield route selection","category":"Yield optimisation","human_seconds":290.004,"agent_seconds":0.2718,"time_saved_seconds":289.7322,"speedup_x":1066.9757,"human_quality":2,"agent_quality":10,"quality_delta":8,"human_cash_cost_usd":0,"agent_cash_cost_usd":0,"human_labor_cost_at_15_usd":1.2084},
-    {"task_id":"A-02","task":"BNB/USDT grid plan safety review","category":"Trading","human_seconds":233.650,"agent_seconds":0.2696,"time_saved_seconds":233.3804,"speedup_x":866.6543,"human_quality":4,"agent_quality":10,"quality_delta":6,"human_cash_cost_usd":0,"agent_cash_cost_usd":0,"human_labor_cost_at_15_usd":0.9735},
-    {"task_id":"A-03","task":"Venus health-factor intervention","category":"Security / risk monitoring","human_seconds":226.700,"agent_seconds":0.2908,"time_saved_seconds":226.4092,"speedup_x":779.5736,"human_quality":8,"agent_quality":10,"quality_delta":2,"human_cash_cost_usd":0,"agent_cash_cost_usd":0,"human_labor_cost_at_15_usd":0.9446}
+    {
+      "task_id": "A-01",
+      "task": "Stablecoin yield route selection",
+      "category": "Yield optimisation",
+      "human_seconds": 290.004,
+      "agent_seconds": 2.9863786,
+      "time_saved_seconds": 287.0176214,
+      "speedup_x": 97.10891981344898,
+      "human_quality": 2,
+      "agent_quality": 10,
+      "quality_delta": 8,
+      "input_sha256": "2150d74ff5e31d5d420eff2435cd6dc8030845c5bc84db68fd4af02a817aee21",
+      "job_id": 642,
+      "agent_id": 1806,
+      "budget_test_u": "0.1",
+      "deliverable_url": "https://mandate-bnb-agent.vercel.app/api/benchmarks/A-01/hire-deliverable/642",
+      "known_transactions": {
+        "create": {
+          "transaction_hash": "0x65075a013ca176bf1e4c6abedd4de61bf94140ad227ca9cd100c298aa98b19df",
+          "explorer_url": "https://testnet.bscscan.com/tx/0x65075a013ca176bf1e4c6abedd4de61bf94140ad227ca9cd100c298aa98b19df"
+        }
+      }
+    },
+    {
+      "task_id": "A-02",
+      "task": "BNB/USDT grid plan safety review",
+      "category": "Trading",
+      "human_seconds": 233.65,
+      "agent_seconds": 0.4795994,
+      "time_saved_seconds": 233.1704006,
+      "speedup_x": 487.1774234913555,
+      "human_quality": 4,
+      "agent_quality": 10,
+      "quality_delta": 6,
+      "input_sha256": "153f5f9a569877b6494132642c256c45ad864e1a14ae5263fca11827ac2c7eb2",
+      "job_id": 644,
+      "agent_id": 1805,
+      "budget_test_u": "0.1",
+      "deliverable_url": "https://mandate-bnb-agent.vercel.app/api/benchmarks/A-02/hire-deliverable/644",
+      "known_transactions": {
+        "create": {
+          "transaction_hash": "0x049bc0cad3ea587460b2e821d2919ad03876ab7903bee9904d611df126496942",
+          "explorer_url": "https://testnet.bscscan.com/tx/0x049bc0cad3ea587460b2e821d2919ad03876ab7903bee9904d611df126496942"
+        },
+        "submit": {
+          "transaction_hash": "0x0a6d266e0b1d455ab9405f502115350426a92b139ad25fb8d50cafeadc5f5cf3",
+          "explorer_url": "https://testnet.bscscan.com/tx/0x0a6d266e0b1d455ab9405f502115350426a92b139ad25fb8d50cafeadc5f5cf3"
+        },
+        "settle": {
+          "transaction_hash": "0x110a45c0e374ab9297143a0dd428850141e29732bca5c7f678dbe0af9d88f1a9",
+          "explorer_url": "https://testnet.bscscan.com/tx/0x110a45c0e374ab9297143a0dd428850141e29732bca5c7f678dbe0af9d88f1a9"
+        }
+      }
+    },
+    {
+      "task_id": "A-03",
+      "task": "Venus health-factor intervention",
+      "category": "Security / risk monitoring",
+      "human_seconds": 226.7,
+      "agent_seconds": 0.4777266,
+      "time_saved_seconds": 226.2222734,
+      "speedup_x": 474.53920296671777,
+      "human_quality": 8,
+      "agent_quality": 10,
+      "quality_delta": 2,
+      "input_sha256": "a398c50ddcc3cc105b602e7052e5213eef35f8f6bbaff69a7cde11047f5bc27e",
+      "job_id": 666,
+      "agent_id": 1807,
+      "budget_test_u": "0.1",
+      "deliverable_url": "https://mandate-bnb-agent.vercel.app/api/benchmarks/A-03/hire-deliverable/666",
+      "known_transactions": {
+        "create": {
+          "transaction_hash": "0x368381e2f5989fc08dbef7907913029a16e199a59d8501e5c17b84b95ccec1c2",
+          "explorer_url": "https://testnet.bscscan.com/tx/0x368381e2f5989fc08dbef7907913029a16e199a59d8501e5c17b84b95ccec1c2"
+        },
+        "settle": {
+          "transaction_hash": "0xc939266cea840943359333fe83d99db50c91799bc9c64e2acbef297a083a13d1",
+          "explorer_url": "https://testnet.bscscan.com/tx/0xc939266cea840943359333fe83d99db50c91799bc9c64e2acbef297a083a13d1"
+        }
+      }
+    }
   ],
   "summary": {
     "paired_tasks": 3,
-    "median_human_seconds": 233.650,
-    "median_agent_seconds": 0.2718,
-    "median_time_saved_seconds": 233.3804,
-    "median_speedup_x": 866.6543,
-    "average_quality_delta_points": 5.3333,
-    "total_modeled_human_labor_cost_usd": 3.1265,
-    "observed_agent_cash_cost_usd": 0,
-    "observed_human_cash_cost_usd": 0
-  }
+    "independent_completed_hires": 3,
+    "median_human_seconds": 233.65,
+    "median_agent_seconds": 0.4795994,
+    "median_time_saved_seconds": 233.1704006,
+    "median_speedup_x": 474.53920296671777,
+    "average_quality_delta_points": 5.333333333333333,
+    "service_cost": "0.1 test U per task; no fiat value claimed",
+    "gas_cost": "Paid in testnet tBNB; complete lifecycle gas not aggregated; no fiat value claimed"
+  },
+  "limitations": [
+    "One human operator and three frozen structured tasks; results are not a population estimate.",
+    "Agent time is a production API round trip after hire verification; human time includes reading and composition.",
+    "Test U and tBNB have no claimed fiat value; full lifecycle gas was not aggregated.",
+    "The experiment measures task execution, not real-capital profitability."
+  ]
 }

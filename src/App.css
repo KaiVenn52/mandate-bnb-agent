@@ -512,6 +512,13 @@ dd { margin: 0; color: var(--text); }
 .yield-proof-source p { font-size: 10px; line-height: 1.5; margin-top: 4px; }
 .yield-proof-source a { align-items: center; color: var(--primary); display: inline-flex; font-size: 10px; gap: 5px; }
 .yield-proof-source code { color: var(--text-faint); font-family: var(--font-mono); font-size: 8px; grid-column: 2 / -1; overflow-wrap: anywhere; }
+.hire-proof-grid { display: grid; gap: 10px; grid-template-columns: repeat(3, 1fr); margin-bottom: 16px; }
+.hire-proof-card { background: var(--bg-elevated); border: 1px solid var(--border-strong); padding: 16px; }
+.hire-proof-card > div:first-child { display: flex; flex-direction: column; gap: 7px; }
+.hire-proof-card span, .hire-proof-card p { color: var(--text-muted); font-size: 10px; }
+.hire-proof-card p { margin: 10px 0; }
+.hire-proof-card > div:last-child { display: flex; flex-wrap: wrap; gap: 14px; }
+.hire-proof-card a { align-items: center; color: var(--primary); display: inline-flex; font-size: 10px; gap: 4px; }
 .commerce-summary { border: 1px solid var(--border); display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 22px; }
 .commerce-summary > div { border-right: 1px solid var(--border); display: grid; gap: 7px; min-height: 84px; padding: 16px; }
 .commerce-summary > div:last-child { border-right: 0; }
@@ -811,6 +818,7 @@ dd { margin: 0; color: var(--text); }
   .commerce-summary > div:nth-child(-n+2) { border-bottom: 1px solid var(--border); }
   .yield-proof-source { align-items: start; grid-template-columns: auto 1fr; }
   .yield-proof-source a, .yield-proof-source code { grid-column: 2; }
+  .hire-proof-grid { grid-template-columns: 1fr; }
   .commerce-steps article { align-items: start; grid-template-columns: 34px 1fr; padding: 18px 0; }
   .commerce-steps article > .button, .commerce-step-state { grid-column: 2; }
   .commerce-steps article > .button { width: 100%; }

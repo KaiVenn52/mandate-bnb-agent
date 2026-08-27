@@ -1,49 +1,49 @@
 {
   "generated_at_utc": "2026-08-26T18:31:48.437941+00:00",
-  "benchmark_version": "mandate-aar-1.1.0-hire-backed",
   "network": "BSC Testnet",
   "chain_id": 97,
+  "commerce_contract": "0xa206c0517B6371C6638CD9e4a42Cc9f02A33B0DE",
+  "router_contract": "0xD7d36D66d2F1B608A0F943f722D27e3744f66F25",
   "client": "0xD30BbB80c863c9B94622EF92337AaD65148D2EC3",
   "provider": "0x34ABe1790E6d67E25c7616799C2C6B7336932c7e",
-  "rows": [
+  "qualification": "3 / 3 independent ERC-8183 hires completed",
+  "service_cost": "0.1 test U per task; test token has no claimed fiat value",
+  "hires": [
     {
       "task_id": "A-01",
-      "task": "Stablecoin yield route selection",
-      "category": "Yield optimisation",
-      "human_seconds": 290.004,
-      "agent_seconds": 2.9863786,
-      "time_saved_seconds": 287.0176214,
-      "speedup_x": 97.10891981344898,
-      "human_quality": 2,
-      "agent_quality": 10,
-      "quality_delta": 8,
-      "input_sha256": "2150d74ff5e31d5d420eff2435cd6dc8030845c5bc84db68fd4af02a817aee21",
       "job_id": 642,
       "agent_id": 1806,
+      "category": "yield",
+      "chain_id": 97,
+      "client": "0xD30BbB80c863c9B94622EF92337AaD65148D2EC3",
+      "provider": "0x34ABe1790E6d67E25c7616799C2C6B7336932c7e",
       "budget_test_u": "0.1",
+      "budget_wei": 100000000000000000,
+      "status": "COMPLETED",
+      "deliverable": "0xcd85db6245cac466a8223563ad23cf659504ad63162172bcbd6ac1cd3177b28c",
+      "submitted_at_unix": 1787672189,
       "deliverable_url": "https://mandate-bnb-agent.vercel.app/api/benchmarks/A-01/hire-deliverable/642",
       "known_transactions": {
         "create": {
           "transaction_hash": "0x65075a013ca176bf1e4c6abedd4de61bf94140ad227ca9cd100c298aa98b19df",
           "explorer_url": "https://testnet.bscscan.com/tx/0x65075a013ca176bf1e4c6abedd4de61bf94140ad227ca9cd100c298aa98b19df"
         }
-      }
+      },
+      "gas_cost_note": "Lifecycle gas was paid in valueless BSC Testnet tBNB; complete per-job gas aggregation was not retained and no fiat conversion is claimed."
     },
     {
       "task_id": "A-02",
-      "task": "BNB/USDT grid plan safety review",
-      "category": "Trading",
-      "human_seconds": 233.65,
-      "agent_seconds": 0.4795994,
-      "time_saved_seconds": 233.1704006,
-      "speedup_x": 487.1774234913555,
-      "human_quality": 4,
-      "agent_quality": 10,
-      "quality_delta": 6,
-      "input_sha256": "153f5f9a569877b6494132642c256c45ad864e1a14ae5263fca11827ac2c7eb2",
       "job_id": 644,
       "agent_id": 1805,
+      "category": "grid",
+      "chain_id": 97,
+      "client": "0xD30BbB80c863c9B94622EF92337AaD65148D2EC3",
+      "provider": "0x34ABe1790E6d67E25c7616799C2C6B7336932c7e",
       "budget_test_u": "0.1",
+      "budget_wei": 100000000000000000,
+      "status": "COMPLETED",
+      "deliverable": "0x001531e1eed3993023f612bf3c84a8cb5f4766abbabe482ae0606261ca8a2043",
+      "submitted_at_unix": 1787741137,
       "deliverable_url": "https://mandate-bnb-agent.vercel.app/api/benchmarks/A-02/hire-deliverable/644",
       "known_transactions": {
         "create": {
@@ -58,23 +58,22 @@
           "transaction_hash": "0x110a45c0e374ab9297143a0dd428850141e29732bca5c7f678dbe0af9d88f1a9",
           "explorer_url": "https://testnet.bscscan.com/tx/0x110a45c0e374ab9297143a0dd428850141e29732bca5c7f678dbe0af9d88f1a9"
         }
-      }
+      },
+      "gas_cost_note": "Lifecycle gas was paid in valueless BSC Testnet tBNB; complete per-job gas aggregation was not retained and no fiat conversion is claimed."
     },
     {
       "task_id": "A-03",
-      "task": "Venus health-factor intervention",
-      "category": "Security / risk monitoring",
-      "human_seconds": 226.7,
-      "agent_seconds": 0.4777266,
-      "time_saved_seconds": 226.2222734,
-      "speedup_x": 474.53920296671777,
-      "human_quality": 8,
-      "agent_quality": 10,
-      "quality_delta": 2,
-      "input_sha256": "a398c50ddcc3cc105b602e7052e5213eef35f8f6bbaff69a7cde11047f5bc27e",
       "job_id": 666,
       "agent_id": 1807,
+      "category": "health",
+      "chain_id": 97,
+      "client": "0xD30BbB80c863c9B94622EF92337AaD65148D2EC3",
+      "provider": "0x34ABe1790E6d67E25c7616799C2C6B7336932c7e",
       "budget_test_u": "0.1",
+      "budget_wei": 100000000000000000,
+      "status": "COMPLETED",
+      "deliverable": "0x8e5b086a607911722b48226b5516a7594afc300b493ffdcc4e324a881a36a64f",
+      "submitted_at_unix": 1787748567,
       "deliverable_url": "https://mandate-bnb-agent.vercel.app/api/benchmarks/A-03/hire-deliverable/666",
       "known_transactions": {
         "create": {
@@ -85,24 +84,8 @@
           "transaction_hash": "0xc939266cea840943359333fe83d99db50c91799bc9c64e2acbef297a083a13d1",
           "explorer_url": "https://testnet.bscscan.com/tx/0xc939266cea840943359333fe83d99db50c91799bc9c64e2acbef297a083a13d1"
         }
-      }
+      },
+      "gas_cost_note": "Lifecycle gas was paid in valueless BSC Testnet tBNB; complete per-job gas aggregation was not retained and no fiat conversion is claimed."
     }
-  ],
-  "summary": {
-    "paired_tasks": 3,
-    "independent_completed_hires": 3,
-    "median_human_seconds": 233.65,
-    "median_agent_seconds": 0.4795994,
-    "median_time_saved_seconds": 233.1704006,
-    "median_speedup_x": 474.53920296671777,
-    "average_quality_delta_points": 5.333333333333333,
-    "service_cost": "0.1 test U per task; no fiat value claimed",
-    "gas_cost": "Paid in testnet tBNB; complete lifecycle gas not aggregated; no fiat value claimed"
-  },
-  "limitations": [
-    "One human operator and three frozen structured tasks; results are not a population estimate.",
-    "Agent time is a production API round trip after hire verification; human time includes reading and composition.",
-    "Test U and tBNB have no claimed fiat value; full lifecycle gas was not aggregated.",
-    "The experiment measures task execution, not real-capital profitability."
   ]
 }

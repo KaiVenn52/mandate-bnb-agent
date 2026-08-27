@@ -38,14 +38,17 @@
     ]
   },
   "termix": {
+    "qualification": "3 / 3 independent ERC-8183 hires completed; Job #506 is retained only as an earlier same-wallet mechanics proof",
+    "independent_hire_inventory": "https://mandate-bnb-agent.vercel.app/evidence/termix/onchain-hires.json",
     "report_url": "https://mandate-bnb-agent.vercel.app/evidence/MANDATE-Agent-Advantage-Report.pdf",
     "paired_tasks": 3,
     "includes_trading_task": true,
     "median_human_seconds": 233.65,
-    "median_agent_seconds": 0.2718,
-    "median_speedup_x": 866.6543,
+    "median_agent_seconds": 0.4795994,
+    "median_speedup_x": 474.5392,
     "average_quality_lift_points": 5.3333,
-    "observed_cash_cost_usd": 0,
+    "service_cost": "0.1 test U per independent task; no fiat value claimed",
+    "gas_cost": "testnet tBNB; complete lifecycle gas not aggregated; no fiat value claimed",
     "actual_outputs": [
       {"task_id":"A-01","human":"https://mandate-bnb-agent.vercel.app/evidence/termix/raw/A-01-baseline.json","agent":"https://mandate-bnb-agent.vercel.app/evidence/termix/raw/A-01-agent.json"},
       {"task_id":"A-02","human":"https://mandate-bnb-agent.vercel.app/evidence/termix/raw/A-02-baseline.json","agent":"https://mandate-bnb-agent.vercel.app/evidence/termix/raw/A-02-agent.json","verification":"https://mandate-bnb-agent.vercel.app/evidence/termix/raw/A-02-verification.json"},

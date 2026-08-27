@@ -3,7 +3,7 @@
   "benchmark_version": "mandate-aar-1.0.0",
   "agent_id": 1806,
   "input_sha256": "2150d74ff5e31d5d420eff2435cd6dc8030845c5bc84db68fd4af02a817aee21",
-  "server_compute_ms": 0.0239,
+  "server_compute_ms": 0.0286,
   "quality_score": 10,
   "quality_max": 10,
   "output": {
@@ -21,6 +21,15 @@
     ],
     "recommendation": "Select lista-usdt: highest net APY among routes that satisfy every hard constraint."
   },
-  "client_roundtrip_ms": 271.8,
-  "recorded_at_utc": "2026-08-12T05:00:29.516Z"
+  "marketplace_hire": {
+    "chain_id": 97,
+    "job_id": 642,
+    "client": "0xD30BbB80c863c9B94622EF92337AaD65148D2EC3",
+    "provider": "0x34ABe1790E6d67E25c7616799C2C6B7336932c7e",
+    "budget_wei": 100000000000000000,
+    "status": 3,
+    "deliverable_url": "https://mandate-bnb-agent.vercel.app/api/benchmarks/A-01/hire-deliverable/642"
+  },
+  "client_roundtrip_ms": 2986.3786,
+  "recorded_at_utc": "2026-08-26T18:25:37.048529+00:00"
 }
