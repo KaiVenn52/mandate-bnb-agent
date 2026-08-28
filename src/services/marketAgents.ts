@@ -1,3 +1,5 @@
+import { apiError } from './apiError'
+
 export type LiveMarket = {
   pair_address: string
   price_usd: number
@@ -32,6 +34,29 @@ export type MarketAgentEvidence = {
   deliverable_sha256: string
 }
 
+export type GridTrackRecord = {
+  schema: string
+  label: string
+  source: { provider: string; symbol: string; interval: string; url: string; closed_candles: number }
+  window: { start_utc: string; end_utc: string; sessions: number; session_hours: number }
+  policy: { capital_usd: number; grid_levels: number; adaptive_half_width_pct: { formula: string; observed_min: number; observed_max: number }; hard_stop_pct: number; fee_pct_per_leg: number; execution: string }
+  record: {
+    traded_sessions: number
+    winning_sessions: number
+    losing_sessions: number
+    session_win_rate_pct: number | null
+    net_pnl_usd: number
+    net_return_pct: number
+    max_session_drawdown_pct: number
+    hard_stop_sessions: number
+    closed_grid_cycles: number
+    fees_usd: number
+  }
+  limitations: string[]
+  generated_at_utc: string
+  evidence_sha256: string
+}
+
 const apiBase = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '')
 
 async function post(path: string, body: object): Promise<MarketAgentEvidence> {
@@ -40,7 +65,7 @@ async function post(path: string, body: object): Promise<MarketAgentEvidence> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
-  if (!response.ok) throw new Error((await response.text()) || `Live agent failed (${response.status})`)
+  if (!response.ok) throw await apiError(response, 'Live agent failed')
   return response.json() as Promise<MarketAgentEvidence>
 }
 
@@ -57,3 +82,9 @@ export const runGridAgent = (capitalUsd: number) => post('/agents/grid/run', {
   max_orders_per_day: 12,
   grid_levels: 7,
 })
+
+export async function fetchGridTrackRecord(): Promise<GridTrackRecord> {
+  const response = await fetch(`${apiBase}/agents/grid/track-record?days=30`)
+  if (!response.ok) throw await apiError(response, 'Grid paper record failed')
+  return response.json() as Promise<GridTrackRecord>
+}

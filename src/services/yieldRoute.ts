@@ -1,3 +1,5 @@
+import { apiError } from './apiError'
+
 export type YieldRoute = {
   pool_id: string
   protocol: string
@@ -84,9 +86,6 @@ export async function runYieldRouteAgent(input: {
       max_actions_per_week: input.maxActionsPerWeek,
     }),
   })
-  if (!response.ok) {
-    const body = await response.text()
-    throw new Error(body || `Live YieldRoute failed (${response.status})`)
-  }
+  if (!response.ok) throw await apiError(response, 'Live YieldRoute failed')
   return response.json() as Promise<YieldRouteEvidence>
 }

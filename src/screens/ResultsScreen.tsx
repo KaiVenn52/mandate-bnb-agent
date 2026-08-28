@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
@@ -6,44 +6,37 @@ import {
   ArrowLeft,
   ArrowRight,
   Calculator,
-  Check,
   CheckCircle2,
   ChevronRight,
-  Clock3,
   ExternalLink,
   FileCheck2,
   RefreshCw,
   ShieldCheck,
-  Sparkles,
 } from 'lucide-react'
 import { categorySheets } from '../data'
 import { categories, categoryOrder, getCategory } from '../catalog'
 import { fetchRegistrySnapshot, searchRegistryAgents } from '../services/agentRegistry'
-import { loadMandateDraft } from '../services/mandateDraft'
+import { loadMandateDraft, parseMandate } from '../services/mandateDraft'
 import { matchAgents } from '../services/agentMatching'
 import { LiveYieldRoute } from '../components/LiveYieldRoute'
 import { LiveMarketAgent } from '../components/LiveMarketAgent'
 import { LiveVenusAgent } from '../components/LiveVenusAgent'
 import { RegistryDiscoveryPanel } from '../components/RegistryDiscoveryPanel'
 
-type ShadowStatus = 'idle' | 'running' | 'complete'
-
-const shadowSteps = ['Simulating', 'Tracking', 'Analysing', 'Results ready']
-
-function capitalisedAdvantage(categoryId: string, advantage: string, capitalAmount?: number | null) {
-  if (categoryId !== 'yield' || !capitalAmount) return null
-  const percentage = Number.parseFloat(advantage.replace(/[^0-9.-]/g, ''))
-  if (!Number.isFinite(percentage)) return null
-  const annualValue = capitalAmount * percentage / 100
-  return `+${annualValue.toLocaleString('en-US', { maximumFractionDigits: 2 })} USDT / year on this mandate`
-}
+const hireActivity = {
+  grid: { hash: '0x110a45c0e374ab9297143a0dd428850141e29732bca5c7f678dbe0af9d88f1a9', label: 'Completed ERC-8183 Job #644' },
+  yield: { hash: '0x65075a013ca176bf1e4c6abedd4de61bf94140ad227ca9cd100c298aa98b19df', label: 'Completed ERC-8183 Job #642' },
+  health: { hash: '0xc939266cea840943359333fe83d99db50c91799bc9c64e2acbef297a083a13d1', label: 'Completed ERC-8183 Job #666' },
+} as const
 
 export function ResultsScreen() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const category = getCategory(searchParams.get('category'))
-  const draft = loadMandateDraft()
-  const mandateSummary = draft?.categoryId === category.id ? draft.summary : category.summary
+  const savedDraft = loadMandateDraft()
+  const isSavedMandate = savedDraft?.categoryId === category.id
+  const draft = isSavedMandate ? savedDraft : parseMandate(category.prompt, category.id)
+  const mandateSummary = draft.summary
   // Only identities backed by an onchain registration and a callable MANDATE
   // service are inventory. The remaining catalog rows are benchmark fixtures,
   // never marketplace recommendations.
@@ -52,45 +45,26 @@ export function ResultsScreen() {
   const eligibleCount = agents.filter((agent) => agent.status === 'satisfies').length
   const noEligibleAgents = eligibleCount === 0
   const [selectedId, setSelectedId] = useState(agents[0].id)
-  const [shadowStatus, setShadowStatus] = useState<ShadowStatus>('idle')
-  const [progress, setProgress] = useState(0)
   const effectiveSelectedId = agents.some((agent) => agent.id === selectedId) ? selectedId : agents[0].id
   const selected = agents.find((agent) => agent.id === effectiveSelectedId) ?? agents[0]
-  const personalisedAnnualised = capitalisedAdvantage(category.id, selected.shadow.advantage, draft?.constraints.capitalAmount)
   const linkedActivity = selected.registrationTxHash
     ? [{ hash: selected.registrationTxHash, label: `ERC-8004 Agent #${selected.id} registration` }]
     : []
+  const completedHire = category.id in hireActivity ? hireActivity[category.id as keyof typeof hireActivity] : null
+  if (completedHire) linkedActivity.push(completedHire)
   const registry = useQuery({
     queryKey: ['erc-8004-registry-snapshot'],
     queryFn: ({ signal }) => fetchRegistrySnapshot(signal),
     staleTime: 60_000,
     retry: 1,
   })
-  const discoveryQuery = draft?.categoryId === category.id
-    ? `${category.label}. ${draft.prompt}`
-    : `${category.label}. ${category.description}`
+  const discoveryQuery = `${category.label}. ${draft.prompt}`
   const discoveries = useQuery({
     queryKey: ['erc-8004-semantic-search', category.id, discoveryQuery],
     queryFn: ({ signal }) => searchRegistryAgents(discoveryQuery, signal),
     staleTime: 5 * 60_000,
     retry: 1,
   })
-
-  useEffect(() => {
-    if (shadowStatus !== 'running') return
-    const timers = [1, 2, 3, 4].map((step) =>
-      window.setTimeout(() => {
-        setProgress(step)
-        if (step === 4) setShadowStatus('complete')
-      }, step * 520),
-    )
-    return () => timers.forEach(window.clearTimeout)
-  }, [shadowStatus])
-
-  const runShadow = () => {
-    setProgress(0)
-    setShadowStatus('running')
-  }
 
   return (
     <section className="results-screen page-gutter">
@@ -116,8 +90,6 @@ export function ResultsScreen() {
             type="button"
             onClick={() => {
               setSelectedId(categories[id].agents[0].id)
-              setShadowStatus('idle')
-              setProgress(0)
               setSearchParams({ category: id })
             }}
           >
@@ -127,14 +99,12 @@ export function ResultsScreen() {
         ))}
       </nav>
 
-      {draft?.categoryId === category.id ? (
         <section className="personalized-match" aria-label="Active matching constraints">
-          <div><small>Matching this mandate</small><strong>{draft.fields[1].value}</strong></div>
+          <div><small>{isSavedMandate ? 'Matching your saved mandate' : 'Official category template'}</small><strong>{draft.fields[1].value}</strong></div>
           <div><small>Risk ceiling</small><strong>{draft.constraints.riskMax}</strong></div>
           <div><small>Leverage ceiling</small><strong>{draft.constraints.leverageMax === 0 ? 'None' : `${draft.constraints.leverageMax}×`}{!draft.constraints.leverageSpecified ? ' · safety default' : ''}</strong></div>
           <div><small>Action ceiling</small><strong>{draft.constraints.actionCap}/{draft.constraints.actionPeriod}{!draft.constraints.actionCapSpecified ? ' · safety default' : ''}</strong></div>
         </section>
-      ) : null}
 
       <div className="results-layout">
         <div className="results-main">
@@ -196,14 +166,12 @@ export function ResultsScreen() {
                   key={agent.id}
                   onClick={() => {
                     setSelectedId(agent.id)
-                    setShadowStatus('idle')
-                    setProgress(0)
                   }}
                 >
                   <span className="agent-identity">
                     <span className="radio-mark" aria-hidden="true" />
                     <span>
-                      <small>{agent.status === 'violates' ? 'Excluded' : agent.recommendation} · {agent.fit}% personalised fit</small>
+                      <small>{agent.status === 'violates' ? 'Excluded' : agent.recommendation} · {agent.fit}% constraint match</small>
                       <strong>{agent.name}</strong>
                       <em>{agent.matchReason}</em>
                       {agent.estimatedOutcome ? <em className="agent-outcome">{agent.estimatedOutcome}</em> : null}
@@ -228,92 +196,47 @@ export function ResultsScreen() {
             })}
           </div>
 
-          {!noEligibleAgents ? <section className="shadow-panel" aria-labelledby="shadow-title">
+          {!noEligibleAgents ? <section className="shadow-panel verification-panel" aria-labelledby="verification-title">
             <div className="shadow-heading">
               <div>
-                <h2 id="shadow-title">Shadow Mode comparison</h2>
-                <p>Read-only simulation. No funds move.</p>
+                <h2 id="verification-title">Verify before you hire</h2>
+                <p>MANDATE does not invent performance. Run the live capability, inspect its source and hash, then review permissions.</p>
               </div>
-              <button className="text-button muted" type="button">Why am I seeing this?</button>
+              <span className="verified-label">NO PROFIT CLAIM</span>
             </div>
-
-            {selected.status === 'violates' ? (
-              <div className="inline-error">
-                <AlertTriangle size={20} aria-hidden="true" />
-                <div><strong>Shadow run blocked</strong><p>{selected.violation} Select an eligible agent to continue.</p></div>
-              </div>
-            ) : (
-              <>
-                <div className="comparison-grid">
-                  <div className="comparison-label" />
-                  <div className="comparison-head"><small>Selected agent</small><strong>{selected.name}</strong></div>
-                  <div className="comparison-head"><small>Baseline</small><strong>Do nothing</strong></div>
-                  <div className="comparison-advantage" />
-
-                  <span className="comparison-label">{category.primaryMetricLabel}<small>{category.primaryMetricSupport}</small></span>
-                  <strong className="mono comparison-number">{selected.shadow.primary}</strong>
-                  <strong className="mono comparison-number">{selected.shadow.baseline}</strong>
-                  <div className="advantage-cell"><small>Agent advantage</small><strong className="mono positive">{selected.shadow.advantage}</strong></div>
-
-                  <span className="comparison-label">Execution cost<small>Estimated</small></span>
-                  <span className="mono">{selected.shadow.cost}</span><span className="mono">{selected.shadow.baselineCost}</span>
-                  <span className="mono muted">{personalisedAnnualised ?? selected.shadow.annualised ?? 'Within configured budget'}</span>
-
-                  <span className="comparison-label">{category.activityLabel}<small>{category.activitySupport}</small></span>
-                  <span className="mono">{selected.shadow.activity}</span><span className="mono">{selected.shadow.baselineActivity}</span><span />
-
-                  <span className="comparison-label">Risk exposure<small>Worst-case simulation</small></span>
-                  <span className="mono">{selected.shadow.risk}</span><span className="mono">{selected.shadow.baselineRisk}</span>
-                  <span className="within-limit"><CheckCircle2 size={16} /> Within your mandate</span>
-                </div>
-
-                <div className="shadow-actionbar">
-                  <div className={`shadow-progress ${shadowStatus}`} aria-live="polite">
-                    {shadowSteps.map((step, index) => (
-                      <div className={progress > index ? 'done' : progress === index && shadowStatus === 'running' ? 'active' : ''} key={step}>
-                        <span>{progress > index ? <Check size={14} /> : index + 1}</span>
-                        <small>{step}</small>
-                      </div>
-                    ))}
-                  </div>
-                  {shadowStatus === 'complete' ? (
-                    <div className="shadow-actions">
-                      <button className="button button-secondary compact-button" type="button" onClick={runShadow}><RefreshCw size={16} /> Run again</button>
-                      <button className="button button-primary compact-button" type="button" onClick={() => navigate(`/activate?category=${category.id}&agent=${selected.id}`)}>
-                        {selected.providerAddress ? 'Review permissions' : 'Preview sample permissions'} <ArrowRight size={16} />
-                      </button>
-                    </div>
-                  ) : (
-                    <button className="button button-primary shadow-run-button" type="button" onClick={runShadow} disabled={shadowStatus === 'running'} aria-busy={shadowStatus === 'running'}>
-                      <Sparkles size={17} aria-hidden="true" />
-                      {shadowStatus === 'running' ? 'Running shadow…' : 'Run in Shadow Mode'}
-                    </button>
-                  )}
-                </div>
-              </>
-            )}
+            <div className="verification-gates">
+              <div><CheckCircle2 size={17} /><span><small>01 · Identity</small><strong>ERC-8004 Agent #{selected.id}</strong></span></div>
+              <div><CheckCircle2 size={17} /><span><small>02 · Limits</small><strong>{selected.fit}% constraint match</strong></span></div>
+              <div><RefreshCw size={17} /><span><small>03 · Capability</small><strong>Run live below</strong></span></div>
+              <div><ShieldCheck size={17} /><span><small>04 · Commerce</small><strong>0.1 test U escrow</strong></span></div>
+            </div>
+            <div className="shadow-actionbar">
+              <button className="button button-secondary compact-button" type="button" onClick={() => document.getElementById('live-capability')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}><RefreshCw size={16} /> Run live capability</button>
+              <button className="button button-primary compact-button" type="button" onClick={() => navigate(`/activate?category=${category.id}&agent=${selected.id}`)}>Review permissions <ArrowRight size={16} /></button>
+            </div>
           </section> : null}
-          {category.id === 'yield' && draft?.categoryId === 'yield' ? <LiveYieldRoute draft={draft} /> : null}
-          {category.id === 'rebalancing' && draft?.categoryId === 'rebalancing' ? <LiveMarketAgent categoryId="rebalancing" draft={draft} /> : null}
-          {category.id === 'grid' && draft?.categoryId === 'grid' ? <LiveMarketAgent categoryId="grid" draft={draft} /> : null}
-          {category.id === 'health' && draft?.categoryId === 'health' ? <LiveVenusAgent /> : null}
+          <div id="live-capability">
+            {category.id === 'yield' ? <LiveYieldRoute draft={draft} /> : null}
+            {category.id === 'rebalancing' ? <LiveMarketAgent categoryId="rebalancing" draft={draft} /> : null}
+            {category.id === 'grid' ? <LiveMarketAgent categoryId="grid" draft={draft} /> : null}
+            {category.id === 'health' ? <LiveVenusAgent /> : null}
+          </div>
         </div>
 
         <aside className="evidence-sidebar" aria-label="Evidence for selected agent">
-          <div className="sidebar-heading"><h2>Evidence</h2><span className="verified-label">Mixed sources</span></div>
+          <div className="sidebar-heading"><h2>Evidence</h2><span className="verified-label">VERIFIABLE SOURCES</span></div>
           <div className="provenance-note">
             <strong>Evidence provenance</strong>
-            <p>Registry totals are live ERC-8004 data. Candidate performance is a labelled demo dataset until a wallet-funded mandate produces receipts.</p>
+            <p>Identity, market reads and completed hires link to public sources. No sample APY, PnL, win rate or capital history is used to rank this provider.</p>
           </div>
           <section className="evidence-section">
             <h3>Evidence Passport</h3>
             {[
-              [`Identity verified · Agent #${selected.id}`, selected.providerAddress ? 'ONCHAIN VERIFIED' : 'DEMO SAMPLE', ShieldCheck],
-              [`${selected.completedMandates} completed mandates`, 'DEMO SAMPLE', FileCheck2],
-              [`${selected.disputed} disputed`, 'DEMO SAMPLE', CheckCircle2],
-              [`$${selected.capitalObserved.toLocaleString()} capital observed`, 'DEMO SAMPLE', Calculator],
-              [`Last active ${selected.lastActive}`, 'DEMO SAMPLE', Clock3],
-              [`Median execution ${selected.medianExecutionSeconds} sec`, 'DEMO SAMPLE', Clock3],
+              [`Identity verified · Agent #${selected.id}`, 'ONCHAIN VERIFIED', ShieldCheck],
+              ['Public production endpoint', 'CALLABLE', CheckCircle2],
+              ['Live BSC or market data', 'SOURCE LINKED', FileCheck2],
+              ['No autonomous signing key', 'READ ONLY', ShieldCheck],
+              [completedHire ? completedHire.label : 'No completed hire claimed', completedHire ? 'ONCHAIN VERIFIED' : 'NOT CLAIMED', FileCheck2],
             ].map(([label, source, Icon]) => {
               const EvidenceIcon = Icon as typeof ShieldCheck
               return (
@@ -326,10 +249,10 @@ export function ResultsScreen() {
             })}
           </section>
           <section className="evidence-section calculation-rail">
-            <h3>Calculation breakdown</h3>
-            <div><Calculator size={16} /><span>{category.primaryMetricLabel}</span><strong className="mono">{selected.shadow.primary}</strong></div>
-            <div><RefreshCw size={16} /><span>Execution cost</span><strong className="mono">{selected.shadow.cost}</strong></div>
-            <div><ShieldCheck size={16} /><span>Risk exposure</span><strong>{selected.shadow.risk}</strong></div>
+            <h3>Pre-hire truth checks</h3>
+            <div><Calculator size={16} /><span>Performance</span><strong className="mono">LIVE RUN REQUIRED</strong></div>
+            <div><RefreshCw size={16} /><span>Network fee</span><strong className="mono">WALLET QUOTE</strong></div>
+            <div><ShieldCheck size={16} /><span>Authority</span><strong>READ ONLY</strong></div>
           </section>
           <section className="evidence-section">
             <h3>Linked activity</h3>
@@ -350,7 +273,7 @@ export function ResultsScreen() {
             <h2 id="category-benchmarks-title">Category-specific evidence sheets</h2>
             <p>Each agent is judged on the outcomes and failure modes that matter for its work—not a generic star rating.</p>
           </div>
-          <span className="mono muted">SAMPLE DATA SHAPE</span>
+          <span className="mono muted">LIVE SOURCES · NO PROFIT CLAIMS</span>
         </div>
         <div className="category-sheet-grid">
           {categorySheets.map((sheet) => {
@@ -359,7 +282,7 @@ export function ResultsScreen() {
             <article className={`category-sheet ${category.id === flowCategory ? 'is-active' : ''}`} key={sheet.category}>
               <div className="category-sheet-title">
                 <div><small>{sheet.eyebrow}</small><h3>{sheet.agent}</h3></div>
-                <strong className="mono">{sheet.fit}% <span>FIT</span></strong>
+                <strong className="mono">{sheet.fit}% <span>CONSTRAINTS</span></strong>
               </div>
               <p className="category-mandate">{sheet.mandate}</p>
               <dl>
@@ -373,8 +296,6 @@ export function ResultsScreen() {
               <div className="category-risk"><ShieldCheck size={15} /><p><strong>Risk gate</strong>{sheet.riskRule}</p></div>
               <button className="text-button category-sheet-link" type="button" onClick={() => {
                 setSelectedId(categories[flowCategory].agents[0].id)
-                setShadowStatus('idle')
-                setProgress(0)
                 setSearchParams({ category: flowCategory })
               }}>Open full {sheet.eyebrow.toLowerCase()} flow <ArrowRight size={14} /></button>
             </article>

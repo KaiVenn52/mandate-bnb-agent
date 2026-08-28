@@ -1,3 +1,5 @@
+import { apiError } from './apiError'
+
 const API_BASE = import.meta.env.VITE_MANDATE_API_BASE ?? (import.meta.env.PROD ? '/api' : 'http://127.0.0.1:8003')
 
 export type GatewayHealth = {
@@ -5,6 +7,7 @@ export type GatewayHealth = {
   network: string
   live: boolean
   liveData?: boolean
+  autonomousExecution?: boolean
   executionMode?: string
   sdk: string
   standards: string[]
@@ -45,9 +48,6 @@ export async function previewJob(input: {
     }),
   })
 
-  if (!response.ok) {
-    const detail = await response.text()
-    throw new Error(detail || `Gateway preview returned ${response.status}`)
-  }
+  if (!response.ok) throw await apiError(response, 'Gateway preview failed')
   return response.json() as Promise<JobPreview>
 }

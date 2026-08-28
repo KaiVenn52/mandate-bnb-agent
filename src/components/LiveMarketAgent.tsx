@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { Activity, CheckCircle2, Download, ExternalLink, Radar, ShieldAlert } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import type { CategoryId } from '../catalog'
 import type { MandateDraft } from '../services/mandateDraft'
-import { runGridAgent, runRebalancingAgent, type MarketAgentEvidence } from '../services/marketAgents'
+import { fetchGridTrackRecord, runGridAgent, runRebalancingAgent, type GridTrackRecord, type MarketAgentEvidence } from '../services/marketAgents'
 
 type SupportedCategory = Extract<CategoryId, 'rebalancing' | 'grid'>
 
@@ -20,6 +21,7 @@ const usd = (value?: number) => value == null ? '—' : new Intl.NumberFormat('e
 
 export function LiveMarketAgent({ categoryId, draft }: { categoryId: SupportedCategory; draft: MandateDraft }) {
   const [evidence, setEvidence] = useState<MarketAgentEvidence | null>(null)
+  const [trackRecord, setTrackRecord] = useState<GridTrackRecord | null>(null)
   const [error, setError] = useState('')
   const [running, setRunning] = useState(false)
   const capital = draft.constraints.capitalAmount
@@ -30,7 +32,16 @@ export function LiveMarketAgent({ categoryId, draft }: { categoryId: SupportedCa
     setError('')
     setRunning(true)
     try {
-      setEvidence(await (isGrid ? runGridAgent(capital) : runRebalancingAgent(capital)))
+      if (isGrid) {
+        const [live, historical] = await Promise.all([
+          runGridAgent(capital),
+          fetchGridTrackRecord().catch(() => null),
+        ])
+        setEvidence(live)
+        setTrackRecord(historical)
+      } else {
+        setEvidence(await runRebalancingAgent(capital))
+      }
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'The live market read failed.')
     } finally {
@@ -72,7 +83,17 @@ export function LiveMarketAgent({ categoryId, draft }: { categoryId: SupportedCa
             <div><dt>Source pool</dt><dd><a href={evidence.market.url} target="_blank" rel="noreferrer">DexScreener / PancakeSwap <ExternalLink size={12} /></a></dd></div>
             <div><dt>Deliverable SHA-256</dt><dd className="mono">{evidence.deliverable_sha256}</dd></div>
           </dl>
-          <div className="yield-evidence-actions"><button className="button button-outline compact-button" type="button" onClick={() => downloadEvidence(evidence)}><Download size={15} /> Download evidence</button><small>Point-in-time analysis. No transaction attempted.</small></div>
+          {isGrid && trackRecord ? <section className="track-record" aria-label="GridPilot historical paper record">
+            <div className="track-record-heading"><div><small>TRANSPARENT TRACK RECORD</small><strong>{trackRecord.label}</strong></div><a href={trackRecord.source.url} target="_blank" rel="noreferrer">Source candles <ExternalLink size={12} /></a></div>
+            <div className="track-record-metrics">
+              <div><small>Window</small><strong>{trackRecord.window.sessions} × 24h</strong><span>{new Date(trackRecord.window.start_utc).toLocaleDateString()}–{new Date(trackRecord.window.end_utc).toLocaleDateString()}</span></div>
+              <div><small>Session win rate</small><strong>{trackRecord.record.session_win_rate_pct == null ? '—' : `${trackRecord.record.session_win_rate_pct}%`}</strong><span>{trackRecord.record.winning_sessions} win · {trackRecord.record.losing_sessions} loss</span></div>
+              <div><small>Max session drawdown</small><strong>{trackRecord.record.max_session_drawdown_pct}%</strong><span>{trackRecord.record.hard_stop_sessions} hard-stop sessions</span></div>
+              <div><small>Paper net return</small><strong>{trackRecord.record.net_return_pct}%</strong><span>Fees included · gas/slippage excluded</span></div>
+            </div>
+            <p>Historical paper test, not realized PnL. BNBUSDT reference candles; no PancakeSwap orders were executed. Hash: <span className="mono">{trackRecord.evidence_sha256}</span></p>
+          </section> : null}
+          <div className="yield-evidence-actions"><div><button className="button button-outline compact-button" type="button" onClick={() => downloadEvidence(evidence)}><Download size={15} /> Download evidence</button><Link className="button button-primary compact-button" to={`/activate?category=${categoryId}&agent=${isGrid ? '1805' : '1804'}`}>Review permissions</Link></div><small>Point-in-time analysis. No transaction attempted.</small></div>
         </>}
       </div>
     </section>

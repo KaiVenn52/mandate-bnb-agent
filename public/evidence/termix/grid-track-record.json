@@ -1,0 +1,56 @@
+{
+  "schema": "mandate.grid-paper-record.v1",
+  "agent": {
+    "erc8004_id": 1805,
+    "name": "GridPilot"
+  },
+  "label": "HISTORICAL PAPER TEST · NOT REALIZED PNL",
+  "source": {
+    "provider": "Binance Data API",
+    "symbol": "BNBUSDT",
+    "interval": "1h",
+    "url": "https://data-api.binance.vision/api/v3/klines?symbol=BNBUSDT&interval=1h",
+    "closed_candles": 719,
+    "fee_source": "PancakeSwap V3 pool 0x172fcD41E0913e95784454622d1c3724f546f849 fee() = 100"
+  },
+  "window": {
+    "start_utc": "2026-07-29T07:00:00+00:00",
+    "end_utc": "2026-08-28T05:59:59.999000+00:00",
+    "sessions": 28,
+    "session_hours": 24
+  },
+  "policy": {
+    "capital_usd": 5000,
+    "grid_levels": 7,
+    "adaptive_half_width_pct": {
+      "formula": "max(1.5, min(4.0, prior_24h_move_pct * 1.4 + 1.0))",
+      "observed_min": 1.5,
+      "observed_max": 4.0
+    },
+    "hard_stop_pct": 5,
+    "fee_pct_per_leg": 0.01,
+    "same_candle_round_trips": "not counted",
+    "execution": "long-only paper grid; daily recenter; closed candles only"
+  },
+  "record": {
+    "traded_sessions": 8,
+    "winning_sessions": 7,
+    "losing_sessions": 1,
+    "session_win_rate_pct": 87.5,
+    "net_pnl_usd": 24.42,
+    "net_return_pct": 0.0174,
+    "max_session_drawdown_pct": 0.7998,
+    "hard_stop_sessions": 0,
+    "closed_grid_cycles": 10,
+    "fees_usd": 3.29
+  },
+  "limitations": [
+    "This is a deterministic historical paper test, not live or realized trading performance.",
+    "The candle source is BNBUSDT reference-market data, not PancakeSwap execution data.",
+    "The evaluation was added after the historical window and is not a pre-committed forward record.",
+    "It excludes slippage, gas, liquidity impact, MEV and intra-candle path ordering.",
+    "A session win rate must not be interpreted as a future-return guarantee."
+  ],
+  "generated_at_utc": "2026-08-28T06:33:57.825397+00:00",
+  "evidence_sha256": "493521ff0f2624dece72b94be31168dbd09f4257f8ea2dafe2b8cb3da634fb82"
+}

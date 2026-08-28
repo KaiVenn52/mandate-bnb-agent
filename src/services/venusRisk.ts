@@ -1,3 +1,5 @@
+import { apiError } from './apiError'
+
 export type VenusRiskEvidence = {
   schema: string
   agent: { erc8004_id: number; name: string }
@@ -47,9 +49,6 @@ export async function runVenusRiskAgent(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ account, minimum_buffer_usd: minimumBufferUsd }),
   })
-  if (!response.ok) {
-    const body = await response.text()
-    throw new Error(body || `Live agent failed (${response.status})`)
-  }
+  if (!response.ok) throw await apiError(response, 'Live agent failed')
   return response.json() as Promise<VenusRiskEvidence>
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Activity, CheckCircle2, Download, ExternalLink, Radar, ShieldAlert } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { isAddress } from 'viem'
 import { useAccount } from 'wagmi'
 import { runVenusRiskAgent, type VenusRiskEvidence } from '../services/venusRisk'
@@ -84,7 +85,7 @@ export function LiveVenusAgent() {
                 <div><dt>Entered markets</dt><dd className="mono">{evidence.observation.entered_market_count}</dd></div>
                 <div><dt>Evidence SHA-256</dt><dd className="mono">{evidence.evidence_sha256}</dd></div>
               </dl>
-              <button className="button button-outline compact-button" type="button" onClick={() => downloadEvidence(evidence)}><Download size={15} /> Download deliverable</button>
+              <div className="yield-evidence-actions"><div><button className="button button-outline compact-button" type="button" onClick={() => downloadEvidence(evidence)}><Download size={15} /> Download deliverable</button><Link className="button button-primary compact-button" to="/activate?category=health&agent=1807">Review permissions</Link></div><small>Pinned-block analysis. No transaction attempted.</small></div>
             </>
           )}
         </div>

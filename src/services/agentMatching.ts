@@ -53,12 +53,11 @@ export function matchAgents(category: CategoryConfig, draft: MandateDraft | null
     if (draft.constraints.protocols.length && !draft.constraints.protocols.some((protocol) => profile.protocols.includes(protocol))) violations.push('none of the allowed protocols are supported by this provider')
     if (weeklyRate(profile.actionRate.count, profile.actionRate.period) > weeklyRate(draft.constraints.actionCap, draft.constraints.actionPeriod) + 0.0001) violations.push(`${profile.actionRate.count}/${profile.actionRate.period} activity exceeds the ${draft.constraints.actionCap}/${draft.constraints.actionPeriod} cap`)
     if (draft.constraints.spendCapUsd !== null && profile.estimatedCostUsd > draft.constraints.spendCapUsd) violations.push(`estimated $${profile.estimatedCostUsd} cost exceeds the $${draft.constraints.spendCapUsd} spend cap`)
-    const apy = category.id === 'yield' ? Number(agent.metrics.netApy?.replace(/[^0-9.-]/g, '') ?? 0) : 0
-    const estimatedOutcome = capital && apy ? `≈ ${(capital * apy / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })} ${draft.constraints.asset}/year at the displayed sample APY` : undefined
-    const reliability = 1 - agent.disputed / Math.max(1, agent.completedMandates)
-    const evidenceCoverage = capital ? Math.min(1, agent.capitalObserved / capital) : 0.5
     const status = violations.length ? 'violates' as const : 'satisfies' as const
-    const fit = status === 'satisfies' ? Math.min(98, Math.round(68 + Math.min(18, apy * 2) + reliability * 8 + evidenceCoverage * 4)) : Math.min(74, Math.round(50 + reliability * 8 + evidenceCoverage * 4))
+    // Fit is constraint compliance only. Performance, reliability and capital
+    // history are not scored until a reviewer runs the live endpoint or opens
+    // a wallet-funded receipt.
+    const fit = Math.max(0, Math.round(((7 - Math.min(7, violations.length)) / 7) * 100))
     const appliedDefaults = [
       !draft.constraints.leverageSpecified ? 'no-leverage default' : null,
       !draft.constraints.actionCapSpecified ? `${draft.constraints.actionCap}/${draft.constraints.actionPeriod} action default` : null,
@@ -70,8 +69,7 @@ export function matchAgents(category: CategoryConfig, draft: MandateDraft | null
       fit,
       status,
       violation: violations.length ? `${violations.join('; ')}.` : undefined,
-      matchReason: violations.length ? `Excluded: ${violations.join('; ')}.` : `Eligible: asset, capital, risk, leverage, protocol, activity and spend checks passed${appliedDefaults.length ? ` (${appliedDefaults.join('; ')})` : ''}.`,
-      estimatedOutcome,
+      matchReason: violations.length ? `Excluded: ${violations.join('; ')}.` : `7/7 encoded constraint checks passed${appliedDefaults.length ? ` (${appliedDefaults.join('; ')})` : ''}. Performance is not inferred.`,
     }
   })
 

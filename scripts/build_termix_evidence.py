@@ -3,11 +3,15 @@ from __future__ import annotations
 import html
 import json
 import statistics
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE = ROOT / "evidence" / "termix"
 PUBLIC = ROOT / "public" / "evidence"
+sys.path.insert(0, str(ROOT / "backend"))
+
+from app.grid_track_record import run_grid_track_record
 
 TASKS = {
     "A-01": ("Stablecoin yield route selection", "Yield optimisation"),
@@ -55,12 +59,13 @@ def build() -> None:
         "service_cost": "0.1 test U per task; no fiat value claimed",
         "gas_cost": "Paid in testnet tBNB; complete lifecycle gas not aggregated; no fiat value claimed",
     }
+    grid_record = run_grid_track_record(30)
     payload = {
         "generated_at_utc": onchain["generated_at_utc"],
         "benchmark_version": "mandate-aar-1.1.0-hire-backed",
         "network": onchain["network"], "chain_id": onchain["chain_id"],
         "client": onchain["client"], "provider": onchain["provider"],
-        "rows": rows, "summary": summary,
+        "rows": rows, "summary": summary, "trading_record": grid_record,
         "limitations": [
             "One human operator and three frozen structured tasks; results are not a population estimate.",
             "Agent time is a production API round trip after hire verification; human time includes reading and composition.",
@@ -72,6 +77,9 @@ def build() -> None:
     (EVIDENCE / "summary.json").write_text(text, encoding="utf-8")
     (EVIDENCE / "artifact.json").write_text(text, encoding="utf-8")
     (PUBLIC / "termix" / "summary.json").write_text(text, encoding="utf-8")
+    grid_text = json.dumps(grid_record, indent=2, ensure_ascii=False) + "\n"
+    (EVIDENCE / "grid-track-record.json").write_text(grid_text, encoding="utf-8")
+    (PUBLIC / "termix" / "grid-track-record.json").write_text(grid_text, encoding="utf-8")
 
     cards = "".join(
         f'<article><small>{r["task_id"]} · Job #{r["job_id"]}</small><h3>{html.escape(r["task"])}</h3>'
@@ -84,8 +92,9 @@ def build() -> None:
 <main><p class="k">TERMIX · FINAL HIRE-BACKED EVIDENCE</p><h1>Agent Advantage Report</h1><p>Three real paired tasks. Three independently hired providers. Three completed ERC-8183 jobs on BSC Testnet.</p>
 <div class="metrics"><div><b>3 / 3</b>completed independent hires</div><div><b>{summary["median_speedup_x"]:.1f}×</b>median per-task speedup</div><div><b>+{summary["average_quality_delta_points"]:.1f}</b>average quality points</div></div>
 <div class="cards">{cards}</div><section><h2>Truthful cost statement</h2><p>Each marketplace job escrowed 0.1 test U. Test U has no claimed fiat value. Gas was paid in BSC Testnet tBNB; complete lifecycle gas was not retained as an aggregate, so this report makes no dollar-cost advantage claim.</p></section>
+<section><h2>GridPilot transparent paper record</h2><p><b>{grid_record["record"]["session_win_rate_pct"]}% session win rate</b> across {grid_record["record"]["traded_sessions"]} traded 24-hour sessions in a {grid_record["window"]["sessions"]}-session window. Paper net return {grid_record["record"]["net_return_pct"]}%; maximum session drawdown {grid_record["record"]["max_session_drawdown_pct"]}%. This is a post-hoc historical paper test using public BNBUSDT candles, not realized PnL or PancakeSwap execution.</p><p><a href="/evidence/termix/grid-track-record.json">Download inputs, policy, limitations and evidence hash</a></p></section>
 <section><h2>Method and limitations</h2><p>Both paths received identical frozen input hashes and a rubric locked before execution. Human timings are browser-measured and self-attested. Agent timings are new hire-gated production round trips; the 2.99-second A-01 cold start is retained. This small controlled benchmark demonstrates workflow advantage, not trading profitability.</p></section>
-<p><a href="/evidence/MANDATE-Agent-Advantage-Report.pdf">Download the reviewed PDF</a> · <a href="/evidence/termix/summary.json">Machine-readable summary</a> · <a href="/evidence/termix/onchain-hires.json">Onchain hire inventory</a></p></main></html>'''
+<p><a href="/evidence/MANDATE-Agent-Advantage-Report.pdf">Download the reviewed PDF</a> · <a href="/evidence/termix/summary.json">Machine-readable summary</a> · <a href="/evidence/termix/grid-track-record.json">Grid paper record</a> · <a href="/evidence/termix/onchain-hires.json">Onchain hire inventory</a></p></main></html>'''
     (EVIDENCE / "agent-advantage-report.html").write_text(report, encoding="utf-8")
     (PUBLIC / "agent-advantage-report.html").write_text(report, encoding="utf-8")
 

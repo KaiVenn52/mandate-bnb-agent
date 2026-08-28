@@ -139,7 +139,7 @@ export function BuilderScreen() {
 
           <div className="builder-proof-strip" aria-label="MANDATE safeguards">
             <span><LockKeyhole size={14} aria-hidden="true" /> Hard limits first</span>
-            <span><ScanSearch size={14} aria-hidden="true" /> Simulate before signing</span>
+            <span><ScanSearch size={14} aria-hidden="true" /> Verify before hiring</span>
             <span><ShieldCheck size={14} aria-hidden="true" /> Onchain receipts</span>
           </div>
         </div>
@@ -148,7 +148,7 @@ export function BuilderScreen() {
           <div className="section-heading">
             <div>
               <h2>{isBuilt ? 'Created mandate' : 'Draft mandate preview'}</h2>
-              <p>{isBuilt ? 'Saved independently from marketplace candidates.' : 'Natural language becomes bounded permissions.'}</p>
+              <p>{isBuilt ? 'Saved independently from marketplace candidates.' : 'Natural language becomes bounded service-hire limits.'}</p>
             </div>
           </div>
           <div className="preview-fields">
@@ -202,8 +202,8 @@ export function BuilderScreen() {
           <div className="bounded-note">
             <CheckCircle2 size={19} aria-hidden="true" />
             <div>
-              <strong>Bounded permissions</strong>
-              <p>Any action outside these limits requires your approval.</p>
+              <strong>Bounded hire requirement</strong>
+              <p>These limits filter providers and cap the ERC-8183 service job. They do not grant trading authority.</p>
             </div>
           </div>
         </aside>
@@ -224,7 +224,7 @@ export function BuilderScreen() {
           <h2>Next: Review {categories[parsed.categoryId].label} agents</h2>
           <p>{categories[parsed.categoryId].description}</p>
         </div>
-        <span>Fit</span><span>Track record</span><span>Risk-adjusted return</span>
+        <span>Constraint match</span><span>Live source</span><span>Hire evidence</span>
       </div>
     </section>
   )

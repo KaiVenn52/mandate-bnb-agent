@@ -17,6 +17,7 @@ from pydantic import BaseModel, Field
 from .benchmarks import BENCHMARK_VERSION, TASKS, public_task, run_agent, score_baseline
 from .market_agents import MarketDataError, run_grid_agent, run_rebalancing_agent
 from .hire_verifier import HireVerificationError, verify_hired_job
+from .grid_track_record import TrackRecordDataError, run_grid_track_record
 from .registry_proxy import RegistryProxyError, fetch_registry
 from .rate_limit import RateLimitMiddleware
 from .venus_agent import ChainReadError, run_venus_risk_agent
@@ -143,8 +144,12 @@ def health() -> dict[str, Any]:
     return {
         "ok": True,
         "network": NETWORK,
-        "live": False,
+        # "live" describes the public service, not autonomous trading authority.
+        # The four endpoints are callable in production and read live BSC/market
+        # data. They deliberately cannot sign or broadcast protocol transactions.
+        "live": True,
         "liveData": True,
+        "autonomousExecution": False,
         "executionMode": "live-read-only; transactional writes guarded",
         "sdk": "bnbagent",
         "standards": ["ERC-8004", "ERC-8183"],
@@ -356,6 +361,15 @@ def grid_run(request: GridRequest) -> dict[str, Any]:
         )
     except MarketDataError as exc:
         raise HTTPException(503, f"Live BNB/USDT market read failed: {exc}") from exc
+
+
+@app.get("/agents/grid/track-record")
+def grid_track_record(days: int = Query(default=30, ge=2, le=30)) -> dict[str, Any]:
+    """Return a transparent historical paper test, never a realized-PnL claim."""
+    try:
+        return run_grid_track_record(days)
+    except TrackRecordDataError as exc:
+        raise HTTPException(503, str(exc)) from exc
 
 
 @app.post("/benchmarks/{task_id}/baseline-score")

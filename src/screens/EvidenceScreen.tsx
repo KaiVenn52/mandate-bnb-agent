@@ -25,7 +25,7 @@ export function EvidenceScreen() {
     <section className="evidence-screen page-gutter">
       <div className="report-heading">
         <div><span className="section-kicker">TERMIX QUALIFIED EVIDENCE · THREE INDEPENDENT ERC-8183 HIRES</span><h1>Agent Advantage Evidence Lab</h1><p>Three frozen tasks were completed by independently hired marketplace agents and compared with the original browser-timed human path. Every agent result is bound to a completed BSC Testnet job.</p></div>
-        <div className="report-actions"><a className="button button-primary" href="/evidence/MANDATE-Agent-Advantage-Report.pdf" target="_blank" rel="noreferrer"><Download size={16} /> Download final report</a></div>
+        <div className="report-actions"><a className="button button-secondary" href="/evidence/termix/grid-track-record.json" target="_blank" rel="noreferrer">Grid track record <ExternalLink size={16} /></a><a className="button button-primary" href="/evidence/MANDATE-Agent-Advantage-Report.pdf" target="_blank" rel="noreferrer"><Download size={16} /> Download final report</a></div>
       </div>
 
       <section className="hire-proof-grid" aria-label="Independent ERC-8183 hire evidence">

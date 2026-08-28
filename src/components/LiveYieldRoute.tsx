@@ -106,7 +106,7 @@ export function LiveYieldRoute({ draft }: { draft: MandateDraft }) {
             <div className="yield-evidence-actions">
               <div>
                 <button className="button button-outline compact-button" type="button" onClick={() => downloadEvidence(evidence)}><Download size={15} /> Download deliverable</button>
-                <Link className="button button-primary compact-button" to="/commerce"><CheckCircle2 size={15} /> Prepare onchain proof</Link>
+                <Link className="button button-primary compact-button" to="/activate?category=yield&agent=1806"><CheckCircle2 size={15} /> Review permissions</Link>
               </div>
               <small>Point-in-time APY, not guaranteed. No transaction was attempted.</small>
             </div>

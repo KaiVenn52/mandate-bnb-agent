@@ -83,6 +83,18 @@ export function ActivateScreen() {
 
   const agentReference = agent.providerAddress ?? `sample:${category.id}:${agent.id}`
   const monogram = agent.name.replace(/[^A-Z]/g, '').slice(0, 2) || agent.name.slice(0, 2).toUpperCase()
+  const serviceMay = [
+    'Read public market and onchain data',
+    'Apply the mandate constraints to its analysis',
+    'Return a hash-verifiable recommendation',
+    'Submit the agreed deliverable to the ERC-8183 job',
+  ]
+  const serviceMayNot = [
+    'Sign or broadcast a DeFi transaction',
+    'Approve, move, withdraw or rebalance user tokens',
+    'Access the user wallet or its private keys',
+    'Claim performance that is not backed by linked evidence',
+  ]
 
   return (
     <section className="activate-screen page-gutter">
@@ -97,7 +109,7 @@ export function ActivateScreen() {
       <div className="activate-heading">
         <div>
           <h1>Review and activate</h1>
-          <p>Grant one agent a bounded onchain mandate. Every permission remains visible.</p>
+          <p>Review a live read-only service, then hire its provider through bounded ERC-8183 escrow. No DeFi trading authority is granted.</p>
         </div>
         {state === 'active' && <span className="live-status"><span className="network-dot" /> PREVIEW ACTIVE · WITHIN LIMITS</span>}
         {state === 'revoked' && <span className="revoked-status">REVOKED</span>}
@@ -122,27 +134,27 @@ export function ActivateScreen() {
             <div className="contract-terms">
               <dl>
                 <div><dt>Goal</dt><dd>{auth.goal}</dd></div>
-                <div><dt>Asset</dt><dd className="mono">{auth.asset}</dd></div>
-                <div><dt>Maximum capital</dt><dd className="mono">{auth.capital}</dd></div>
-                <div><dt>Maximum spend</dt><dd className="mono">{auth.maxSpend}</dd></div>
-                <div><dt>Duration</dt><dd className="mono">{auth.duration}</dd></div>
+                <div><dt>Analysis asset</dt><dd className="mono">{auth.asset}</dd></div>
+                <div><dt>Capital analysed</dt><dd className="mono">{auth.capital}</dd></div>
+                <div><dt>Underlying action ceiling</dt><dd className="mono">{auth.maxSpend}</dd></div>
+                <div><dt>Evaluation horizon</dt><dd className="mono">{auth.duration}</dd></div>
               </dl>
               <dl>
-                <div><dt>Allowed protocols</dt><dd>{auth.protocols}</dd></div>
-                <div><dt>Allowed actions</dt><dd>{auth.actions}</dd></div>
-                <div><dt>Expiry</dt><dd className="mono">{auth.expiry}</dd></div>
-                <div><dt>Control</dt><dd>Revoke anytime</dd></div>
+                <div><dt>Data / protocol scope</dt><dd>{auth.protocols}</dd></div>
+                <div><dt>Recommendation scope</dt><dd>{auth.actions}</dd></div>
+                <div><dt>Service escrow</dt><dd className="mono">0.1 test U</dd></div>
+                <div><dt>Authority</dt><dd>Read and recommend only</dd></div>
               </dl>
             </div>
 
             <div className="permission-columns">
               <div>
-                <h4>This agent may</h4>
-                {auth.may.map((item) => <p key={item}><CheckCircle2 size={16} />{item}</p>)}
+                <h4>This service can</h4>
+                {serviceMay.map((item) => <p key={item}><CheckCircle2 size={16} />{item}</p>)}
               </div>
               <div>
-                <h4>This agent may not</h4>
-                {auth.mayNot.map((item) => <p key={item}><X size={16} />{item}</p>)}
+                <h4>This service cannot</h4>
+                {serviceMayNot.map((item) => <p key={item}><X size={16} />{item}</p>)}
               </div>
             </div>
           </div>
@@ -175,17 +187,17 @@ export function ActivateScreen() {
             <div><dt>Network</dt><dd>BNB Chain Testnet</dd></div>
             <div><dt>Contract</dt><dd className="mono">ERC-8183 gateway</dd></div>
             <div><dt>Function</dt><dd className="mono">prepareJob(…)</dd></div>
-            <div><dt>Gas estimate</dt><dd className="mono">132,416</dd></div>
-            <div><dt>Total cost (max)</dt><dd className="mono">$0.03</dd></div>
+            <div><dt>Service escrow</dt><dd className="mono">0.1 test U</dd></div>
+            <div><dt>Network fee</dt><dd className="mono">Quoted by wallet before each signature</dd></div>
           </dl>
           <div className="simulation-separator" />
           <h3>Wallet & network confirmation</h3>
           <dl>
             <div><dt>Network</dt><dd>Chain ID 97 <CheckCircle2 size={15} /></dd></div>
             <div><dt>Allowance check</dt><dd>Not checked</dd></div>
-            <div><dt>Service spend ceiling</dt><dd className="mono">{auth.maxSpend}</dd></div>
+            <div><dt>Service spend ceiling</dt><dd className="mono">0.1 test U</dd></div>
           </dl>
-          <div className="simulation-note"><ShieldCheck size={18} /><p>The agent cannot exceed these encoded limits. This preview never asks you to sign blind.</p></div>
+            <div className="simulation-note"><ShieldCheck size={18} /><p>The ERC-8183 job cannot exceed these encoded service limits. It does not authorize the agent to trade, withdraw or rebalance your DeFi funds.</p></div>
         </aside>
       </div>
 
@@ -198,10 +210,10 @@ export function ActivateScreen() {
           <div className="live-metrics">
             {[
               ['Capital ceiling', auth.capital, auth.asset],
-              [category.primaryMetricLabel, agent.shadow.primary, category.primaryMetricSupport],
-              ['Baseline', agent.shadow.baseline, 'Same input snapshot'],
-              ['Agent advantage', agent.shadow.advantage, 'vs baseline'],
-              ['Execution cost', agent.shadow.cost, `Limit ${auth.maxSpend}`],
+              ['Provider identity', `Agent #${agent.id}`, 'ERC-8004 on BSC'],
+              ['Service mode', 'Live read-only', 'No autonomous signer'],
+              ['Hire budget', '0.1 test U', 'Exact ERC-8183 escrow'],
+              ['Network fee', 'Wallet quote', 'tBNB testnet gas'],
               ['Expires', auth.duration, auth.expiry],
             ].map(([label, value, support]) => (
               <div key={label}><small>{label}</small><strong className={`mono ${label === 'Agent advantage' ? 'positive' : ''}`}>{value}</strong><span>{support}</span></div>
@@ -226,10 +238,10 @@ export function ActivateScreen() {
               <div className="receipt-heading"><h3>MANDATE PERMISSION PREVIEW</h3><span>NOT BROADCAST</span></div>
               <dl>
                 <div><dt>Agent</dt><dd>{agent.name} · {agent.id}</dd></div>
-                <div><dt>Result</dt><dd className="mono">{agent.shadow.primary}</dd></div>
-                <div><dt>Baseline</dt><dd className="mono">{agent.shadow.baseline}</dd></div>
-                <div><dt>Agent Advantage</dt><dd className="mono positive">{agent.shadow.advantage}</dd></div>
-                <div><dt>Cost</dt><dd className="mono">{agent.shadow.cost}</dd></div>
+                <div><dt>Capability result</dt><dd className="mono">Run live before hiring</dd></div>
+                <div><dt>Performance claim</dt><dd className="mono">None</dd></div>
+                <div><dt>Service authority</dt><dd className="mono positive">Read and recommend</dd></div>
+                <div><dt>Cost</dt><dd className="mono">0.1 test U + wallet gas quote</dd></div>
                 <div><dt>Job</dt><dd className="mono">Not created</dd></div>
                 <div><dt>Evidence</dt><dd>No onchain receipt yet</dd></div>
               </dl>
