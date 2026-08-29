@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft, CheckCircle2, ExternalLink, LoaderCircle, Radio, Search, ShieldCheck, UserCheck } from 'lucide-react'
 import { isAddress, parseEventLogs, zeroAddress } from 'viem'
@@ -9,6 +9,7 @@ import { getCategory } from '../catalog'
 import { commerceAbi, type CommerceJob, ERC8183_COMMERCE_ADDRESS, ERC8183_ROUTER_ADDRESS, jobStatusLabels } from '../services/erc8183'
 import { loadMandateDraft } from '../services/mandateDraft'
 import { fetchRegistryAgent } from '../services/agentRegistry'
+import { buildProviderJobDescription, loadProviderAcceptance, mandateDigest, verifyProviderAcceptance, type ProviderAcceptanceReceipt } from '../services/providerAcceptance'
 
 const storageKey = (address: string, category: string) => `mandate:open-job:v1:${address.toLowerCase()}:${category}`
 
@@ -30,6 +31,20 @@ export function OpenMandateScreen() {
     staleTime: 5 * 60_000,
     retry: 1,
   })
+  const acceptanceDigest = useMemo(() => {
+    if (!candidate.data) return null
+    const provider = candidate.data.agentWallet ?? candidate.data.ownerAddress
+    if (!provider || !isAddress(provider)) return null
+    return mandateDigest({
+      categoryId: category.id,
+      mandate: mandate?.prompt ?? category.prompt,
+      tokenId: candidate.data.tokenId,
+      providerAddress: provider,
+    })
+  }, [candidate.data, category.id, category.prompt, mandate?.prompt])
+  const storedAcceptance = useMemo<ProviderAcceptanceReceipt | null>(() => (
+    candidateTokenId && acceptanceDigest ? loadProviderAcceptance(candidateTokenId, acceptanceDigest) : null
+  ), [acceptanceDigest, candidateTokenId])
   const [jobId, setJobId] = useState<bigint | undefined>(() => queryJobId && /^\d+$/.test(queryJobId) ? BigInt(queryJobId) : undefined)
   const [job, setJob] = useState<CommerceJob>()
   const [latestHash, setLatestHash] = useState<`0x${string}`>()
@@ -38,6 +53,21 @@ export function OpenMandateScreen() {
   const [acceptanceConfirmed, setAcceptanceConfirmed] = useState(false)
   const [error, setError] = useState('')
   const walletReady = Boolean(isConnected && address && chainId === bscTestnet.id)
+
+  useEffect(() => {
+    let cancelled = false
+    if (!storedAcceptance) {
+      setAcceptanceConfirmed(false)
+      return
+    }
+    const expectedProvider = candidate.data?.agentWallet ?? candidate.data?.ownerAddress
+    void verifyProviderAcceptance(storedAcceptance, expectedProvider ?? undefined, acceptanceDigest ?? undefined).then((valid) => {
+      if (!cancelled) setAcceptanceConfirmed(valid)
+    }).catch(() => {
+      if (!cancelled) setAcceptanceConfirmed(false)
+    })
+    return () => { cancelled = true }
+  }, [acceptanceDigest, candidate.data?.agentWallet, candidate.data?.ownerAddress, storedAcceptance])
 
   useEffect(() => {
     if (jobId !== undefined || !address) return
@@ -64,7 +94,12 @@ export function OpenMandateScreen() {
     setError('')
     try {
       const createdAt = Math.floor(Date.now() / 1000)
-      const description = JSON.stringify({
+      const quotedDescription = storedAcceptance ? buildProviderJobDescription(storedAcceptance, {
+        category: category.id,
+        mandate: mandate.prompt,
+        constraints: mandate.constraints,
+      }) : null
+      const description = JSON.stringify(quotedDescription ?? {
         version: 1,
         type: 'open-mandate',
         provider: 'unassigned',
@@ -75,7 +110,7 @@ export function OpenMandateScreen() {
         bidding: 'offchain-provider-proposals; client-assigns-provider-before-funding',
         evidence_requirements: ['ERC-8004 identity', 'bounded decision', 'public deliverable manifest', 'onchain deliverable hash'],
         invited_candidate: candidateTokenId ? {
-          chain_id: 56,
+          chain_id: candidate.data?.chainId ?? 97,
           token_id: candidateTokenId,
           name: candidate.data?.name ?? null,
           owner: candidate.data?.ownerAddress ?? null,
@@ -110,8 +145,8 @@ export function OpenMandateScreen() {
 
   const candidateProvider = candidate.data?.agentWallet ?? candidate.data?.ownerAddress ?? null
   const candidateCanBeAssigned = Boolean(
+    candidate.data?.chainId === 97 &&
     candidate.data?.isActive &&
-    candidate.data?.endpointVerified &&
     candidateProvider &&
     isAddress(candidateProvider),
   )
@@ -119,14 +154,32 @@ export function OpenMandateScreen() {
   const assignProvider = async () => {
     if (!walletReady || !address || !walletClient.data || !publicClient || jobId === undefined || !job || !candidateProvider || !isAddress(candidateProvider)) return
     if (address.toLowerCase() !== job.client.toLowerCase()) return setError('Only the job client can assign the provider.')
-    if (!acceptanceConfirmed) return setError('Confirm that the provider accepted the exact mandate before assignment.')
+    if (
+      !storedAcceptance ||
+      !acceptanceConfirmed ||
+      storedAcceptance.provider_address.toLowerCase() !== candidateProvider.toLowerCase()
+    ) return setError('A cryptographically verified acceptance from the assigned provider wallet is required before assignment.')
+    if (!(await verifyProviderAcceptance(storedAcceptance, candidateProvider, acceptanceDigest ?? undefined))) {
+      setAcceptanceConfirmed(false)
+      return setError('The provider acceptance could not be re-verified for this exact mandate; request a fresh signature.')
+    }
     setIsAssigning(true)
     setError('')
     try {
       const optParams = `0x${Array.from(new TextEncoder().encode(JSON.stringify({
-        acceptance: 'confirmed-offchain-by-client',
+        acceptance: 'cryptographically-verified-provider-receipt',
         candidate_erc8004_id: candidateTokenId,
         endpoint: candidate.data?.a2aEndpoint ?? candidate.data?.mcpEndpoint ?? null,
+        acceptance_receipt: {
+          schema: storedAcceptance.schema,
+          mandate_digest: storedAcceptance.mandate_digest,
+          provider_address: storedAcceptance.provider_address,
+          signature: storedAcceptance.signature,
+          accepted_at_utc: storedAcceptance.accepted_at_utc,
+          expires_at_utc: storedAcceptance.expires_at_utc,
+          protocol: storedAcceptance.protocol ?? 'mandate',
+          ...(storedAcceptance.negotiation ? { negotiation: storedAcceptance.negotiation } : {}),
+        },
       }))).map((byte) => byte.toString(16).padStart(2, '0')).join('')}` as `0x${string}`
       const request = await publicClient.simulateContract({
         account: address,
@@ -201,18 +254,19 @@ export function OpenMandateScreen() {
               <span className="section-kicker">EXPLICIT PROVIDER ASSIGNMENT</span>
               <h3>{candidate.data?.name ?? `Agent #${candidateTokenId}`}</h3>
               <p className="mono">{candidateProvider ?? 'No provider wallet published'}</p>
-              <p>{candidateCanBeAssigned ? 'The registry reports an active agent, a verified endpoint, and a valid provider wallet.' : 'Assignment is blocked: this identity needs an active verified endpoint and a valid provider wallet.'}</p>
+              <p>{candidateCanBeAssigned && storedAcceptance && acceptanceConfirmed ? 'The provider returned a verified signature for this exact BSC Testnet mandate.' : candidate.data?.chainId !== 97 ? 'Assignment is blocked: this identity is registered on BNB Chain mainnet, while this open job is on BSC Testnet.' : !candidateCanBeAssigned ? 'Assignment is blocked: this identity needs an active BSC Testnet registration and a valid provider wallet.' : 'Assignment is blocked until the provider returns a cryptographically verified acceptance.'}</p>
               {candidate.data?.a2aEndpoint || candidate.data?.mcpEndpoint ? <a href={candidate.data.a2aEndpoint ?? candidate.data.mcpEndpoint ?? '#'} target="_blank" rel="noreferrer">Open provider endpoint <ExternalLink size={13} /></a> : null}
             </div>
-            <label className="open-provider-confirm"><input type="checkbox" checked={acceptanceConfirmed} onChange={(event) => setAcceptanceConfirmed(event.target.checked)} /> I contacted this provider and it accepted the exact immutable mandate, service price and evidence requirements.</label>
-            <button className="button button-primary" type="button" disabled={!candidateCanBeAssigned || !acceptanceConfirmed || isAssigning || address?.toLowerCase() !== job.client.toLowerCase()} onClick={assignProvider}>
+            {storedAcceptance ? <div className={`open-provider-confirm ${acceptanceConfirmed ? 'is-verified' : ''}`}><ShieldCheck size={16} /> {acceptanceConfirmed ? 'Cryptographic provider acceptance verified for this exact immutable mandate.' : 'Rechecking the provider signature before assignment…'}</div> : <div className="external-acceptance-error"><ShieldCheck size={16} /><span>Signed provider acceptance required. Open the registry profile and request it; a manual checkbox cannot authorize assignment.</span></div>}
+            {storedAcceptance ? <p className="external-acceptance-success"><ShieldCheck size={16} /> Signed acceptance loaded for digest <span className="mono">{storedAcceptance.mandate_digest.slice(0, 12)}…{storedAcceptance.mandate_digest.slice(-8)}</span>.</p> : null}
+            <button className="button button-primary" type="button" disabled={!candidateCanBeAssigned || !storedAcceptance || !acceptanceConfirmed || isAssigning || address?.toLowerCase() !== job.client.toLowerCase()} onClick={assignProvider}>
               {isAssigning ? <><LoaderCircle className="spin" size={16} /> Assigning…</> : <><UserCheck size={16} /> Assign accepted provider</>}
             </button>
           </div>
         ) : null}
 
         {job && !providerUnassigned ? (
-          <div className="registration-guard"><UserCheck size={18} /><div><strong>Provider assignment is final for this OPEN job</strong><p>The client can now continue with policy registration, the exact service budget and escrow funding. The provider—not MANDATE—must submit its own result.</p></div><button className="button button-primary compact-button" type="button" onClick={() => navigate(`/commerce?category=${category.id}&jobId=${jobId}`)}>Continue funded hire</button></div>
+          <div className="registration-guard"><UserCheck size={18} /><div><strong>Provider assignment is final for this OPEN job</strong><p>The client can now continue with policy registration, the exact service budget and escrow funding. The provider—not MANDATE—must submit its own result.</p></div><button className="button button-primary compact-button" type="button" onClick={() => navigate(`/commerce?category=${category.id}&jobId=${jobId}${candidateTokenId ? `&candidate=${candidateTokenId}` : ''}`)}>Continue funded hire</button></div>
         ) : null}
       </section>
 

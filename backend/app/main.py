@@ -7,8 +7,15 @@ client-side and require the correct connected client or provider wallet.
 from __future__ import annotations
 
 import os
+import ipaddress
+import json
+import socket
 import time
-from typing import Any
+import urllib.error
+import urllib.parse
+import urllib.request
+from datetime import datetime, timezone
+from typing import Any, Literal
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -43,6 +50,63 @@ WEB_ORIGINS = [
 ERC8183_COMMERCE_ADDRESS = "0xa206c0517B6371C6638CD9e4a42Cc9f02A33B0DE"
 ERC8183_ROUTER_ADDRESS = "0xD7d36D66d2F1B608A0F943f722D27e3744f66F25"
 ERC8183_POLICY_ADDRESS = "0xd6a4217588f6b1f5657a92a3e94e6422ad771cea"
+
+
+class _NoRedirectHandler(urllib.request.HTTPRedirectHandler):
+    """Provider proxies must never follow an unvalidated Location header."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+_SAFE_PROVIDER_OPENER = urllib.request.build_opener(_NoRedirectHandler)
+
+
+def _open_provider(request: urllib.request.Request, timeout: float):
+    return _SAFE_PROVIDER_OPENER.open(request, timeout=timeout)
+
+CATEGORY_EXECUTION_STATUS = {
+    "rebalancing": {
+        "agent_id": "1804",
+        "service": "PancakeSwap LP range decision",
+        "mode": "live-read-only",
+        "service_escrow_enabled": True,
+        "asset_transaction_enabled": False,
+        "external_execution_supported": True,
+        "provider_execution_protocol": "mandate.provider-execution-receipt.v1",
+        "required_for_testnet_execution": ["provider-owned LP position", "scoped session key", "PancakeSwap V3 transaction receipt"],
+    },
+    "grid": {
+        "agent_id": "1805",
+        "service": "PancakeSwap BNB/USDT grid plan",
+        "mode": "live-read-only + paper-track-record",
+        "service_escrow_enabled": True,
+        "asset_transaction_enabled": False,
+        "external_execution_supported": True,
+        "provider_execution_protocol": "mandate.provider-execution-receipt.v1",
+        "required_for_testnet_execution": ["provider-owned trading wallet", "scoped spend cap", "bounded swap receipts"],
+    },
+    "yield": {
+        "agent_id": "1806",
+        "service": "Stablecoin yield route selection",
+        "mode": "live-read-only",
+        "service_escrow_enabled": True,
+        "asset_transaction_enabled": False,
+        "external_execution_supported": True,
+        "provider_execution_protocol": "mandate.provider-execution-receipt.v1",
+        "required_for_testnet_execution": ["provider-owned lending wallet", "protocol allowlist", "supply/withdraw receipts"],
+    },
+    "health": {
+        "agent_id": "1807",
+        "service": "Venus liquidation-buffer decision",
+        "mode": "live-read-only",
+        "service_escrow_enabled": True,
+        "asset_transaction_enabled": False,
+        "external_execution_supported": True,
+        "provider_execution_protocol": "mandate.provider-execution-receipt.v1",
+        "required_for_testnet_execution": ["provider-owned Venus position", "repay/add-collateral allowlist", "bounded intervention receipt"],
+    },
+}
 
 MARKETPLACE_DELIVERABLES = {
     "rebalancing": {
@@ -108,6 +172,8 @@ class RebalancingRequest(BaseModel):
     max_rebalances_per_day: int = Field(default=2, ge=1, le=24)
     max_gas_drag_pct: float = Field(default=20, gt=0, le=100)
     target_width_pct: float = Field(default=15, ge=2, le=50)
+    action_cap: int | None = Field(default=None, ge=1, le=100)
+    action_period: Literal['day', 'week', 'month'] = 'day'
 
 
 class GridRequest(BaseModel):
@@ -115,10 +181,30 @@ class GridRequest(BaseModel):
     max_drawdown_pct: float = Field(default=5, gt=0, le=50)
     max_orders_per_day: int = Field(default=12, ge=1, le=100)
     grid_levels: int = Field(default=7, ge=3, le=24)
+    action_cap: int | None = Field(default=None, ge=1, le=100)
+    action_period: Literal['day', 'week', 'month'] = 'day'
 
 
 class HireBackedRunRequest(BaseModel):
     job_id: int = Field(gt=0)
+
+
+class ProviderAcceptanceProxyRequest(BaseModel):
+    endpoint: str = Field(min_length=12, max_length=2048)
+    payload: dict[str, Any]
+
+
+class ProviderCapabilityProxyRequest(BaseModel):
+    endpoint: str = Field(min_length=12, max_length=2048)
+
+
+class ProviderCardProxyRequest(BaseModel):
+    endpoint: str = Field(min_length=12, max_length=2048)
+
+
+class ProviderExecutionProxyRequest(BaseModel):
+    endpoint: str = Field(min_length=12, max_length=2048)
+    payload: dict[str, Any]
 
 
 app = FastAPI(title="MANDATE BNB Agent Gateway", version="0.1.0")
@@ -161,6 +247,224 @@ def health() -> dict[str, Any]:
             "venusRisk": "/agents/venus-risk/run",
         },
     }
+
+
+@app.get("/agents/execution-status")
+def execution_status() -> dict[str, Any]:
+    """Expose the real execution boundary instead of implying that reads trade."""
+    return {
+        "schema": "mandate.execution-status.v1",
+        "chain_id": 97,
+        "registry_chain_id": 56,
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "autonomous_execution": False,
+        "service_receipts": {
+            "erc8183_jobs": [642, 644, 666],
+            "description": "Paid, settled service jobs; not asset-trading receipts.",
+        },
+        "categories": CATEGORY_EXECUTION_STATUS,
+    }
+
+
+@app.get("/providers/capability-contract")
+def provider_capability_contract() -> dict[str, Any]:
+    """Publish the machine-readable contract independent providers must implement.
+
+    This is documentation, not a provider endpoint: the onboarding flow
+    intentionally rejects MANDATE's own URLs so the project cannot self-certify
+    a second provider.
+    """
+    return {
+        "schema": "mandate.provider-service.v1",
+        "version": 1,
+        "chain_id": 97,
+        "required": {
+            "provider_address": "checksummed EVM address matching the connected wallet",
+            "service_protocol": ["A2A", "MCP"],
+            "categories": ["rebalancing", "grid", "yield", "health"],
+            "acceptance_endpoint": "public HTTPS endpoint returning mandate.provider-acceptance.v1 with a future expires_at_utc",
+            "execution_endpoint": "public HTTPS endpoint for bounded provider-owned testnet actions",
+            "capabilities": {
+                "bounded_service_escrow": True,
+                "bounded_testnet_execution": True,
+                "asset_transactions": True,
+            },
+            "execution_scope": {
+                "category": "one of rebalancing, grid, yield, health",
+                "chain_id": 97,
+                "allowed_actions": "non-empty provider-owned action names",
+                "contract_allowlist": "non-empty EVM addresses; every receipt.to must match one",
+                "max_value_wei": "positive integer ceiling",
+            },
+            "execution_receipts": "at least one successful 0x transaction hash; browser verifies receipt.from == provider_address, target, calldata, value and allowlist",
+            "execution_receipt_protocol": "mandate.provider-execution-receipt.v1 or BNBAgent A2A data part; exact mandate_digest + request_nonce and provider signature are required",
+            "commerce_submission": "optional provider-signed AgenticCommerce.submit receipt plus deliverable hash and HTTPS URL",
+        },
+        "receipt_policy": "No registry metadata, endpoint HTTP 200, paper result or project-owned transaction can satisfy this contract.",
+    }
+
+
+def _public_https_endpoint(raw_endpoint: str) -> str:
+    """Validate a registry-declared provider endpoint before proxying one POST.
+
+    The proxy is only a CORS escape hatch for a buyer-initiated acceptance
+    request. It must never become a generic HTTP proxy or a path to localhost,
+    loopback, link-local, private or reserved infrastructure.
+    """
+    try:
+        parsed = urllib.parse.urlparse(raw_endpoint)
+    except ValueError as exc:
+        raise HTTPException(422, "Provider endpoint is not a valid URL") from exc
+    host = (parsed.hostname or "").lower().rstrip(".")
+    if parsed.scheme.lower() != "https" or not host or parsed.username or parsed.password:
+        raise HTTPException(422, "Provider endpoint must be public HTTPS without embedded credentials")
+    if host in {"localhost", "localhost.localdomain", "0.0.0.0", "::1"} or host.endswith(".local"):
+        raise HTTPException(422, "Private or local provider endpoints are not allowed")
+    try:
+        addresses = {item[4][0] for item in socket.getaddrinfo(host, 443, type=socket.SOCK_STREAM)}
+    except OSError as exc:
+        raise HTTPException(502, "Provider endpoint DNS lookup failed") from exc
+    for address in addresses:
+        try:
+            parsed_address = ipaddress.ip_address(address)
+        except ValueError:
+            continue
+        if parsed_address.is_private or parsed_address.is_loopback or parsed_address.is_link_local or parsed_address.is_reserved:
+            raise HTTPException(422, "Provider endpoint resolves to private or reserved infrastructure")
+    return parsed.geturl()
+
+
+@app.post("/registry/provider-acceptance")
+def registry_provider_acceptance(request: ProviderAcceptanceProxyRequest) -> dict[str, Any]:
+    """Proxy one signed-acceptance request when a provider omits CORS headers.
+
+    The response is still validated cryptographically in the browser against
+    the wallet published by ERC-8004. This route does not assign a provider,
+    hold funds or sign anything on behalf of a user.
+    """
+    endpoint = _public_https_endpoint(request.endpoint)
+    encoded = json.dumps(request.payload, separators=(",", ":")).encode("utf-8")
+    if len(encoded) > 32_768:
+        raise HTTPException(413, "Provider acceptance payload is too large")
+    outbound = urllib.request.Request(
+        endpoint,
+        data=encoded,
+        headers={
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "User-Agent": "MANDATE/1.0 provider-acceptance",
+        },
+        method="POST",
+    )
+    try:
+        with _open_provider(outbound, timeout=12) as response:
+            raw = response.read(65_537)
+            if len(raw) > 65_536:
+                raise HTTPException(502, "Provider acceptance response is too large")
+            payload = json.loads(raw)
+    except HTTPException:
+        raise
+    except (OSError, ValueError, urllib.error.URLError) as exc:
+        raise HTTPException(502, f"Provider acceptance endpoint could not be reached: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise HTTPException(502, "Provider acceptance endpoint did not return a JSON object")
+    return payload
+
+
+@app.post("/registry/provider-capability")
+def registry_provider_capability(request: ProviderCapabilityProxyRequest) -> dict[str, Any]:
+    """Fetch one provider capability document when the provider omits CORS.
+
+    This is deliberately a separate, GET-only route instead of turning the
+    acceptance proxy into a generic HTTP forwarder. The browser still checks
+    the returned document, wallet match and every receipt on the BSC Testnet.
+    """
+    endpoint = _public_https_endpoint(request.endpoint)
+    outbound = urllib.request.Request(
+        endpoint,
+        headers={
+            "Accept": "application/json",
+            "User-Agent": "MANDATE/1.0 provider-capability",
+        },
+        method="GET",
+    )
+    try:
+        with _open_provider(outbound, timeout=12) as response:
+            raw = response.read(65_537)
+            if len(raw) > 65_536:
+                raise HTTPException(502, "Provider capability response is too large")
+            payload = json.loads(raw)
+    except HTTPException:
+        raise
+    except (OSError, ValueError, urllib.error.URLError) as exc:
+        raise HTTPException(502, f"Provider capability endpoint could not be reached: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise HTTPException(502, "Provider capability endpoint did not return a JSON object")
+    return payload
+
+
+@app.post("/registry/provider-card")
+def registry_provider_card(request: ProviderCardProxyRequest) -> dict[str, Any]:
+    """Resolve one ERC-8004 A2A agent card without exposing a generic proxy."""
+    endpoint = _public_https_endpoint(request.endpoint)
+    outbound = urllib.request.Request(
+        endpoint,
+        headers={
+            "Accept": "application/json",
+            "User-Agent": "MANDATE/1.0 provider-card",
+        },
+        method="GET",
+    )
+    try:
+        with _open_provider(outbound, timeout=12) as response:
+            raw = response.read(65_537)
+            if len(raw) > 65_536:
+                raise HTTPException(502, "Provider agent card is too large")
+            payload = json.loads(raw)
+    except HTTPException:
+        raise
+    except (OSError, ValueError, urllib.error.URLError) as exc:
+        raise HTTPException(502, f"Provider agent card could not be reached: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise HTTPException(502, "Provider agent card did not return a JSON object")
+    return payload
+
+
+@app.post("/registry/provider-execution")
+def registry_provider_execution(request: ProviderExecutionProxyRequest) -> dict[str, Any]:
+    """Proxy one buyer-initiated execution request when a provider omits CORS.
+
+    The proxy does not hold a provider key and cannot submit an ERC-8183 job on
+    behalf of the buyer. It only forwards the bounded request; the browser
+    verifies the provider signature and every returned BSC Testnet receipt.
+    """
+    endpoint = _public_https_endpoint(request.endpoint)
+    encoded = json.dumps(request.payload, separators=(",", ":")).encode("utf-8")
+    if len(encoded) > 32_768:
+        raise HTTPException(413, "Provider execution payload is too large")
+    outbound = urllib.request.Request(
+        endpoint,
+        data=encoded,
+        headers={
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "User-Agent": "MANDATE/1.0 provider-execution",
+        },
+        method="POST",
+    )
+    try:
+        with _open_provider(outbound, timeout=20) as response:
+            raw = response.read(131_073)
+            if len(raw) > 131_072:
+                raise HTTPException(502, "Provider execution response is too large")
+            payload = json.loads(raw)
+    except HTTPException:
+        raise
+    except (OSError, ValueError, urllib.error.URLError) as exc:
+        raise HTTPException(502, f"Provider execution endpoint could not be reached: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise HTTPException(502, "Provider execution endpoint did not return a JSON object")
+    return payload
 
 
 @app.get("/erc8183/deliverable/{job_id}")
@@ -247,7 +551,7 @@ def benchmark_index() -> dict[str, Any]:
 @app.get("/registry/agents")
 def registry_agents() -> dict[str, Any]:
     try:
-        return fetch_registry("/agents", {"page": "1", "limit": "1", "chainId": "56"}, ttl_seconds=120)
+        return fetch_registry("/agents", {"page": "1", "limit": "1", "chainId": "97"}, ttl_seconds=120)
     except RegistryProxyError as exc:
         raise HTTPException(503, str(exc)) from exc
 
@@ -255,17 +559,17 @@ def registry_agents() -> dict[str, Any]:
 @app.get("/registry/agents/search")
 def registry_search(q: str = Query(min_length=3, max_length=500)) -> dict[str, Any]:
     try:
-        return fetch_registry("/agents/search", {"q": q, "chainId": "56", "limit": "10", "semanticWeight": "0.65"}, ttl_seconds=300)
+        return fetch_registry("/agents/search", {"q": q, "chainId": "97", "limit": "10", "semanticWeight": "0.65"}, ttl_seconds=300)
     except RegistryProxyError as exc:
         raise HTTPException(503, str(exc)) from exc
 
 
-@app.get("/registry/agents/56/{token_id}")
+@app.get("/registry/agents/97/{token_id}")
 def registry_agent(token_id: int) -> dict[str, Any]:
     if token_id <= 0:
         raise HTTPException(422, "Invalid ERC-8004 token ID")
     try:
-        return fetch_registry(f"/agents/56/{token_id}", {}, ttl_seconds=300)
+        return fetch_registry(f"/agents/97/{token_id}", {}, ttl_seconds=300)
     except RegistryProxyError as exc:
         raise HTTPException(503, str(exc)) from exc
 
@@ -345,6 +649,8 @@ def rebalancing_run(request: RebalancingRequest) -> dict[str, Any]:
             max_rebalances_per_day=request.max_rebalances_per_day,
             max_gas_drag_pct=request.max_gas_drag_pct,
             target_width_pct=request.target_width_pct,
+            action_cap=request.action_cap,
+            action_period=request.action_period,
         )
     except MarketDataError as exc:
         raise HTTPException(503, f"Live PancakeSwap market read failed: {exc}") from exc
@@ -358,6 +664,8 @@ def grid_run(request: GridRequest) -> dict[str, Any]:
             max_drawdown_pct=request.max_drawdown_pct,
             max_orders_per_day=request.max_orders_per_day,
             grid_levels=request.grid_levels,
+            action_cap=request.action_cap,
+            action_period=request.action_period,
         )
     except MarketDataError as exc:
         raise HTTPException(503, f"Live BNB/USDT market read failed: {exc}") from exc

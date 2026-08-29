@@ -20,6 +20,14 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             bucket, limit, window = "compute", 12, 60
         elif path == "/registry/agents/search":
             bucket, limit, window = "registry-search", 10, 60
+        elif path == "/registry/provider-acceptance":
+            bucket, limit, window = "provider-acceptance", 8, 60
+        elif path == "/registry/provider-capability":
+            bucket, limit, window = "provider-capability", 8, 60
+        elif path == "/registry/provider-card":
+            bucket, limit, window = "provider-card", 8, 60
+        elif path == "/registry/provider-execution":
+            bucket, limit, window = "provider-execution", 4, 60
         else:
             return await call_next(request)
         forwarded = request.headers.get("x-forwarded-for", "").split(",", 1)[0].strip()

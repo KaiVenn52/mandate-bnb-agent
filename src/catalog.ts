@@ -1,5 +1,32 @@
 export type CategoryId = 'rebalancing' | 'grid' | 'yield' | 'health'
 
+export type AgentEvidenceStatus = 'verified-onchain' | 'unverified-sample'
+export type AgentExecutionMode = 'live-read-only' | 'testnet-service-escrow' | 'not-hireable'
+
+export type AgentTrackRecord = {
+  schema: 'mandate.agent-track-record.v1'
+  mode: 'realized-onchain'
+  window: { start_utc: string; end_utc: string }
+  summary: {
+    executed_trades: number
+    winning_trades: number
+    losing_trades: number
+    win_rate_pct: number
+    max_drawdown_pct: number
+  }
+  risk_exposure: {
+    position_side: string
+    leverage: number
+    max_loss_pct: number
+    notes: string
+  }
+  onchain_evidence: {
+    chain_id: 97
+    transactions: Array<{ hash: `0x${string}`; executed_at_utc: string }>
+    verification_url?: string
+  }
+}
+
 export type CatalogAgent = {
   id: string
   name: string
@@ -15,6 +42,25 @@ export type CatalogAgent = {
   lastActive: string
   providerAddress?: `0x${string}`
   registrationTxHash?: `0x${string}`
+  /** Provenance is intentionally explicit so ranking never treats fixtures as history. */
+  evidenceStatus?: AgentEvidenceStatus
+  /** The current built-in service reads data; it does not sign DeFi asset transactions. */
+  executionMode?: AgentExecutionMode
+  /** Provider-controlled endpoint advertised in ERC-8004 metadata. */
+  serviceEndpoint?: string
+  serviceProtocol?: 'A2A' | 'MCP'
+  /** Set only after a provider-owned testnet transaction is independently checked. */
+  assetExecutionVerified?: boolean
+  executionReceiptHashes?: string[]
+  trackRecord?: AgentTrackRecord
+  executionScope?: {
+    category: CategoryId
+    chain_id: 97
+    allowed_actions: string[]
+    contract_allowlist: string[]
+    max_value_wei: string
+  }
+  providerSource?: string
   shadow: {
     primary: string
     baseline: string
@@ -98,9 +144,9 @@ export const categories: Record<CategoryId, CategoryConfig> = {
       mayNot: ['Transfer the LP NFT to another wallet', 'Use any pool outside BNB/USDT', 'Borrow assets or add leverage', 'Rebalance more than twice in 24 hours'],
     },
     agents: [
-      { id: 'rg-1042', name: 'RangeGuard', recommendation: 'Best fit', fit: 91, status: 'satisfies', metrics: { netFees: '+$184.20', rangeUptime: '96.8%', gasDrag: '14.2%', rebalances: '1.3/day' }, completedMandates: 19, disputed: 0, capitalObserved: 48_300, medianExecutionSeconds: 38, lastActive: '4m ago', shadow: { primary: '+$184.20', baseline: '+$119.70', advantage: '+$64.50', cost: '$2.84', baselineCost: '$0.00', activity: '1.3/day', baselineActivity: '0', risk: 'Medium', baselineRisk: 'High', annualised: '+$774 / $10k / year' } },
-      { id: 'rb-2271', name: 'BandSteady', recommendation: 'Safer', fit: 86, status: 'satisfies', metrics: { netFees: '+$161.80', rangeUptime: '94.1%', gasDrag: '10.8%', rebalances: '0.8/day' }, completedMandates: 12, disputed: 0, capitalObserved: 26_900, medianExecutionSeconds: 46, lastActive: '9m ago', shadow: { primary: '+$161.80', baseline: '+$119.70', advantage: '+$42.10', cost: '$1.96', baselineCost: '$0.00', activity: '0.8/day', baselineActivity: '0', risk: 'Low', baselineRisk: 'High', annualised: '+$505 / $10k / year' } },
-      { id: 'rh-9904', name: 'RangeHyper', recommendation: 'Cheaper', fit: 74, status: 'violates', violation: 'Rebalances 4.8 times per day, above your limit of 2.', metrics: { netFees: '+$211.30', rangeUptime: '98.2%', gasDrag: '27.4%', rebalances: '4.8/day' }, completedMandates: 31, disputed: 3, capitalObserved: 96_200, medianExecutionSeconds: 27, lastActive: '1m ago', shadow: { primary: '+$211.30', baseline: '+$119.70', advantage: '+$91.60', cost: '$8.20', baselineCost: '$0.00', activity: '4.8/day', baselineActivity: '0', risk: 'High', baselineRisk: 'High' } },
+      { id: 'rg-1042', name: 'RangeGuard', recommendation: 'Best fit', fit: 91, status: 'satisfies', metrics: { netFees: 'Live run', rangeUptime: 'Not claimed', gasDrag: 'Calculated live', rebalances: 'Mandate cap' }, completedMandates: 0, disputed: 0, capitalObserved: 0, medianExecutionSeconds: 0, lastActive: 'Live on request', shadow: { primary: 'Live decision', baseline: 'Not compared', advantage: 'Not claimed', cost: 'Wallet quote', baselineCost: 'Not measured', activity: 'Mandate cap', baselineActivity: 'Not measured', risk: 'Mandate bound', baselineRisk: 'Not measured' } },
+      { id: 'rb-2271', name: 'BandSteady', recommendation: 'Safer', fit: 0, status: 'satisfies', metrics: { netFees: 'Not verified', rangeUptime: 'Not verified', gasDrag: 'Not verified', rebalances: 'Not verified' }, completedMandates: 0, disputed: 0, capitalObserved: 0, medianExecutionSeconds: 0, lastActive: 'Not verified', shadow: { primary: 'Not verified', baseline: 'Not verified', advantage: 'Not claimed', cost: 'Not verified', baselineCost: 'Not verified', activity: 'Not verified', baselineActivity: 'Not verified', risk: 'Not verified', baselineRisk: 'Not verified' } },
+      { id: 'rh-9904', name: 'RangeHyper', recommendation: 'Cheaper', fit: 0, status: 'violates', violation: 'No verified provider receipt; cannot be assessed for your mandate.', metrics: { netFees: 'Not verified', rangeUptime: 'Not verified', gasDrag: 'Not verified', rebalances: 'Not verified' }, completedMandates: 0, disputed: 0, capitalObserved: 0, medianExecutionSeconds: 0, lastActive: 'Not verified', shadow: { primary: 'Not verified', baseline: 'Not verified', advantage: 'Not claimed', cost: 'Not verified', baselineCost: 'Not verified', activity: 'Not verified', baselineActivity: 'Not verified', risk: 'Not verified', baselineRisk: 'Not verified' } },
     ],
   },
   grid: {
@@ -141,9 +187,9 @@ export const categories: Record<CategoryId, CategoryConfig> = {
       mayNot: ['Trade any other pair', 'Use leverage or borrowed capital', 'Continue after 5% drawdown', 'Transfer assets outside the execution contract'],
     },
     agents: [
-      { id: 'gp-3814', name: 'GridPilot', recommendation: 'Best fit', fit: 88, status: 'satisfies', metrics: { netPnl: '+4.26%', drawdown: '3.18%', profitFactor: '1.71', winRate: '64.8%' }, completedMandates: 22, disputed: 1, capitalObserved: 61_750, medianExecutionSeconds: 51, lastActive: '2m ago', shadow: { primary: '+4.26%', baseline: '+1.08%', advantage: '+3.18%', cost: '$4.12', baselineCost: '$0.00', activity: '8.4/day', baselineActivity: '0', risk: '3.18% DD', baselineRisk: '6.42% DD', annualised: '+$159 / $5k / 30d' } },
-      { id: 'gc-2140', name: 'GridCalm', recommendation: 'Safer', fit: 84, status: 'satisfies', metrics: { netPnl: '+3.44%', drawdown: '2.11%', profitFactor: '1.58', winRate: '62.1%' }, completedMandates: 15, disputed: 0, capitalObserved: 35_400, medianExecutionSeconds: 64, lastActive: '7m ago', shadow: { primary: '+3.44%', baseline: '+1.08%', advantage: '+2.36%', cost: '$3.26', baselineCost: '$0.00', activity: '6.1/day', baselineActivity: '0', risk: '2.11% DD', baselineRisk: '6.42% DD', annualised: '+$118 / $5k / 30d' } },
-      { id: 'gt-8102', name: 'GridTurbo', recommendation: 'Cheaper', fit: 77, status: 'violates', violation: '30-day replay reaches 8.7% max drawdown, above your 5% hard stop.', metrics: { netPnl: '+7.82%', drawdown: '8.70%', profitFactor: '1.39', winRate: '58.4%' }, completedMandates: 44, disputed: 4, capitalObserved: 132_900, medianExecutionSeconds: 29, lastActive: '1m ago', shadow: { primary: '+7.82%', baseline: '+1.08%', advantage: '+6.74%', cost: '$9.38', baselineCost: '$0.00', activity: '18.6/day', baselineActivity: '0', risk: '8.70% DD', baselineRisk: '6.42% DD' } },
+      { id: 'gp-3814', name: 'GridPilot', recommendation: 'Best fit', fit: 88, status: 'satisfies', metrics: { netPnl: '30d paper test', drawdown: 'Mandate hard stop', profitFactor: 'Pool fee modeled', winRate: 'No onchain record' }, completedMandates: 0, disputed: 0, capitalObserved: 0, medianExecutionSeconds: 0, lastActive: 'Live on request', shadow: { primary: 'Paper record', baseline: 'Not compared', advantage: 'Not claimed', cost: 'Modeled', baselineCost: 'Not measured', activity: 'Mandate cap', baselineActivity: 'Not measured', risk: 'Paper hard stop', baselineRisk: 'Not measured' } },
+      { id: 'gc-2140', name: 'GridCalm', recommendation: 'Safer', fit: 0, status: 'satisfies', metrics: { netPnl: 'Not verified', drawdown: 'Not verified', profitFactor: 'Not verified', winRate: 'Not verified' }, completedMandates: 0, disputed: 0, capitalObserved: 0, medianExecutionSeconds: 0, lastActive: 'Not verified', shadow: { primary: 'Not verified', baseline: 'Not verified', advantage: 'Not claimed', cost: 'Not verified', baselineCost: 'Not verified', activity: 'Not verified', baselineActivity: 'Not verified', risk: 'Not verified', baselineRisk: 'Not verified' } },
+      { id: 'gt-8102', name: 'GridTurbo', recommendation: 'Cheaper', fit: 0, status: 'violates', violation: 'No verified provider receipt; cannot be assessed for your mandate.', metrics: { netPnl: 'Not verified', drawdown: 'Not verified', profitFactor: 'Not verified', winRate: 'Not verified' }, completedMandates: 0, disputed: 0, capitalObserved: 0, medianExecutionSeconds: 0, lastActive: 'Not verified', shadow: { primary: 'Not verified', baseline: 'Not verified', advantage: 'Not claimed', cost: 'Not verified', baselineCost: 'Not verified', activity: 'Not verified', baselineActivity: 'Not verified', risk: 'Not verified', baselineRisk: 'Not verified' } },
     ],
   },
   yield: {
@@ -184,9 +230,9 @@ export const categories: Record<CategoryId, CategoryConfig> = {
       mayNot: ['Borrow any assets or use leverage', 'Transfer funds to wallets outside the allowlist', 'Use any protocol outside the allowed list', 'Exceed $50 of spend in a 24h period'],
     },
     agents: [
-      { id: '8217', name: 'YieldRoute', recommendation: 'Best fit', fit: 87, status: 'satisfies', metrics: { netApy: '7.42%', leverage: '0 leverage', protocols: '3', mandates: '14' }, completedMandates: 14, disputed: 0, capitalObserved: 21_420, medianExecutionSeconds: 42, lastActive: '3m ago', shadow: { primary: '7.42%', baseline: '5.69%', advantage: '+1.73%', cost: '$0.27', baselineCost: '$0.00', activity: '1', baselineActivity: '0', risk: 'Medium', baselineRisk: 'Low', annualised: '+$173 / $10k / year' } },
-      { id: '6042', name: 'SteadyPath', recommendation: 'Safer', fit: 82, status: 'satisfies', metrics: { netApy: '6.18%', leverage: '0 leverage', protocols: '2', mandates: '8' }, completedMandates: 8, disputed: 0, capitalObserved: 12_610, medianExecutionSeconds: 55, lastActive: '11m ago', shadow: { primary: '6.18%', baseline: '5.69%', advantage: '+0.49%', cost: '$0.19', baselineCost: '$0.00', activity: '1', baselineActivity: '0', risk: 'Low', baselineRisk: 'Low', annualised: '+$49 / $10k / year' } },
-      { id: '1938', name: 'AggroMax', recommendation: 'Cheaper', fit: 79, status: 'violates', violation: 'Uses 2× leverage, which your mandate forbids.', metrics: { netApy: '8.91%', leverage: '2× leverage', protocols: '4', mandates: '27' }, completedMandates: 27, disputed: 2, capitalObserved: 88_930, medianExecutionSeconds: 31, lastActive: '1m ago', shadow: { primary: '8.91%', baseline: '5.69%', advantage: '+3.22%', cost: '$0.31', baselineCost: '$0.00', activity: '3', baselineActivity: '0', risk: 'High', baselineRisk: 'Low' } },
+      { id: '8217', name: 'YieldRoute', recommendation: 'Best fit', fit: 87, status: 'satisfies', metrics: { netApy: 'Live quote', leverage: 'Mandate cap', protocols: 'Live sources', mandates: '1 verified hire' }, completedMandates: 1, disputed: 0, capitalObserved: 0, medianExecutionSeconds: 0, lastActive: 'Live on request', shadow: { primary: 'Live quote', baseline: 'Not compared', advantage: 'Not claimed', cost: 'Wallet quote', baselineCost: 'Not measured', activity: 'Mandate cap', baselineActivity: 'Not measured', risk: 'Mandate bound', baselineRisk: 'Not measured' } },
+      { id: '6042', name: 'SteadyPath', recommendation: 'Safer', fit: 0, status: 'satisfies', metrics: { netApy: 'Not verified', leverage: 'Not verified', protocols: 'Not verified', mandates: 'Not verified' }, completedMandates: 0, disputed: 0, capitalObserved: 0, medianExecutionSeconds: 0, lastActive: 'Not verified', shadow: { primary: 'Not verified', baseline: 'Not verified', advantage: 'Not claimed', cost: 'Not verified', baselineCost: 'Not verified', activity: 'Not verified', baselineActivity: 'Not verified', risk: 'Not verified', baselineRisk: 'Not verified' } },
+      { id: '1938', name: 'AggroMax', recommendation: 'Cheaper', fit: 0, status: 'violates', violation: 'No verified provider receipt; cannot be assessed for your mandate.', metrics: { netApy: 'Not verified', leverage: 'Not verified', protocols: 'Not verified', mandates: 'Not verified' }, completedMandates: 0, disputed: 0, capitalObserved: 0, medianExecutionSeconds: 0, lastActive: 'Not verified', shadow: { primary: 'Not verified', baseline: 'Not verified', advantage: 'Not claimed', cost: 'Not verified', baselineCost: 'Not verified', activity: 'Not verified', baselineActivity: 'Not verified', risk: 'Not verified', baselineRisk: 'Not verified' } },
     ],
   },
   health: {
@@ -227,9 +273,9 @@ export const categories: Record<CategoryId, CategoryConfig> = {
       mayNot: ['Open a new borrow position', 'Withdraw collateral', 'Use any protocol outside Venus', 'Transfer funds outside the allowlist'],
     },
     agents: [
-      { id: 'ls-5520', name: 'LiqShield', recommendation: 'Best fit', fit: 94, status: 'satisfies', metrics: { minimumHf: '1.92', leadTime: '4m 18s', latency: '6.2s', falseAlerts: '0' }, completedMandates: 17, disputed: 0, capitalObserved: 42_800, medianExecutionSeconds: 6, lastActive: '20s ago', shadow: { primary: '1.92 HF', baseline: '1.61 HF', advantage: '+0.31 HF', cost: '$0.09', baselineCost: '$0.00', activity: '6.2s', baselineActivity: 'Manual', risk: 'Protected', baselineRisk: 'Liquidation zone', annualised: '4m 18s earlier warning' } },
-      { id: 'hs-1188', name: 'HealthSentinel', recommendation: 'Safer', fit: 89, status: 'satisfies', metrics: { minimumHf: '2.04', leadTime: '5m 02s', latency: '9.8s', falseAlerts: '1' }, completedMandates: 11, disputed: 0, capitalObserved: 31_600, medianExecutionSeconds: 10, lastActive: '2m ago', shadow: { primary: '2.04 HF', baseline: '1.61 HF', advantage: '+0.43 HF', cost: '$0.12', baselineCost: '$0.00', activity: '9.8s', baselineActivity: 'Manual', risk: 'Protected', baselineRisk: 'Liquidation zone', annualised: '5m 02s earlier warning' } },
-      { id: 'ha-7011', name: 'HealthAmp', recommendation: 'Cheaper', fit: 76, status: 'violates', violation: 'May open a new borrow position during intervention, which your mandate forbids.', metrics: { minimumHf: '2.21', leadTime: '3m 41s', latency: '4.1s', falseAlerts: '3' }, completedMandates: 29, disputed: 2, capitalObserved: 83_500, medianExecutionSeconds: 4, lastActive: '35s ago', shadow: { primary: '2.21 HF', baseline: '1.61 HF', advantage: '+0.60 HF', cost: '$0.18', baselineCost: '$0.00', activity: '4.1s', baselineActivity: 'Manual', risk: 'Adds debt', baselineRisk: 'Liquidation zone' } },
+      { id: 'ls-5520', name: 'LiqShield', recommendation: 'Best fit', fit: 94, status: 'satisfies', metrics: { minimumHf: 'Live wallet read', leadTime: 'Pinned block', latency: 'API measured', falseAlerts: 'Not claimed' }, completedMandates: 0, disputed: 0, capitalObserved: 0, medianExecutionSeconds: 0, lastActive: 'Live on request', shadow: { primary: 'Live decision', baseline: 'Not compared', advantage: 'Not claimed', cost: 'Wallet quote', baselineCost: 'Not measured', activity: 'Mandate cap', baselineActivity: 'Not measured', risk: 'Mandate bound', baselineRisk: 'Not measured' } },
+      { id: 'hs-1188', name: 'HealthSentinel', recommendation: 'Safer', fit: 0, status: 'satisfies', metrics: { minimumHf: 'Not verified', leadTime: 'Not verified', latency: 'Not verified', falseAlerts: 'Not verified' }, completedMandates: 0, disputed: 0, capitalObserved: 0, medianExecutionSeconds: 0, lastActive: 'Not verified', shadow: { primary: 'Not verified', baseline: 'Not verified', advantage: 'Not claimed', cost: 'Not verified', baselineCost: 'Not verified', activity: 'Not verified', baselineActivity: 'Not verified', risk: 'Not verified', baselineRisk: 'Not verified' } },
+      { id: 'ha-7011', name: 'HealthAmp', recommendation: 'Cheaper', fit: 0, status: 'violates', violation: 'No verified provider receipt; cannot be assessed for your mandate.', metrics: { minimumHf: 'Not verified', leadTime: 'Not verified', latency: 'Not verified', falseAlerts: 'Not verified' }, completedMandates: 0, disputed: 0, capitalObserved: 0, medianExecutionSeconds: 0, lastActive: 'Not verified', shadow: { primary: 'Not verified', baseline: 'Not verified', advantage: 'Not claimed', cost: 'Not verified', baselineCost: 'Not verified', activity: 'Not verified', baselineActivity: 'Not verified', risk: 'Not verified', baselineRisk: 'Not verified' } },
     ],
   },
 }
@@ -237,7 +283,7 @@ export const categories: Record<CategoryId, CategoryConfig> = {
 // ERC-8004 identities were registered by the project owner, while ERC-8183
 // work is fulfilled by a separate provider wallet. Keeping those roles
 // separate makes every TermiX hire independently verifiable onchain.
-const verifiedServiceProvider = '0x34ABe1790E6d67E25c7616799C2C6B7336932c7e' as const
+export const verifiedServiceProvider = '0x34ABe1790E6d67E25c7616799C2C6B7336932c7e' as const
 Object.assign(categories.rebalancing.agents[0], {
   id: '1804',
   providerAddress: verifiedServiceProvider,
@@ -262,6 +308,42 @@ Object.assign(categories.health.agents[0], {
   registrationTxHash: '0x27237dab5509726b660be6e2d13d13296cc34a2c33312b01f1f8cd1f69261100',
   metrics: { minimumHf: 'Live wallet read', leadTime: 'Pinned block', latency: 'API measured', falseAlerts: 'Not claimed' },
 })
+
+// Keep the provenance on every card, including the benchmark fixtures that are
+// intentionally excluded from the hireable inventory. This makes it impossible
+// for a new surface to accidentally present the old demo APY/PnL/counts as facts.
+for (const category of Object.values(categories)) {
+  for (const agent of category.agents) {
+    if (agent.providerAddress && agent.registrationTxHash) {
+      agent.evidenceStatus = 'verified-onchain'
+      agent.executionMode = 'live-read-only'
+      agent.providerSource = 'MANDATE live gateway + public BSC receipt'
+    } else {
+      agent.evidenceStatus = 'unverified-sample'
+      agent.executionMode = 'not-hireable'
+      agent.providerSource = 'Benchmark fixture — no provider wallet or receipt'
+    }
+  }
+}
+
+export function isHireableCatalogAgent(agent: CatalogAgent) {
+  return Boolean(
+    agent.evidenceStatus === 'verified-onchain' &&
+    (agent.executionMode === 'live-read-only' || agent.executionMode === 'testnet-service-escrow') &&
+    agent.providerAddress &&
+    agent.registrationTxHash,
+  ) && (agent.executionMode !== 'testnet-service-escrow' || (Boolean(agent.executionScope) && agent.assetExecutionVerified === true))
+    && (agent.executionScope?.category !== 'grid' || Boolean(agent.trackRecord?.mode === 'realized-onchain'))
+}
+
+export function countUniqueProviders(category: CategoryConfig) {
+  return new Set(
+    category.agents
+      .filter(isHireableCatalogAgent)
+      .map((agent) => agent.providerAddress?.toLowerCase())
+      .filter(Boolean),
+  ).size
+}
 
 export function getCategory(value: string | null): CategoryConfig {
   return value && value in categories ? categories[value as CategoryId] : categories.yield

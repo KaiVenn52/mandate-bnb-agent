@@ -22,6 +22,7 @@ DEXSCREENER_URL = (
 )
 USDT_ADDRESS = "0x55d398326f99059ff775485246999027b3197955"
 CHAIN_ID = 56
+PERIOD_DAYS = {"day": 1, "week": 7, "month": 30}
 
 
 class MarketDataError(RuntimeError):
@@ -98,12 +99,23 @@ def _finish(payload: dict[str, Any]) -> dict[str, Any]:
     return payload
 
 
+def _activity_limit(action_cap: int | None, action_period: str, fallback_daily_cap: int) -> tuple[int, str, float]:
+    """Return the user's exact cap plus a conservative daily normalisation for estimates."""
+    if action_cap is None:
+        return fallback_daily_cap, "day", float(fallback_daily_cap)
+    days = PERIOD_DAYS.get(action_period, 1)
+    return action_cap, action_period, max(action_cap / days, 1 / days)
+
+
 def run_rebalancing_agent(
     capital_usd: float,
     max_rebalances_per_day: int,
     max_gas_drag_pct: float,
     target_width_pct: float,
+    action_cap: int | None = None,
+    action_period: str = "day",
 ) -> dict[str, Any]:
+    requested_actions, requested_period, effective_daily_cap = _activity_limit(action_cap, action_period, max_rebalances_per_day)
     market = _live_market()
     observed_move = max(
         abs(market["change_h1_pct"]),
@@ -114,7 +126,7 @@ def run_rebalancing_agent(
     adaptive_half_width = max(target_width_pct / 2, min(15.0, observed_move * 2.4))
     lower = market["price_usd"] * (1 - adaptive_half_width / 100)
     upper = market["price_usd"] * (1 + adaptive_half_width / 100)
-    estimated_daily_gas_usd = min(max_rebalances_per_day, 2) * 0.08
+    estimated_daily_gas_usd = min(effective_daily_cap, 2) * 0.08
     conservative_daily_fee_usd = max(0.01, capital_usd * min(market["volume_h24_usd"] / max(market["liquidity_usd"], 1), 2) * 0.0001)
     gas_drag = estimated_daily_gas_usd / conservative_daily_fee_usd * 100
     action = "HOLD_RANGE"
@@ -133,6 +145,9 @@ def run_rebalancing_agent(
             "max_rebalances_per_day": max_rebalances_per_day,
             "max_gas_drag_pct": max_gas_drag_pct,
             "target_width_pct": target_width_pct,
+            "action_cap": requested_actions,
+            "action_period": requested_period,
+            "effective_daily_cap": round(effective_daily_cap, 4),
             "broadcast_allowed": False,
         },
         "source": {"chain": "BNB Smart Chain", "chain_id": CHAIN_ID, "provider": "DexScreener", "url": DEXSCREENER_URL},
@@ -161,7 +176,10 @@ def run_grid_agent(
     max_drawdown_pct: float,
     max_orders_per_day: int,
     grid_levels: int,
+    action_cap: int | None = None,
+    action_period: str = "day",
 ) -> dict[str, Any]:
+    requested_actions, requested_period, effective_daily_cap = _activity_limit(action_cap, action_period, max_orders_per_day)
     market = _live_market()
     directional_pressure = max(abs(market["change_h6_pct"]), abs(market["change_h24_pct"]))
     ranging = directional_pressure <= max(4.0, max_drawdown_pct)
@@ -180,6 +198,9 @@ def run_grid_agent(
             "max_drawdown_pct": max_drawdown_pct,
             "max_orders_per_day": max_orders_per_day,
             "requested_grid_levels": grid_levels,
+            "action_cap": requested_actions,
+            "action_period": requested_period,
+            "effective_daily_cap": round(effective_daily_cap, 4),
             "broadcast_allowed": False,
         },
         "source": {"chain": "BNB Smart Chain", "chain_id": CHAIN_ID, "provider": "DexScreener", "url": DEXSCREENER_URL},

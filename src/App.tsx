@@ -16,6 +16,9 @@ const RegistrationScreen = lazy(() =>
 const RegistryAgentScreen = lazy(() =>
   import('./screens/RegistryAgentScreen').then((module) => ({ default: module.RegistryAgentScreen })),
 )
+const ProviderOnboardingScreen = lazy(() =>
+  import('./screens/ProviderOnboardingScreen').then((module) => ({ default: module.ProviderOnboardingScreen })),
+)
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -40,6 +43,7 @@ export default function App() {
           <Route path="/commerce" element={<CommerceScreen />} />
           <Route path="/open-mandate" element={<OpenMandateScreen />} />
           <Route path="/registry-agent/:tokenId" element={<Suspense fallback={<div className="route-loading">Loading registry agent…</div>}><RegistryAgentScreen /></Suspense>} />
+          <Route path="/provider-onboarding" element={<Suspense fallback={<div className="route-loading">Loading provider onboarding…</div>}><ProviderOnboardingScreen /></Suspense>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AppShell>

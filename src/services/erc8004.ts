@@ -48,7 +48,12 @@ export function buildAgentUri(input: {
   description: string
   category: CategoryId
   origin: string
+  serviceEndpoint?: string
+  serviceProtocol?: 'A2A' | 'MCP'
+  providerAddress?: string
 }) {
+  const serviceProtocol = input.serviceProtocol ?? 'A2A'
+  const serviceEndpoint = input.serviceEndpoint ?? `${input.origin}/api/health`
   const registration = {
     type: 'https://eips.ethereum.org/EIPS/eip-8004#registration-v1',
     name: input.name,
@@ -56,12 +61,16 @@ export function buildAgentUri(input: {
     image: '',
     services: [
       {
-        name: 'web',
-        endpoint: `${input.origin}/api/health`,
-        version: '1.0.0',
-        capabilities: [input.category, 'shadow-mode', 'bounded-mandates'],
+        name: serviceProtocol,
+        endpoint: serviceEndpoint,
+        version: serviceProtocol === 'A2A' ? '0.3.0' : '2025-06-18',
+        capabilities: [input.category, 'live-verification', 'bounded-mandates'],
       },
+      { name: 'web', endpoint: serviceEndpoint, version: '1.0.0' },
     ],
+    ...(input.providerAddress ? { agentWallet: input.providerAddress } : {}),
+    x402Support: false,
+    active: true,
     registrations: [],
     supportedTrust: ['reputation', 'crypto-economic'],
   }

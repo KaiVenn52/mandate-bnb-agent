@@ -17,15 +17,18 @@ function downloadEvidence(evidence: VenusRiskEvidence) {
   URL.revokeObjectURL(url)
 }
 
-export function LiveVenusAgent() {
+export function LiveVenusAgent({ onVerified, displayAgentId, displayAgentName }: { onVerified?: (verified: boolean) => void; displayAgentId?: string; displayAgentName?: string }) {
   const { address } = useAccount()
   const [account, setAccount] = useState(address ?? submissionWallet)
   const [minimumBuffer, setMinimumBuffer] = useState('1000')
   const [evidence, setEvidence] = useState<VenusRiskEvidence | null>(null)
   const [error, setError] = useState('')
   const [running, setRunning] = useState(false)
+  const agentIdLabel = displayAgentId ?? '1807'
+  const agentNameLabel = displayAgentName ?? 'LiqShield'
 
   async function run() {
+    onVerified?.(false)
     setError('')
     setEvidence(null)
     if (!isAddress(account)) {
@@ -40,6 +43,7 @@ export function LiveVenusAgent() {
     setRunning(true)
     try {
       setEvidence(await runVenusRiskAgent(account, buffer))
+      onVerified?.(true)
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Live agent run failed.')
     } finally {
@@ -51,11 +55,11 @@ export function LiveVenusAgent() {
     <section className="live-agent" aria-labelledby="live-agent-title">
       <header className="live-agent-heading">
         <div>
-          <span className="section-kicker">LIVE CAPABILITY · BNB CHAIN MAINNET · READ ONLY</span>
-          <h2 id="live-agent-title">Venus liquidation-buffer agent</h2>
+          <span className="section-kicker">LIVE CAPABILITY · BNB CHAIN MAINNET DATA · READ ONLY</span>
+          <h2 id="live-agent-title">{agentNameLabel} · Venus liquidation-buffer agent</h2>
           <p>Reads the official Venus Comptroller at one pinned block, applies your risk mandate, and produces a hash-verifiable deliverable. It cannot move funds.</p>
         </div>
-        <span className="live-agent-badge"><Radar size={15} /> AGENT #1807</span>
+        <span className="live-agent-badge"><Radar size={15} /> AGENT #{agentIdLabel}</span>
       </header>
 
       <div className="live-agent-console">
@@ -69,7 +73,7 @@ export function LiveVenusAgent() {
         </div>
 
         <div className="live-agent-output" aria-live="polite">
-          {!evidence && !error && <div className="live-agent-idle"><Radar size={28} /><strong>Awaiting a public wallet address</strong><span>The result will include the exact block, Comptroller, observations and SHA-256 evidence hash.</span></div>}
+          {!evidence && !error && <div className="live-agent-idle"><Radar size={28} /><strong>Ready to inspect a public wallet address</strong><span>The result will include the exact block, Comptroller, observations and SHA-256 evidence hash.</span></div>}
           {error && <div className="live-agent-error"><ShieldAlert size={20} /><span><strong>Agent could not complete the live read</strong>{error}</span></div>}
           {evidence && (
             <>
@@ -85,7 +89,7 @@ export function LiveVenusAgent() {
                 <div><dt>Entered markets</dt><dd className="mono">{evidence.observation.entered_market_count}</dd></div>
                 <div><dt>Evidence SHA-256</dt><dd className="mono">{evidence.evidence_sha256}</dd></div>
               </dl>
-              <div className="yield-evidence-actions"><div><button className="button button-outline compact-button" type="button" onClick={() => downloadEvidence(evidence)}><Download size={15} /> Download deliverable</button><Link className="button button-primary compact-button" to="/activate?category=health&agent=1807">Review permissions</Link></div><small>Pinned-block analysis. No transaction attempted.</small></div>
+              <div className="yield-evidence-actions"><div><button className="button button-outline compact-button" type="button" onClick={() => downloadEvidence(evidence)}><Download size={15} /> Download deliverable</button><Link className="button button-primary compact-button" to={`/activate?category=health&agent=${agentIdLabel}`}>Start bounded testnet hire</Link></div><small>Pinned-block analysis; ERC-8183 service hire requires explicit wallet signatures.</small></div>
             </>
           )}
         </div>

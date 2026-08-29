@@ -25,7 +25,7 @@ export function EvidenceScreen() {
     <section className="evidence-screen page-gutter">
       <div className="report-heading">
         <div><span className="section-kicker">TERMIX QUALIFIED EVIDENCE · THREE INDEPENDENT ERC-8183 HIRES</span><h1>Agent Advantage Evidence Lab</h1><p>Three frozen tasks were completed by independently hired marketplace agents and compared with the original browser-timed human path. Every agent result is bound to a completed BSC Testnet job.</p></div>
-        <div className="report-actions"><a className="button button-secondary" href="/evidence/termix/grid-track-record.json" target="_blank" rel="noreferrer">Grid track record <ExternalLink size={16} /></a><a className="button button-primary" href="/evidence/MANDATE-Agent-Advantage-Report.pdf" target="_blank" rel="noreferrer"><Download size={16} /> Download final report</a></div>
+        <div className="report-actions"><Link className="button button-secondary" to="/provider-onboarding">Add independent provider</Link><a className="button button-secondary" href="/evidence/termix/grid-track-record.json" target="_blank" rel="noreferrer">Grid track record <ExternalLink size={16} /></a><a className="button button-primary" href="/evidence/MANDATE-Agent-Advantage-Report.pdf" target="_blank" rel="noreferrer"><Download size={16} /> Download final report</a></div>
       </div>
 
       <section className="hire-proof-grid" aria-label="Independent ERC-8183 hire evidence">
@@ -39,6 +39,12 @@ export function EvidenceScreen() {
 
       <div className="report-meta"><div><small>Final report</small><strong className="mono">AAR-2026-0827</strong></div><div><small>Qualification status</small><strong>3 / 3 independent hires</strong></div><div><small>Completed jobs</small><strong className="mono">#642 · #644 · #666</strong></div><div><small>High-stakes categories</small><strong>Trading + security</strong></div><span className="report-verified"><ShieldCheck size={17} /> Onchain + raw pairs verified</span></div>
       <div className="report-summary"><div><Timer size={18} /><span><small>Median paired speedup</small><strong className="mono">474.5×</strong></span></div><div><WalletCards size={18} /><span><small>Marketplace service cost</small><strong className="mono">0.1 test U / task</strong></span></div><div><FileCheck2 size={18} /><span><small>Qualified evidence bundles</small><strong className="mono">3 / 3</strong></span></div></div>
+
+      <section className="evidence-boundary" aria-label="Execution and data boundaries">
+        <ShieldCheck size={18} />
+        <div><strong>What the receipts prove — and what they do not</strong><p>The three ERC-8183 jobs prove paid service delivery and settlement. They do not prove autonomous DeFi trades, a second provider, or realized trading returns. Those claims require a provider-owned wallet, bounded testnet transaction receipts and a fresh track record.</p></div>
+        <Link className="button button-secondary compact-button" to="/provider-onboarding">Start provider path</Link>
+      </section>
 
       <LiveVenusAgent />
       <BenchmarkLab />

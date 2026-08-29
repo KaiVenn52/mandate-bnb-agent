@@ -16,7 +16,7 @@ Edit Capital from the right-hand preview to show that each permission is indepen
 
 ## 0:42-1:08 - Four-category marketplace and hard rejection
 
-Sweep across LP Rebalancing, Grid Trading, Yield Optimisation and Health Factor Monitoring. Return to Yield. Point to SteadyPath as eligible and the explicit rejection reasons on riskier candidates.
+Sweep across LP Rebalancing, Grid Trading, Yield Optimisation and Health Factor Monitoring. Return to Yield. Point to the receipt-backed provider row; unverified comparison fixtures are intentionally withheld from hiring.
 
 **Narration:** "The marketplace treats four financial agent categories as first-class. It does not merely rank agents; it rejects agents that violate the mandate."
 
@@ -28,7 +28,7 @@ Run live YieldRoute and show current observed APY, liquidity, protocol trend, ca
 
 ## 1:32-1:50 - Permission review and hire path
 
-Run Shadow Mode, open Review permissions, then Continue to onchain hire. Point to the connected evaluator wallet as client and Agent #1806 as the separate provider.
+Run the live capability, wait for the hash-verifiable result, open Review permissions, then Continue to onchain hire. Point to the connected evaluator wallet as client and Agent #1806 as the separate provider.
 
 **Narration:** "The same limits now control eligibility, permission review and the immutable job description. The client funds; only the registered provider can submit; settlement is permissionless after the dispute window."
 
@@ -36,7 +36,7 @@ Run Shadow Mode, open Review permissions, then Continue to onchain hire. Point t
 
 Open Evidence. Show the headline figures and the three task rows: yield, trading and Venus risk monitoring.
 
-**Narration:** "For TermiX, the evidence lab refuses direct API runs. Each agent path now requires a funded ERC-8183 job with a separate provider and matching category. The old three-pair comparison remains an archived baseline; we will regenerate the final report after three independent hires."
+**Narration:** "For TermiX, each qualifying agent run requires a funded ERC-8183 job with a separate provider and matching category. Jobs 642, 644 and 666 independently hired the yield, trading and risk agents. Their verified outputs are paired with the same frozen inputs and pre-committed rubrics in the final report."
 
 ## 2:10-2:28 - Onchain proof
 

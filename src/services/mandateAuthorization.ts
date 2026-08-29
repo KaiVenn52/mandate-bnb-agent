@@ -32,6 +32,16 @@ export function authorizationFromMandate(
   const spendPermission = constraints.spendCapUsd === null
     ? `Stay within the ${category.authorization.maxSpend} category safety default`
     : `Spend no more than ${spend}`
+  const riskPermission = constraints.drawdownMaxPct !== null
+    ? `Keep drawdown at or below ${constraints.drawdownMaxPct}%`
+    : constraints.gasDragMaxPct !== null
+      ? `Keep gas drag at or below ${constraints.gasDragMaxPct}%`
+      : `Operate within the ${title(constraints.riskMax)} risk ceiling`
+  const riskViolation = constraints.drawdownMaxPct !== null
+    ? `Exceed ${constraints.drawdownMaxPct}% drawdown`
+    : constraints.gasDragMaxPct !== null
+      ? `Exceed ${constraints.gasDragMaxPct}% gas drag`
+      : `Operate above the ${title(constraints.riskMax)} risk ceiling`
 
   return {
     source: 'parsed-mandate',
@@ -45,6 +55,7 @@ export function authorizationFromMandate(
     expiry: category.authorization.expiry,
     may: [
       capitalPermission,
+      riskPermission,
       `${category.authorization.actions} only on ${protocols.join(', ')}`,
       leverage,
       `Perform at most ${constraints.actionCap} actions per ${constraints.actionPeriod}`,
@@ -56,7 +67,7 @@ export function authorizationFromMandate(
       `Use any protocol outside ${protocols.join(', ')}`,
       `Exceed ${constraints.actionCap} actions per ${constraints.actionPeriod}`,
       constraints.spendCapUsd === null ? `Exceed the ${category.authorization.maxSpend} safety default` : `Exceed ${spend}`,
-      `Operate above the ${title(constraints.riskMax)} risk ceiling`,
+      riskViolation,
     ],
   }
 }

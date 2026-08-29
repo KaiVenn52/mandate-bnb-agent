@@ -45,3 +45,5 @@ Allowlist only registered provider addresses. Enable live mode for one bounded t
 ## Step 5: TermiX A/B evidence
 
 Run all three predefined tasks from identical snapshots. Preserve raw outputs, UTC timestamps, total costs, evaluator rubric, transaction links, failures, and manual interventions. Only then replace the draft values in the Agent Advantage Report.
+
+Current evidence status: this runbook's three qualifying hires are complete—YieldRoute Job #642, GridPilot Job #644, and LiqShield Job #666. Their raw outputs, job metadata, timings, costs and rubric results are published in `public/evidence/termix`, and the final hire-backed report is `public/evidence/MANDATE-Agent-Advantage-Report.pdf`. Any new benchmark run must preserve the same independent-hire and frozen-input rules rather than overwrite this evidence silently.

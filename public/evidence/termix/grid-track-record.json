@@ -44,6 +44,22 @@
     "closed_grid_cycles": 10,
     "fees_usd": 3.29
   },
+  "risk_exposure": {
+    "position_side": "long-only",
+    "leverage": 0,
+    "capital_base_usd": 5000,
+    "hard_stop_pct": 5,
+    "max_loss_if_hard_stop_usd": 250,
+    "exposure_model": "paper position notional; no borrowed capital"
+  },
+  "onchain_evidence": {
+    "status": "none",
+    "chain_id": 56,
+    "transaction_count": 0,
+    "transactions": [],
+    "verification_url": null,
+    "note": "No PancakeSwap orders were executed. A real trading record requires provider-owned testnet or mainnet transaction receipts."
+  },
   "limitations": [
     "This is a deterministic historical paper test, not live or realized trading performance.",
     "The candle source is BNBUSDT reference-market data, not PancakeSwap execution data.",
@@ -52,5 +68,5 @@
     "A session win rate must not be interpreted as a future-return guarantee."
   ],
   "generated_at_utc": "2026-08-28T06:33:57.825397+00:00",
-  "evidence_sha256": "493521ff0f2624dece72b94be31168dbd09f4257f8ea2dafe2b8cb3da634fb82"
+  "evidence_sha256": "127a9324efb738a52c0088c99742db5f3a673a6bdce5f6c884bad57d81850c2f"
 }

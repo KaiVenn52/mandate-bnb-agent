@@ -91,10 +91,10 @@ export function RegistrationScreen() {
     <section className="registration-screen page-gutter">
       <div className="registration-heading">
         <div>
-          <h1>Register verified agent identities</h1>
-          <p>Each signature mints one ERC-8004 identity on BSC Testnet and stores its immutable transaction proof.</p>
+          <h1>Register project reference identities</h1>
+          <p>These four reference identities are controlled by the project wallet. For an independent marketplace provider, use the separate onboarding flow.</p>
         </div>
-        <Link className="button button-secondary" to="/evidence">Back to evidence</Link>
+        <div className="registration-heading-actions"><Link className="button button-secondary" to="/provider-onboarding">Independent provider onboarding</Link><Link className="button button-secondary" to="/evidence">Back to evidence</Link></div>
       </div>
 
       <div className="registration-guard" role="status">

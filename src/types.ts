@@ -6,14 +6,15 @@ export type Agent = {
   category: AgentCategory
   recommendation: 'Best fit' | 'Safer' | 'Cheaper'
   fit: number
-  projectedApy: number
+  projectedApy: number | null
   leverage: number
   protocols: string[]
-  completedMandates: number
-  disputed: number
-  capitalObserved: number
-  medianExecutionSeconds: number
-  lastActive: string
+  completedMandates: number | null
+  disputed: number | null
+  capitalObserved: number | null
+  medianExecutionSeconds: number | null
+  lastActive: string | null
+  dataQuality: 'unverified-sample' | 'verified-onchain' | 'live-read-only'
   status: 'satisfies' | 'violates'
   violation?: string
 }
@@ -47,6 +48,7 @@ export type CategorySheet = {
   agent: string
   mandate: string
   fit: number
+  evidenceStatus: 'live-read-only' | 'verified-onchain' | 'paper-only'
   metrics: Array<{
     label: string
     value: string

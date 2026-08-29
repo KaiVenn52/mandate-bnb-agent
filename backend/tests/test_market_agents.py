@@ -34,3 +34,19 @@ def test_grid_agent_caps_levels_and_returns_no_transaction(monkeypatch):
     assert result["decision"]["grid_levels"] == 6
     assert result["decision"]["transaction_attempted"] is False
     assert len(result["decision"]["grid_prices_usd"]) == 6
+
+
+def test_rebalancing_evidence_preserves_non_daily_activity_limit(monkeypatch):
+    monkeypatch.setattr("app.market_agents._live_market", lambda: LIVE_MARKET)
+    result = run_rebalancing_agent(10_000, 1, 20, 15, action_cap=2, action_period="week")
+    assert result["mandate"]["action_cap"] == 2
+    assert result["mandate"]["action_period"] == "week"
+    assert result["mandate"]["effective_daily_cap"] == 0.2857
+
+
+def test_grid_evidence_preserves_user_activity_limit(monkeypatch):
+    monkeypatch.setattr("app.market_agents._live_market", lambda: LIVE_MARKET)
+    result = run_grid_agent(5_000, 4, 1, 7, action_cap=2, action_period="week")
+    assert result["mandate"]["action_cap"] == 2
+    assert result["mandate"]["action_period"] == "week"
+    assert result["mandate"]["effective_daily_cap"] == 0.2857

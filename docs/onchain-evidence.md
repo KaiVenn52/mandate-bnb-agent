@@ -20,7 +20,7 @@ Verified independently against BSC Testnet RPC on 2026-08-12.
 | Yield Optimisation | YieldRoute | 1806 | 124491457 | [0xe00a95…a8198](https://testnet.bscscan.com/tx/0xe00a95305b3b28637d6de96b31b6cf0e87d84acac49a31d7b4a1f2add44a8198) |
 | Health Factor Monitoring | LiqShield | 1807 | 124491531 | [0x27237d…61100](https://testnet.bscscan.com/tx/0x27237dab5509726b660be6e2d13d13296cc34a2c33312b01f1f8cd1f69261100) |
 
-Candidate performance metrics remain demo data until separate ERC-8183 jobs and TermiX A/B runs generate execution evidence. The real identity status must not be interpreted as verification of those performance claims.
+Candidate card metrics outside the verified benchmark remain demo data. The three independent TermiX hires below provide task-specific execution evidence, but an ERC-8004 identity alone must never be interpreted as verification of unbacked performance claims.
 
 ## ERC-8183 YieldRoute proof - Job #506
 

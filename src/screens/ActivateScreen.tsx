@@ -13,6 +13,7 @@ import {
   X,
 } from 'lucide-react'
 import { getCategory } from '../catalog'
+import { getMarketplaceCategory } from '../services/providerRegistry'
 import { fetchGatewayHealth, previewJob } from '../services/jobGateway'
 import { loadMandateDraft } from '../services/mandateDraft'
 import { authorizationFromMandate } from '../services/mandateAuthorization'
@@ -30,7 +31,7 @@ const timeline = [
 export function ActivateScreen() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const category = getCategory(searchParams.get('category'))
+  const category = getMarketplaceCategory(getCategory(searchParams.get('category')))
   const agent = category.agents.find((item) => item.id === searchParams.get('agent')) ?? category.agents[0]
   const draft = loadMandateDraft()
   const auth = authorizationFromMandate(category, agent, draft)
@@ -136,6 +137,7 @@ export function ActivateScreen() {
                 <div><dt>Goal</dt><dd>{auth.goal}</dd></div>
                 <div><dt>Analysis asset</dt><dd className="mono">{auth.asset}</dd></div>
                 <div><dt>Capital analysed</dt><dd className="mono">{auth.capital}</dd></div>
+                <div><dt>Risk ceiling</dt><dd className="mono">{draft?.categoryId === category.id && draft.constraints.drawdownMaxPct !== null ? `Drawdown ≤${draft.constraints.drawdownMaxPct}%` : draft?.categoryId === category.id && draft.constraints.gasDragMaxPct !== null ? `Gas drag ≤${draft.constraints.gasDragMaxPct}%` : draft?.categoryId === category.id ? `${draft.constraints.riskMax} risk` : 'Category safety default'}</dd></div>
                 <div><dt>Underlying action ceiling</dt><dd className="mono">{auth.maxSpend}</dd></div>
                 <div><dt>Evaluation horizon</dt><dd className="mono">{auth.duration}</dd></div>
               </dl>

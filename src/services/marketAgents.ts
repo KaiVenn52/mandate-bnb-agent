@@ -13,6 +13,19 @@ export type LiveMarket = {
 export type MarketAgentEvidence = {
   schema: string
   agent: { erc8004_id: number; name: string }
+  mandate?: {
+    capital_usd: number
+    max_rebalances_per_day?: number
+    max_gas_drag_pct?: number
+    target_width_pct?: number
+    max_drawdown_pct?: number
+    max_orders_per_day?: number
+    requested_grid_levels?: number
+    action_cap?: number
+    action_period?: ActionPeriod
+    effective_daily_cap?: number
+    broadcast_allowed: false
+  }
   source: { chain: string; chain_id: number; provider: string; url: string }
   market: LiveMarket
   decision: {
@@ -52,12 +65,35 @@ export type GridTrackRecord = {
     closed_grid_cycles: number
     fees_usd: number
   }
+  risk_exposure: {
+    position_side: string
+    leverage: number
+    capital_base_usd: number
+    hard_stop_pct: number
+    max_loss_if_hard_stop_usd: number
+    exposure_model: string
+  }
+  onchain_evidence: {
+    status: 'none' | 'partial' | 'verified'
+    chain_id: number
+    transaction_count: number
+    transactions: Array<{ hash: string; url?: string; executed_at_utc?: string }>
+    verification_url: string | null
+    note: string
+  }
   limitations: string[]
   generated_at_utc: string
   evidence_sha256: string
 }
 
 const apiBase = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '')
+
+type ActionPeriod = 'day' | 'week' | 'month'
+
+export const dailyActionCap = (count: number, period: ActionPeriod) => {
+  const days = period === 'day' ? 1 : period === 'week' ? 7 : 30
+  return Math.max(1, Math.ceil(count / days))
+}
 
 async function post(path: string, body: object): Promise<MarketAgentEvidence> {
   const response = await fetch(`${apiBase}${path}`, {
@@ -69,18 +105,34 @@ async function post(path: string, body: object): Promise<MarketAgentEvidence> {
   return response.json() as Promise<MarketAgentEvidence>
 }
 
-export const runRebalancingAgent = (capitalUsd: number) => post('/agents/rebalancing/run', {
-  capital_usd: capitalUsd,
-  max_rebalances_per_day: 2,
-  max_gas_drag_pct: 20,
-  target_width_pct: 15,
+export const runRebalancingAgent = (input: {
+  capitalUsd: number
+  actionCap: number
+  actionPeriod: ActionPeriod
+  maxGasDragPct: number
+  targetWidthPct?: number
+}) => post('/agents/rebalancing/run', {
+  capital_usd: input.capitalUsd,
+  max_rebalances_per_day: dailyActionCap(input.actionCap, input.actionPeriod),
+  max_gas_drag_pct: input.maxGasDragPct,
+  target_width_pct: input.targetWidthPct ?? 15,
+  action_cap: input.actionCap,
+  action_period: input.actionPeriod,
 })
 
-export const runGridAgent = (capitalUsd: number) => post('/agents/grid/run', {
-  capital_usd: capitalUsd,
-  max_drawdown_pct: 5,
-  max_orders_per_day: 12,
-  grid_levels: 7,
+export const runGridAgent = (input: {
+  capitalUsd: number
+  actionCap: number
+  actionPeriod: ActionPeriod
+  maxDrawdownPct: number
+  gridLevels?: number
+}) => post('/agents/grid/run', {
+  capital_usd: input.capitalUsd,
+  max_drawdown_pct: input.maxDrawdownPct,
+  max_orders_per_day: dailyActionCap(input.actionCap, input.actionPeriod),
+  grid_levels: input.gridLevels ?? 7,
+  action_cap: input.actionCap,
+  action_period: input.actionPeriod,
 })
 
 export async function fetchGridTrackRecord(): Promise<GridTrackRecord> {

@@ -20,6 +20,8 @@ export type MandateDraft = {
     actionPeriod: 'day' | 'week' | 'month'
     actionCapSpecified: boolean
     protocols: string[]
+    gasDragMaxPct: number | null
+    drawdownMaxPct: number | null
     spendCapUsd: number | null
     spendCapPeriod: 'day' | 'week' | 'month' | 'total'
     spendCapSpecified: boolean
@@ -54,7 +56,23 @@ function inferCategory(prompt: string, fallback: CategoryId): CategoryId {
 }
 
 function extractCapital(prompt: string): { amount: string; numericAmount: number | null; asset: string } {
-  const assetAmount = prompt.match(/(?:[$€£]\s*)?([\d,.]+)\s*(USDT|USDC|BNB|USD|ETH|BTCB|BTC)\b/i)
+  const assetPattern = /(?:[$€£]\s*)?([\d,.]+)\s*(USDT|USDC|BNB|USD|ETH|BTCB|BTC)\b/gi
+  const assetAmounts = [...prompt.matchAll(assetPattern)]
+  const scoredAssetAmounts = assetAmounts.map((match) => {
+    const index = match.index ?? 0
+    const before = prompt.slice(Math.max(0, index - 36), index).toLowerCase()
+    const after = prompt.slice(index + match[0].length, index + match[0].length + 24).toLowerCase()
+    let score = 0
+    if (/(?:capital|principal|本金)\s*[:=]?\s*$/.test(before)) score += 12
+    if (/(?:using|with|on|deposit|supply)\s*$/.test(before)) score += 10
+    if (/^\s*(?:capital|principal|本金)\b/.test(after)) score += 12
+    if (/(?:profit|income|return|target|goal)\s*[:=]?\s*$/.test(before)) score -= 10
+    if (/^\s*(?:profit|income|return|target|goal)\b/.test(after)) score -= 10
+    const numeric = Number(match[1].replace(/,/g, ''))
+    return { match, score, numeric: Number.isFinite(numeric) ? numeric : 0 }
+  })
+  const assetAmount = scoredAssetAmounts
+    .sort((left, right) => right.score - left.score || right.numeric - left.numeric)[0]?.match
   const rawCurrencyAmount = prompt.match(/([$€£])\s*([\d,.]+)/)
   const currencyContext = rawCurrencyAmount?.index === undefined ? '' : prompt.slice(Math.max(0, rawCurrencyAmount.index - 32), rawCurrencyAmount.index)
   const currencyAmount = /(?:spend|cost|fee|gas)\D{0,24}$/i.test(currencyContext) ? undefined : rawCurrencyAmount
@@ -116,6 +134,13 @@ function extractSpendCap(prompt: string): { amount: number | null; period: 'day'
   }
 }
 
+function extractPercentLimit(prompt: string, keyword: string): number | null {
+  const match = new RegExp(`${keyword}\\D{0,24}(\\d+(?:\\.\\d+)?)\\s*%`, 'i').exec(prompt)
+  if (!match) return null
+  const value = Number(match[1])
+  return Number.isFinite(value) && value > 0 ? value : null
+}
+
 function canonicalPrompt(input: {
   goal: string
   capitalAmount: number | null
@@ -125,6 +150,8 @@ function canonicalPrompt(input: {
   actionCap: number
   actionPeriod: 'day' | 'week' | 'month'
   protocols: string[]
+  gasDragMaxPct?: number | null
+  drawdownMaxPct?: number | null
   spendCapUsd: number | null
   spendCapPeriod: 'day' | 'week' | 'month' | 'total'
 }) {
@@ -136,7 +163,9 @@ function canonicalPrompt(input: {
   const spend = input.spendCapUsd === null
     ? ''
     : ` Spend no more than $${input.spendCapUsd}${input.spendCapPeriod === 'total' ? ' total' : ` per ${input.spendCapPeriod}`}.`
-  return `${input.goal}.${capital} ${risk}. ${leverage}. Max ${input.actionCap} actions per ${input.actionPeriod}. ${protocols}.${spend}`
+  const gasDrag = input.gasDragMaxPct == null ? '' : ` Gas drag no more than ${input.gasDragMaxPct}%.`
+  const drawdown = input.drawdownMaxPct == null ? '' : ` Max drawdown ${input.drawdownMaxPct}%.`
+  return `${input.goal}.${capital} ${risk}. ${leverage}. Max ${input.actionCap} actions per ${input.actionPeriod}. ${protocols}.${spend}${gasDrag}${drawdown}`
 }
 
 export function editMandateField(draft: MandateDraft, label: EditableMandateField, rawValue: string): string {
@@ -151,6 +180,8 @@ export function editMandateField(draft: MandateDraft, label: EditableMandateFiel
     actionCap: draft.constraints.actionCap,
     actionPeriod: draft.constraints.actionPeriod,
     protocols: [...draft.constraints.protocols],
+    gasDragMaxPct: draft.constraints.gasDragMaxPct,
+    drawdownMaxPct: draft.constraints.drawdownMaxPct,
     spendCapUsd: draft.constraints.spendCapUsd,
     spendCapPeriod: draft.constraints.spendCapPeriod,
   }
@@ -207,8 +238,9 @@ function outcome(prompt: string, categoryId: CategoryId): string {
   // phrase before presenting the goal so "Earn on 5,000 USDT" does not make
   // Goal and Capital appear to be the same field.
   const withoutCapital = firstSentence
-    .replace(/\b(?:on|with|using)\s+(?:[$€£]\s*)?[\d,.]+\s*(?:USDT|USDC|BNB|USD|ETH|BTCB|BTC)\b/ig, '')
-    .replace(/(?:[$€£]\s*)?[\d,.]+\s*(?:USDT|USDC|BNB|USD|ETH|BTCB|BTC)\b/ig, '')
+    .replace(/\b(?:capital|principal)\s*[:=]?\s*(?:[$€£]\s*)?[\d,.]+\s*(?:USDT|USDC|BNB|USD|ETH|BTCB|BTC)\b/ig, '')
+    .replace(/\b(?:on|with|using|deposit|supply)\s+(?:[$€£]\s*)?[\d,.]+\s*(?:USDT|USDC|BNB|USD|ETH|BTCB|BTC)\b(?:\s+(?:capital|principal))?/ig, '')
+    .replace(/(?:[$€£]\s*)?[\d,.]+\s*(?:USDT|USDC|BNB|USD|ETH|BTCB|BTC)\s+(?:capital|principal)\b/ig, '')
     .replace(/\s+/g, ' ')
     .replace(/\b(?:on|with|using)\s*$/i, '')
     .trim()
@@ -224,6 +256,8 @@ export function parseMandate(prompt: string, fallback: CategoryId): MandateDraft
   const leverage = extractLeverage(prompt)
   const frequency = extractFrequency(prompt, categoryId)
   const protocols = extractProtocols(prompt)
+  const gasDragMaxPct = extractPercentLimit(prompt, 'gas\\s+drag')
+  const drawdownMaxPct = extractPercentLimit(prompt, 'drawdown')
   const spend = extractSpendCap(prompt)
   const fields: ParsedField[] = [
     { label: 'Goal', value: outcome(prompt, categoryId) },
@@ -254,6 +288,8 @@ export function parseMandate(prompt: string, fallback: CategoryId): MandateDraft
       actionPeriod: frequency.period,
       actionCapSpecified: frequency.specified,
       protocols: protocols === 'No protocol specified' ? [] : protocols.split(', '),
+      gasDragMaxPct,
+      drawdownMaxPct,
       spendCapUsd: spend.amount,
       spendCapPeriod: spend.period,
       spendCapSpecified: spend.specified,

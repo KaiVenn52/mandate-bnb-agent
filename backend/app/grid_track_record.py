@@ -166,6 +166,22 @@ def build_grid_track_record(rows: list[list[Any]], capital_usd: float = 5000, fe
             "closed_grid_cycles": sum(item["closed_grid_cycles"] for item in results),
             "fees_usd": round(sum(item["fees_usd"] for item in results), 2),
         },
+        "risk_exposure": {
+            "position_side": "long-only",
+            "leverage": 0,
+            "capital_base_usd": capital_usd,
+            "hard_stop_pct": 5,
+            "max_loss_if_hard_stop_usd": round(capital_usd * 0.05, 2),
+            "exposure_model": "paper position notional; no borrowed capital",
+        },
+        "onchain_evidence": {
+            "status": "none",
+            "chain_id": 56,
+            "transaction_count": 0,
+            "transactions": [],
+            "verification_url": None,
+            "note": "No PancakeSwap orders were executed. A real trading record requires provider-owned testnet or mainnet transaction receipts.",
+        },
         "limitations": [
             "This is a deterministic historical paper test, not live or realized trading performance.",
             "The candle source is BNBUSDT reference-market data, not PancakeSwap execution data.",

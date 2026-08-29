@@ -19,22 +19,25 @@ function formatUsd(value: number | null | undefined) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(value)
 }
 
-export function LiveYieldRoute({ draft }: { draft: MandateDraft }) {
+export function LiveYieldRoute({ draft, onVerified, displayAgentId, displayAgentName }: { draft: MandateDraft; onVerified?: (verified: boolean) => void; displayAgentId?: string; displayAgentName?: string }) {
   const [evidence, setEvidence] = useState<YieldRouteEvidence | null>(null)
   const [error, setError] = useState('')
   const [running, setRunning] = useState(false)
   const capital = draft.constraints.capitalAmount
+  const agentIdLabel = displayAgentId ?? '1806'
+  const agentNameLabel = displayAgentName ?? 'YieldRoute'
 
   async function run() {
+    onVerified?.(false)
+    setError('')
+    setEvidence(null)
     if (!capital) {
       setError('Add a capital amount to the mandate before running live analysis.')
       return
     }
-    setError('')
-    setEvidence(null)
     setRunning(true)
     try {
-      setEvidence(await runYieldRouteAgent({
+      const result = await runYieldRouteAgent({
         asset: draft.constraints.asset,
         capitalUsd: capital,
         maxRisk: draft.constraints.riskMax,
@@ -45,7 +48,9 @@ export function LiveYieldRoute({ draft }: { draft: MandateDraft }) {
           : draft.constraints.actionPeriod === 'day'
             ? draft.constraints.actionCap * 7
             : Math.max(1, Math.floor(draft.constraints.actionCap / 4)),
-      }))
+      })
+      setEvidence(result)
+      onVerified?.(true)
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Live YieldRoute failed.')
     } finally {
@@ -59,11 +64,11 @@ export function LiveYieldRoute({ draft }: { draft: MandateDraft }) {
     <section className="live-agent live-yield-route" aria-labelledby="live-yield-title">
       <header className="live-agent-heading">
         <div>
-          <span className="section-kicker">LIVE CAPABILITY · BNB CHAIN · READ ONLY</span>
-          <h2 id="live-yield-title">Run YieldRoute on current market data</h2>
+          <span className="section-kicker">LIVE CAPABILITY · BNB CHAIN MAINNET DATA · READ ONLY</span>
+          <h2 id="live-yield-title">Run {agentNameLabel} on current market data</h2>
           <p>Fetches live BSC pool APY, liquidity and protocol TVL trends, applies this mandate's hard limits, and produces a SHA-256-verifiable deliverable. It cannot move funds.</p>
         </div>
-        <span className="live-agent-badge"><Radar size={15} /> AGENT #1806</span>
+        <span className="live-agent-badge"><Radar size={15} /> AGENT #{agentIdLabel}</span>
       </header>
 
       <div className="yield-run-summary">
@@ -106,9 +111,9 @@ export function LiveYieldRoute({ draft }: { draft: MandateDraft }) {
             <div className="yield-evidence-actions">
               <div>
                 <button className="button button-outline compact-button" type="button" onClick={() => downloadEvidence(evidence)}><Download size={15} /> Download deliverable</button>
-                <Link className="button button-primary compact-button" to="/activate?category=yield&agent=1806"><CheckCircle2 size={15} /> Review permissions</Link>
+                <Link className="button button-primary compact-button" to={`/activate?category=yield&agent=${agentIdLabel}`}><CheckCircle2 size={15} /> Start bounded testnet hire</Link>
               </div>
-              <small>Point-in-time APY, not guaranteed. No transaction was attempted.</small>
+              <small>Point-in-time APY, not guaranteed. ERC-8183 service hire is a separate, wallet-signed testnet action.</small>
             </div>
           </>
         )}

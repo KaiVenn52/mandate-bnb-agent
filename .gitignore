@@ -27,6 +27,14 @@ __pycache__/
 *.sw?
 
 .vercel
+.env
+.env.*
+!.env.example
+.provider-receipts.json
+.provider-deliverables.json
+*.keystore
+*.key
+*.pem
 
 # Local agent/build workspaces and generated review artifacts
 .superstack/

@@ -73,6 +73,19 @@ export function BuilderScreen() {
       setError('Add an outcome and at least one risk limit.')
       return
     }
+    const { constraints } = parsed
+    const hasExplicitLimit = constraints.riskSpecified
+      || constraints.leverageSpecified
+      || constraints.actionCapSpecified
+      || constraints.spendCapSpecified
+      || constraints.protocols.length > 0
+    const capitalRequired = parsed.categoryId !== 'health'
+    if ((capitalRequired && !constraints.capitalAmount) || !hasExplicitLimit) {
+      setError(capitalRequired
+        ? 'Add a capital amount and at least one explicit risk or activity limit.'
+        : 'Add at least one explicit risk or activity limit.')
+      return
+    }
     setError('')
     saveMandateDraft(parsed)
     setIsBuilt(true)
@@ -209,14 +222,14 @@ export function BuilderScreen() {
         </aside>
       </div>
 
-      <div className="evidence-ticker" aria-label="Example evidence record">
+      <div className="evidence-ticker evidence-status-strip" aria-label="Evidence status">
         <ShieldCheck size={18} aria-hidden="true" />
-        <strong>Evidence record preview</strong>
-        <span className="verified-label">Sample</span>
-        <span className="mono muted">0x8f3a…c1d2</span>
-        <span>Example: adjusted position on Venus</span>
-        <span className="mono">Capital: 2,500 USDT</span>
-        <span className="mono muted">2h ago</span>
+        <strong>Evidence starts with a live run</strong>
+        <span className="verified-label">NO SAMPLE CLAIMS</span>
+        <span>Provider receipt required</span>
+        <span className="mono muted">Live quote · receipt · source hash</span>
+        <span>Paper records are labeled</span>
+        <span className="mono muted">Not prefilled</span>
       </div>
 
       <div className="next-preview" aria-hidden="true">

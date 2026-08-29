@@ -1,6 +1,6 @@
 # MANDATE Agent Advantage benchmark protocol
 
-Status: **three human/direct-API baselines are archived and hash-checked; 0/3 independent marketplace hires have been recorded. The final qualifying report is pending**.
+Status: **3/3 independent marketplace hires are completed and verified on BSC Testnet. The final hire-backed Agent Advantage Report has been generated from Jobs #642, #644, and #666**.
 
 ## Official qualification rule
 
@@ -33,19 +33,19 @@ The inputs, constraints, candidate rows, and rubric are returned by `GET /api/be
 - Agent cost must include marketplace service price and chain fees if hired onchain. Human cost is elapsed time multiplied by a disclosed hourly labour assumption. Test U and tBNB are reported separately from USD and are never presented as real monetary spend.
 - Any intervention, failed run, retry, or revealed answer invalidates that attempt and must be disclosed.
 
-## Archived baseline evidence (not yet qualifying)
+## Archived baseline evidence
 
-A real person completed all three no-agent worksheets before the direct API results were revealed. All six historical bundles are retained under `evidence/termix/raw`. They remain useful reproducibility baselines, but none contains an independent marketplace hire. The archived HTML/PDF must be regenerated only after three hire-backed outputs are recorded.
+A real person completed all three no-agent worksheets before the original direct-API results were revealed. Those historical bundles remain useful reproducibility baselines, but the direct-API outputs are not counted as marketplace hires. The final report instead uses new agent round trips gated by the completed, funded jobs listed in `public/evidence/termix/onchain-hires.json`.
 
 ## Recorded runs
 
 | Task | Path | UTC | Time | Quality | Raw output |
 |---|---|---|---:|---:|---|
-| A-01 | Human, no agent | 2026-08-12 04:36:25 | 290.004 s | 2/10 | `evidence/termix/raw/A-01-baseline.json` |
-| A-01 | YieldRoute Agent #1806 | 2026-08-12 05:00:29 | 271.8 ms browser round trip | 10/10 | `evidence/termix/raw/A-01-agent.json` |
-| A-02 | Human, no agent | 2026-08-12 04:48:36 | 233.650 s | 4/10 | `evidence/termix/raw/A-02-baseline.json` |
-| A-02 | GridPilot Agent #1805 | 2026-08-12 04:59:36 | 269.6 ms browser round trip | 10/10 | `evidence/termix/raw/A-02-agent.json` |
-| A-03 | Human, no agent | 2026-08-12 04:57:31 | 226.700 s | 8/10 | `evidence/termix/raw/A-03-baseline.json` |
-| A-03 | LiqShield Agent #1807 | 2026-08-12 04:59:44 | 290.8 ms browser round trip | 10/10 | `evidence/termix/raw/A-03-agent.json` |
+| A-01 | Human, no agent | 2026-08-12 04:36:25 | 290.004 s | 2/10 | `public/evidence/termix/raw/A-01-baseline.json` |
+| A-01 | YieldRoute Agent #1806, Job #642 | 2026-08-26 | 2.986 s production round trip | 10/10 | `public/evidence/termix/raw/A-01-agent.json` |
+| A-02 | Human, no agent | 2026-08-12 04:48:36 | 233.650 s | 4/10 | `public/evidence/termix/raw/A-02-baseline.json` |
+| A-02 | GridPilot Agent #1805, Job #644 | 2026-08-26 | 0.480 s production round trip | 10/10 | `public/evidence/termix/raw/A-02-agent.json` |
+| A-03 | Human, no agent | 2026-08-12 04:57:31 | 226.700 s | 8/10 | `public/evidence/termix/raw/A-03-baseline.json` |
+| A-03 | LiqShield Agent #1807, Job #666 | 2026-08-26 | 0.478 s production round trip | 10/10 | `public/evidence/termix/raw/A-03-agent.json` |
 
-The agent times above are browser-observed round trips to the public production API. Server compute time is retained inside each raw JSON file. Both paths had $0 observed incremental cash cost, so no paid-service cost advantage is claimed. A-02's integral metric crossed a Python-float/JavaScript-Number wire boundary; `A-02-verification.json` documents the schema-preserving normalization that reproduces the recorded hash.
+The qualifying agent times above are production API round trips after onchain hire verification; the A-01 cold start is retained. Server compute time is retained inside each raw JSON file. Each marketplace service cost 0.1 test U, while test U and tBNB are assigned no fiat value. The experiment measures workflow execution rather than real-capital trading profitability. A-02's integral metric crossed a Python-float/JavaScript-Number wire boundary; `public/evidence/termix/raw/A-02-verification.json` documents the schema-preserving normalization that reproduces the recorded hash.
