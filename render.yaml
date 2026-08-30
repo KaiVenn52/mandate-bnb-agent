@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: mandate-provider-yield
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./backend/provider_service/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    maxShutdownDelaySeconds: 60
+    envVars:
+      - key: MANDATE_PROVIDER_PRIVATE_KEY
+        sync: false
+      - key: PROVIDER_CATEGORY
+        value: yield
+      - key: PROVIDER_NAME
+        value: MANDATE YieldRoute Provider B
+      - key: PROVIDER_RPC_URL
+        value: https://data-seed-prebsc-1-s1.bnbchain.org:8545
+      - key: PROVIDER_ASSET_TO
+        value: 0xc70B8741B8B07A6d61E54fd4B20f22Fa648E5565
+      - key: PROVIDER_ASSET_DATA
+        value: 0x095ea7b3000000000000000000000000a206c0517b6371c6638cd9e4a42cc9f02a33b0de0000000000000000000000000000000000000000000000000000000000000001
+      - key: PROVIDER_ASSET_VALUE_WEI
+        value: "0"
+      - key: PROVIDER_MAX_VALUE_WEI
+        value: "1"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: mandate-provider-state
+          property: connectionString
+
+databases:
+  - name: mandate-provider-state
+    plan: free
+    region: singapore
+    databaseName: mandate_provider
+    user: mandate_provider

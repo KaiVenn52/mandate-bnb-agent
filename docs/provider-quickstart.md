@@ -50,6 +50,19 @@ Run exactly one process for a given wallet/category. The included job lock is
 process-local; a multi-worker deployment needs a shared distributed lock before
 it can safely use the same signer.
 
+For a restart-safe public deployment, the repository also includes `render.yaml`
+and `backend/provider_service/Dockerfile`. The Blueprint creates one free web
+service plus a free PostgreSQL database in Singapore. Render injects the public
+HTTPS URL automatically, while receipts and deliverables are stored in Postgres
+instead of the container filesystem. During Blueprint creation, enter
+`MANDATE_PROVIDER_PRIVATE_KEY` only in Render's secret field; never paste it into
+source code, a chat message, or a `VITE_*` variable.
+
+The checked-in yield-worker example uses one exact, zero-value BSC Testnet call:
+`approve(AgenticCommerce, 1)` on the test U token. This is a capability receipt,
+not an investment or yield claim. Replace it with an audited category-specific
+testnet action before claiming deeper protocol execution.
+
 Publish these routes over HTTPS:
 
 - `GET /.well-known/agent-card.json` — official A2A card;

@@ -47,3 +47,8 @@ def test_public_url_validation_rejects_credentials_and_local_hosts():
     assert worker._valid_public_https("https://worker.local") is False
     assert worker._valid_public_https("https://10.0.0.1") is False
     assert worker._valid_public_https("https://169.254.169.254") is False
+
+
+def test_render_external_url_is_supported(monkeypatch):
+    monkeypatch.setattr(worker, "PUBLIC_BASE_URL", "https://mandate-provider-yield.onrender.com")
+    assert worker._base_url() == "https://mandate-provider-yield.onrender.com"

@@ -94,6 +94,8 @@ The repository includes a separate, fail-closed provider worker for teams that
 want to become directly hireable with their own wallet and bounded BSC Testnet
 receipts. It is not mounted into MANDATE's public buyer gateway and never sends
 a signing key to the browser. See [provider-quickstart.md](docs/provider-quickstart.md).
+The included Render Blueprint runs exactly one worker and stores its receipts in
+PostgreSQL so container restarts do not erase the public evidence trail.
 
 ## Architecture
 

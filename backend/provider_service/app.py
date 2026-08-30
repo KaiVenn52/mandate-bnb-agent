@@ -43,9 +43,13 @@ U_TOKEN_ADDRESS = os.getenv(
 )
 RPC_URL = os.getenv("PROVIDER_RPC_URL", "https://data-seed-prebsc-1-s1.bnbchain.org:8545")
 PRIVATE_KEY = os.getenv("MANDATE_PROVIDER_PRIVATE_KEY", "").strip()
-PUBLIC_BASE_URL = os.getenv("PROVIDER_PUBLIC_BASE_URL", "").strip().rstrip("/")
+PUBLIC_BASE_URL = (
+    os.getenv("PROVIDER_PUBLIC_BASE_URL", "").strip()
+    or os.getenv("RENDER_EXTERNAL_URL", "").strip()
+).rstrip("/")
 CATEGORY = os.getenv("PROVIDER_CATEGORY", "yield").strip().lower()
 PROVIDER_NAME = os.getenv("PROVIDER_NAME", f"MANDATE {CATEGORY.title()} Provider").strip()
+DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
 RECEIPTS_FILE = Path(os.getenv("PROVIDER_RECEIPTS_FILE", ".provider-receipts.json"))
 DELIVERABLES_FILE = Path(os.getenv("PROVIDER_DELIVERABLES_FILE", ".provider-deliverables.json"))
 TRACK_RECORD_FILE = Path(os.getenv("PROVIDER_TRACK_RECORD_FILE", "")).expanduser() if os.getenv("PROVIDER_TRACK_RECORD_FILE") else None
@@ -117,6 +121,22 @@ def _valid_public_https(value: str) -> bool:
 
 
 def _read_json(path: Path, default: Any) -> Any:
+    state_key = _database_state_key(path)
+    if DATABASE_URL and state_key:
+        try:
+            import psycopg
+
+            with psycopg.connect(DATABASE_URL) as connection:
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        "CREATE TABLE IF NOT EXISTS mandate_provider_state "
+                        "(key TEXT PRIMARY KEY, value JSONB NOT NULL, updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())"
+                    )
+                    cursor.execute("SELECT value FROM mandate_provider_state WHERE key = %s", (state_key,))
+                    row = cursor.fetchone()
+                    return row[0] if row else default
+        except Exception as exc:
+            raise RuntimeError("Provider durable state database is unavailable.") from exc
     try:
         return json.loads(path.read_text(encoding="utf-8"))
     except (FileNotFoundError, OSError, ValueError):
@@ -124,10 +144,38 @@ def _read_json(path: Path, default: Any) -> Any:
 
 
 def _write_json(path: Path, value: Any) -> None:
+    state_key = _database_state_key(path)
+    if DATABASE_URL and state_key:
+        try:
+            import psycopg
+            from psycopg.types.json import Jsonb
+
+            with psycopg.connect(DATABASE_URL) as connection:
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        "CREATE TABLE IF NOT EXISTS mandate_provider_state "
+                        "(key TEXT PRIMARY KEY, value JSONB NOT NULL, updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())"
+                    )
+                    cursor.execute(
+                        "INSERT INTO mandate_provider_state (key, value, updated_at) VALUES (%s, %s, NOW()) "
+                        "ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()",
+                        (state_key, Jsonb(value)),
+                    )
+            return
+        except Exception as exc:
+            raise RuntimeError("Provider durable state database is unavailable.") from exc
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(f".{path.name}.tmp")
     temporary.write_text(json.dumps(value, indent=2, sort_keys=True), encoding="utf-8")
     os.replace(temporary, path)
+
+
+def _database_state_key(path: Path) -> str | None:
+    if path == RECEIPTS_FILE:
+        return f"{CATEGORY}:receipts"
+    if path == DELIVERABLES_FILE:
+        return f"{CATEGORY}:deliverables"
+    return None
 
 
 def _receipt_hashes() -> list[str]:
@@ -564,6 +612,7 @@ def health() -> dict[str, Any]:
         "provider_address": _provider_address() if PRIVATE_KEY else None,
         "signer_configured": bool(PRIVATE_KEY),
         "asset_execution_configured": bool(ASSET_TARGET and ASSET_DATA),
+        "durable_state_configured": bool(DATABASE_URL),
         "execution_receipt_count": len(_receipt_hashes()),
         "note": "A missing signer or asset target keeps execution unavailable.",
     }
