@@ -7,7 +7,6 @@ services:
     dockerfilePath: ./backend/provider_service/Dockerfile
     dockerContext: .
     healthCheckPath: /health
-    maxShutdownDelaySeconds: 60
     envVars:
       - key: MANDATE_PROVIDER_PRIVATE_KEY
         sync: false
