@@ -53,6 +53,7 @@ const trust = injected({
 })
 
 const walletConnectProjectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID?.trim()
+  || '40eb8782835cc76f9b21b488e3fcbef9'
 
 const remoteWalletConnectors = walletConnectProjectId
   ? [walletConnect({

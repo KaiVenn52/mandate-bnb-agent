@@ -64,7 +64,7 @@ npm run preview
 
 - MetaMask uses the official MetaMask Connect connector, including its mobile QR fallback.
 - Installed Bitget, Binance, OKX, Trust, Coinbase and other EVM extensions are discovered through EIP-6963 with legacy injected-provider fallbacks where the wallet documents one.
-- Set the public `VITE_WALLETCONNECT_PROJECT_ID` from the Reown dashboard to expose one WalletConnect QR option for compatible mobile wallets. If it is unset, MANDATE does not show a non-functional QR button.
+- The repository includes MANDATE's public Reown Project ID so the WalletConnect QR option works in the deployed app. `VITE_WALLETCONNECT_PROJECT_ID` can override it for forks; this identifier is public and is not a wallet secret.
 - Wallet connection only exposes the selected public account. Every BSC Testnet state change still needs a separate wallet confirmation.
 
 ## Run the guarded BNB Agent gateway
