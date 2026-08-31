@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
 import {
   Activity,
@@ -7,6 +7,7 @@ import {
   ExternalLink,
   Laptop,
   LoaderCircle,
+  RefreshCw,
   ShieldCheck,
   Smartphone,
   Wallet,
@@ -24,13 +25,19 @@ type WalletProfile = {
   priority: number
 }
 
+type WalletAvailability = 'checking' | 'available' | 'unavailable'
+
+function supportsRemoteConnection(id: string) {
+  return id === 'metaMaskSDK' || id === 'coinbaseWalletSDK'
+}
+
 function walletProfile(id: string, name: string): WalletProfile {
   const identity = `${id} ${name}`.toLowerCase()
   if (identity.includes('bitget') || identity.includes('bitkeep')) {
     return { mark: 'BG', tone: 'bitget', description: 'Recommended for the submission wallet', priority: 0 }
   }
   if (identity.includes('metamask')) {
-    return { mark: 'MM', tone: 'metamask', description: 'Extension or MetaMask mobile', priority: 1 }
+    return { mark: 'MM', tone: 'metamask', description: 'Extension or scan with MetaMask Mobile', priority: 1 }
   }
   if (identity.includes('coinbase')) {
     return { mark: 'CB', tone: 'coinbase', description: 'Extension or Coinbase Wallet mobile', priority: 2 }
@@ -50,6 +57,9 @@ function walletProfile(id: string, name: string): WalletProfile {
 function friendlyConnectionError(error: unknown) {
   const message = error instanceof Error ? error.message : String(error)
   if (/rejected|denied|declined|4001/i.test(message)) return ''
+  if (/failed to fetch dynamically imported module|cannot find.*connect-evm/i.test(message)) {
+    return 'The MetaMask connection module did not load. Refresh this page and try again.'
+  }
   if (/provider|install|not found|unavailable/i.test(message)) {
     return 'Wallet not detected. Install or open it, then try again.'
   }
@@ -64,6 +74,8 @@ function WalletButton() {
   const [showWallets, setShowWallets] = useState(false)
   const [pendingConnectorId, setPendingConnectorId] = useState<string | null>(null)
   const [connectionError, setConnectionError] = useState('')
+  const [availability, setAvailability] = useState<Record<string, WalletAvailability>>({})
+  const [isDetecting, setIsDetecting] = useState(false)
   const dialogRef = useRef<HTMLDialogElement>(null)
 
   const uniqueConnectors = useMemo(() => {
@@ -80,6 +92,26 @@ function WalletButton() {
     })
   }, [connectors])
 
+  const detectWallets = useCallback(async () => {
+    setIsDetecting(true)
+    setConnectionError('')
+    setAvailability(Object.fromEntries(uniqueConnectors.map((connector) => [connector.uid, 'checking'])))
+
+    const results = await Promise.all(uniqueConnectors.map(async (connector) => {
+      if (supportsRemoteConnection(connector.id)) return [connector.uid, 'available'] as const
+
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        const provider = await connector.getProvider().catch(() => undefined)
+        if (provider) return [connector.uid, 'available'] as const
+        if (attempt < 2) await new Promise((resolve) => window.setTimeout(resolve, 350))
+      }
+      return [connector.uid, 'unavailable'] as const
+    }))
+
+    setAvailability(Object.fromEntries(results))
+    setIsDetecting(false)
+  }, [uniqueConnectors])
+
   useEffect(() => {
     const dialog = dialogRef.current
     if (!dialog) return
@@ -87,14 +119,29 @@ function WalletButton() {
     if (!showWallets && dialog.open) dialog.close()
   }, [showWallets])
 
+  useEffect(() => {
+    if (showWallets) void detectWallets()
+  }, [detectWallets, showWallets])
+
+  const availableConnectors = useMemo(
+    () => uniqueConnectors.filter((connector) => availability[connector.uid] !== 'unavailable'),
+    [availability, uniqueConnectors],
+  )
+
   const chooseWallet = async (connector: (typeof connectors)[number]) => {
     setPendingConnectorId(connector.uid)
     setConnectionError('')
+    if (dialogRef.current?.open) dialogRef.current.close()
+    setShowWallets(false)
+    await new Promise((resolve) => window.setTimeout(resolve, 0))
     try {
       await connectAsync({ connector })
-      setShowWallets(false)
     } catch (error) {
-      setConnectionError(friendlyConnectionError(error))
+      const friendlyError = friendlyConnectionError(error)
+      if (friendlyError) {
+        setConnectionError(friendlyError)
+        setShowWallets(true)
+      }
     } finally {
       setPendingConnectorId(null)
     }
@@ -160,15 +207,16 @@ function WalletButton() {
           </div>
 
           <div className="wallet-options" aria-label="Available wallet connections">
-            {uniqueConnectors.length ? uniqueConnectors.map((connector) => {
+            {availableConnectors.length ? availableConnectors.map((connector) => {
               const profile = walletProfile(connector.id, connector.name)
               const connecting = isPending && pendingConnectorId === connector.uid
+              const checking = availability[connector.uid] !== 'available'
               return (
                 <button
                   className="wallet-option"
                   key={connector.uid}
                   type="button"
-                  disabled={isPending}
+                  disabled={isPending || checking}
                   aria-busy={connecting}
                   onClick={() => chooseWallet(connector)}
                 >
@@ -177,7 +225,7 @@ function WalletButton() {
                     <strong>{connector.name}</strong>
                     <small>{profile.description}</small>
                   </span>
-                  {connecting ? <LoaderCircle className="spin" size={18} aria-hidden="true" /> : profile.priority === 0 ? <span className="wallet-recommended"><Check size={12} /> Best fit</span> : <ChevronRight size={18} aria-hidden="true" />}
+                  {connecting || checking ? <LoaderCircle className="spin" size={18} aria-hidden="true" /> : profile.priority === 0 ? <span className="wallet-recommended"><Check size={12} /> Best fit</span> : <ChevronRight size={18} aria-hidden="true" />}
                 </button>
               )
             }) : (
@@ -186,6 +234,10 @@ function WalletButton() {
                 <div><strong>No browser wallet detected</strong><p>Install a wallet or open this site inside its DApp browser.</p></div>
               </div>
             )}
+            <button className="wallet-detect" type="button" disabled={isDetecting || isPending} onClick={() => void detectWallets()}>
+              <RefreshCw className={isDetecting ? 'spin' : ''} size={14} aria-hidden="true" />
+              {isDetecting ? 'Detecting wallets…' : 'Detect wallets again'}
+            </button>
           </div>
 
           {connectionError ? <div className="wallet-error" role="alert"><strong>Connection failed</strong><span>{connectionError}</span></div> : null}
