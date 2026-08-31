@@ -28,7 +28,7 @@ type WalletProfile = {
 type WalletAvailability = 'checking' | 'available' | 'unavailable'
 
 function supportsRemoteConnection(id: string) {
-  return id === 'metaMaskSDK' || id === 'coinbaseWalletSDK'
+  return id === 'metaMaskSDK' || id === 'walletConnect'
 }
 
 function walletProfile(id: string, name: string): WalletProfile {
@@ -42,14 +42,17 @@ function walletProfile(id: string, name: string): WalletProfile {
   if (identity.includes('coinbase')) {
     return { mark: 'CB', tone: 'coinbase', description: 'Extension or Coinbase Wallet mobile', priority: 2 }
   }
+  if (identity.includes('walletconnect')) {
+    return { mark: 'QR', tone: 'walletconnect', description: 'Scan with Bitget, Binance, OKX, Trust, or another mobile wallet', priority: 3 }
+  }
   if (identity.includes('binance')) {
-    return { mark: 'BN', tone: 'binance', description: 'Connect the Binance Wallet extension', priority: 3 }
+    return { mark: 'BN', tone: 'binance', description: 'Detected Binance Wallet extension', priority: 4 }
   }
   if (identity.includes('okx')) {
-    return { mark: 'OK', tone: 'okx', description: 'Connect the OKX Wallet extension', priority: 4 }
+    return { mark: 'OK', tone: 'okx', description: 'Detected OKX Wallet extension', priority: 5 }
   }
   if (identity.includes('trust')) {
-    return { mark: 'TW', tone: 'trust', description: 'Extension or Trust Wallet DApp browser', priority: 5 }
+    return { mark: 'TW', tone: 'trust', description: 'Detected extension or Trust Wallet DApp browser', priority: 6 }
   }
   return { mark: 'WEB', tone: 'browser', description: 'Use an installed EVM browser wallet', priority: 8 }
 }
@@ -127,6 +130,8 @@ function WalletButton() {
     () => uniqueConnectors.filter((connector) => availability[connector.uid] !== 'unavailable'),
     [availability, uniqueConnectors],
   )
+
+  const hasWalletConnect = uniqueConnectors.some((connector) => connector.id === 'walletConnect')
 
   const chooseWallet = async (connector: (typeof connectors)[number]) => {
     setPendingConnectorId(connector.uid)
@@ -244,8 +249,9 @@ function WalletButton() {
 
           <div className="wallet-more">
             <div><Smartphone size={17} aria-hidden="true" /><span><strong>Using a phone?</strong><small>Open MANDATE inside Bitget, Binance, OKX, or Trust Wallet's DApp browser.</small></span></div>
-            <div className="wallet-supported" aria-label="Supported wallet families">
-              <span>Bitget</span><span>MetaMask</span><span>Binance</span><span>OKX</span><span>Trust</span><span>Coinbase</span>
+            <div className="wallet-supported" aria-label="Wallet connection coverage">
+              <span>Installed extensions appear automatically</span>
+              <span>{hasWalletConnect ? 'Mobile wallets available by QR' : 'Mobile QR pending configuration'}</span>
             </div>
           </div>
 

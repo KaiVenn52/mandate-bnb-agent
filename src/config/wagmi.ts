@@ -1,6 +1,6 @@
 import { createConfig } from 'wagmi'
 import { bsc, bscTestnet } from 'wagmi/chains'
-import { coinbaseWallet, injected, metaMask } from 'wagmi/connectors'
+import { injected, metaMask, walletConnect } from 'wagmi/connectors'
 import { fallback, http, type EIP1193Provider } from 'viem'
 
 type WalletWindow = Window & {
@@ -52,15 +52,30 @@ const trust = injected({
   },
 })
 
+const walletConnectProjectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID?.trim()
+
+const remoteWalletConnectors = walletConnectProjectId
+  ? [walletConnect({
+      projectId: walletConnectProjectId,
+      showQrModal: true,
+      metadata: {
+        name: 'MANDATE',
+        description: 'Outcome-first BNB Agent Marketplace',
+        url: 'https://mandate-bnb-agent.vercel.app',
+        icons: ['https://mandate-bnb-agent.vercel.app/favicon.svg'],
+      },
+    })]
+  : []
+
 export const wagmiConfig = createConfig({
   chains: [bscTestnet, bsc],
   connectors: [
     bitget,
     metaMask(),
-    coinbaseWallet({ appName: 'MANDATE' }),
     binance,
     okx,
     trust,
+    ...remoteWalletConnectors,
     injected(),
   ],
   transports: {
