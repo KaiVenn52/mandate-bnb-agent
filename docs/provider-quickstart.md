@@ -58,6 +58,13 @@ instead of the container filesystem. During Blueprint creation, enter
 `MANDATE_PROVIDER_PRIVATE_KEY` only in Render's secret field; never paste it into
 source code, a chat message, or a `VITE_*` variable.
 
+Render probes `GET /health`, which deliberately reports process liveness without
+depending on RPC or PostgreSQL. After deployment, verify `GET /ready`: it only
+succeeds when the signer, public URL, bounded execution scope, BSC Testnet RPC,
+and durable receipt store are all usable. If `/health` reports an `invalid`
+signer status, replace the Render secret with the intended provider wallet's
+private key; do not paste that key anywhere else.
+
 The checked-in yield-worker example uses one exact, zero-value BSC Testnet call:
 `approve(AgenticCommerce, 1)` on the test U token. This is a capability receipt,
 not an investment or yield claim. Replace it with an audited category-specific
@@ -66,6 +73,8 @@ testnet action before claiming deeper protocol execution.
 Publish these routes over HTTPS:
 
 - `GET /.well-known/agent-card.json` — official A2A card;
+- `GET /health` — process liveness and non-secret configuration summary;
+- `GET /ready` — fail-closed autonomous execution readiness;
 - `GET /mandate/capability` — `mandate.provider-service.v1`;
 - `POST /mandate/accept` — signed exact-mandate acceptance;
 - `POST /mandate/execute` or A2A `message/send` — one bounded provider action;

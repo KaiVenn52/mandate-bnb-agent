@@ -10,9 +10,23 @@ def test_provider_worker_is_fail_closed_without_signer(monkeypatch):
     monkeypatch.setattr(worker, "PRIVATE_KEY", "")
     status = worker.health()
     assert status["signer_configured"] is False
+    assert status["signer_status"] == "missing"
+    assert status["ok"] is True
     assert status["asset_execution_configured"] is False
     with pytest.raises(HTTPException) as failure:
         worker.capability()
+    assert failure.value.status_code == 503
+
+
+def test_liveness_survives_invalid_signer_without_claiming_readiness(monkeypatch):
+    monkeypatch.setattr(worker, "PRIVATE_KEY", "not-a-private-key")
+    status = worker.health()
+    assert status["ok"] is True
+    assert status["provider_address"] is None
+    assert status["signer_configured"] is True
+    assert status["signer_status"] == "invalid"
+    with pytest.raises(HTTPException) as failure:
+        worker.ready()
     assert failure.value.status_code == 503
 
 

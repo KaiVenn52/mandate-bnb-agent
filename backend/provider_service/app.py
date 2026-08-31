@@ -604,17 +604,53 @@ _INFLIGHT_LOCK = threading.Lock()
 
 @app.get("/health")
 def health() -> dict[str, Any]:
+    # Render uses this route as a liveness probe. It must only report whether
+    # the HTTP process is alive; signer, database and RPC readiness belong to
+    # the separate readiness route below.
+    provider_address: str | None = None
+    signer_status = "missing"
+    if PRIVATE_KEY:
+        try:
+            provider_address = Account.from_key(PRIVATE_KEY).address
+            signer_status = "ready"
+        except Exception:
+            signer_status = "invalid"
     return {
         "ok": True,
         "service": "mandate-independent-provider",
         "category": CATEGORY,
         "chain_id": CHAIN_ID,
-        "provider_address": _provider_address() if PRIVATE_KEY else None,
+        "provider_address": provider_address,
         "signer_configured": bool(PRIVATE_KEY),
+        "signer_status": signer_status,
         "asset_execution_configured": bool(ASSET_TARGET and ASSET_DATA),
         "durable_state_configured": bool(DATABASE_URL),
-        "execution_receipt_count": len(_receipt_hashes()),
-        "note": "A missing signer or asset target keeps execution unavailable.",
+        "note": "Liveness only. Use /ready for signer, durable state and RPC readiness.",
+    }
+
+
+@app.get("/ready")
+def ready() -> dict[str, Any]:
+    """Fail closed unless every autonomous-execution dependency is usable."""
+    provider_address = _provider_address()
+    _base_url()
+    scope = _scope()
+    client = _w3()
+    try:
+        receipt_count = len(_receipt_hashes())
+    except RuntimeError as exc:
+        raise HTTPException(503, str(exc)) from exc
+    return {
+        "ok": True,
+        "service": "mandate-independent-provider",
+        "provider_address": provider_address,
+        "category": CATEGORY,
+        "chain_id": CHAIN_ID,
+        "rpc_connected": client.is_connected(),
+        "asset_execution_configured": bool(ASSET_TARGET and ASSET_DATA),
+        "durable_state_available": True,
+        "execution_receipt_count": receipt_count,
+        "execution_scope": scope,
     }
 
 
