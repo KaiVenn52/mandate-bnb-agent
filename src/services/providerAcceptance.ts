@@ -273,6 +273,24 @@ async function getProviderJson(endpoint: string, signal?: AbortSignal): Promise<
   }
 }
 
+async function resolveCompactAcceptanceEndpoint(agent: RegistryAgentDiscovery, signal?: AbortSignal) {
+  const declaredEndpoint = endpointFor(agent)
+  const capability = await getProviderJson(declaredEndpoint, signal).catch(() => null)
+  if (capability?.status !== 200 || !capability.payload || typeof capability.payload !== 'object') return declaredEndpoint
+  const document = capability.payload as Record<string, unknown>
+  if (document.schema !== 'mandate.provider-service.v1' || typeof document.acceptance_endpoint !== 'string') return declaredEndpoint
+  try {
+    const advertised = new URL(document.acceptance_endpoint, declaredEndpoint)
+    const declared = new URL(declaredEndpoint)
+    // The registry owner selected the declared host. Do not allow its document
+    // to turn the buyer's signed mandate into a request to an unrelated host.
+    if (advertised.hostname !== declared.hostname || !isPublicHttpsEndpoint(advertised.toString())) return declaredEndpoint
+    return advertised.toString()
+  } catch {
+    return declaredEndpoint
+  }
+}
+
 function isJsonRpcEnvelope(payload: unknown): payload is Record<string, unknown> {
   return Boolean(payload && typeof payload === 'object' && (payload as Record<string, unknown>).jsonrpc === '2.0')
 }
@@ -506,7 +524,10 @@ export async function requestProviderAcceptance(
   request: ProviderAcceptanceRequest,
   signal?: AbortSignal,
 ): Promise<ProviderAcceptanceReceipt> {
-  const endpoint = endpointFor(agent)
+  // A MANDATE provider registers its public capability document in ERC-8004;
+  // the document, in turn, advertises the POST-only acceptance endpoint. Do
+  // not POST the mandate to the GET-only capability URL.
+  const endpoint = await resolveCompactAcceptanceEndpoint(agent, signal)
   const result = await postProviderJson(endpoint, request, signal)
   const payload = result.payload as Partial<ProviderAcceptanceReceipt> | null
   const expectedProvider = request.candidate.provider_wallet.toLowerCase()
