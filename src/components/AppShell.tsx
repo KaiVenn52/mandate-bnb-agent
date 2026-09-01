@@ -28,7 +28,7 @@ type WalletProfile = {
 type WalletAvailability = 'checking' | 'available' | 'unavailable'
 
 function supportsRemoteConnection(id: string) {
-  return id === 'metaMaskSDK' || id === 'walletConnect'
+  return id === 'walletConnect'
 }
 
 function walletProfile(id: string, name: string): WalletProfile {
@@ -37,7 +37,7 @@ function walletProfile(id: string, name: string): WalletProfile {
     return { mark: 'BG', tone: 'bitget', description: 'Recommended for the submission wallet', priority: 0 }
   }
   if (identity.includes('metamask')) {
-    return { mark: 'MM', tone: 'metamask', description: 'Extension or scan with MetaMask Mobile', priority: 1 }
+    return { mark: 'MM', tone: 'metamask', description: 'Detected MetaMask browser extension', priority: 1 }
   }
   if (identity.includes('coinbase')) {
     return { mark: 'CB', tone: 'coinbase', description: 'Extension or Coinbase Wallet mobile', priority: 2 }

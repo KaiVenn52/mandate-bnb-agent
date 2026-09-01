@@ -1,6 +1,6 @@
 import { createConfig } from 'wagmi'
 import { bsc, bscTestnet } from 'wagmi/chains'
-import { injected, metaMask, walletConnect } from 'wagmi/connectors'
+import { injected, walletConnect } from 'wagmi/connectors'
 import { fallback, http, type EIP1193Provider } from 'viem'
 
 type WalletWindow = Window & {
@@ -52,6 +52,15 @@ const trust = injected({
   },
 })
 
+// Use MetaMask's injected EIP-1193 provider for desktop extension sessions.
+// The MetaMask SDK connector can route desktop requests through its remote
+// transport and time out before the extension ever displays a confirmation.
+// Mobile MetaMask remains available through WalletConnect below.
+const metamask = injected({
+  target: 'metaMask',
+  unstable_shimAsyncInject: 2_000,
+})
+
 const walletConnectProjectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID?.trim()
   || '40eb8782835cc76f9b21b488e3fcbef9'
 
@@ -72,7 +81,7 @@ export const wagmiConfig = createConfig({
   chains: [bscTestnet, bsc],
   connectors: [
     bitget,
-    metaMask(),
+    metamask,
     binance,
     okx,
     trust,

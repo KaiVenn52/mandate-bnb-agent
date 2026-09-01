@@ -131,7 +131,11 @@ export async function probeProviderCapability(
   const endpointUrl = httpsUrl(endpoint, 'Provider service endpoint')
   if (!isAddress(expectedProvider)) throw new Error('Connected provider wallet is not a valid EVM address.')
   const controller = new AbortController()
-  const timeout = window.setTimeout(() => controller.abort(), 10_000)
+  // Free provider hosts can cold-start for close to a minute. Registration is
+  // intentionally gated on this probe, so a short timeout prevents the wallet
+  // request from ever opening even when the provider is healthy.
+  const capabilityTimeoutMs = 65_000
+  const timeout = window.setTimeout(() => controller.abort(), capabilityTimeoutMs)
   const abort = () => controller.abort()
   signal?.addEventListener('abort', abort, { once: true })
   try {
@@ -174,7 +178,7 @@ export async function probeProviderCapability(
       trackRecord: document.track_record,
     }
   } catch (reason) {
-    if (reason instanceof DOMException && reason.name === 'AbortError') throw new Error('Provider capability endpoint timed out after 10 seconds.')
+    if (reason instanceof DOMException && reason.name === 'AbortError') throw new Error('Provider capability endpoint timed out after 65 seconds.')
     throw reason instanceof Error ? reason : new Error('Provider capability probe failed.')
   } finally {
     window.clearTimeout(timeout)
