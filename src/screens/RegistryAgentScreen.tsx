@@ -5,7 +5,7 @@ import { isAddress } from 'viem'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { getCategory } from '../catalog'
 import { fetchRegistryAgent, isPublicHttpsEndpoint } from '../services/agentRegistry'
-import { loadMandateDraft } from '../services/mandateDraft'
+import { loadMandateDraft, parseMandate, saveMandateDraft } from '../services/mandateDraft'
 import { buildProviderAcceptanceRequest, mandateDigest, requestProviderAcceptance, type ProviderAcceptanceReceipt } from '../services/providerAcceptance'
 
 export function RegistryAgentScreen() {
@@ -64,6 +64,15 @@ export function RegistryAgentScreen() {
     window.setTimeout(() => setCopied(false), 1600)
   }
   const candidateParams = new URLSearchParams({ category: category.id, candidate: agent.tokenId })
+
+  const continueWithAcceptance = () => {
+    // Direct ERC-8004 profile links are a supported marketplace entry point.
+    // If this browser has no draft yet, persist the exact category mandate
+    // that the provider just signed so OpenMandateScreen can reproduce the
+    // same digest and constraints instead of presenting a disabled dead end.
+    if (!mandate) saveMandateDraft(parseMandate(category.prompt, category.id))
+    navigate(`/open-mandate?${candidateParams}${acceptance ? `&acceptance=${encodeURIComponent(acceptance.mandate_digest)}` : ''}`)
+  }
 
   const requestAcceptance = async () => {
     setAcceptanceError('')
@@ -129,7 +138,7 @@ export function RegistryAgentScreen() {
             {acceptanceError ? <div className="external-acceptance-error" role="alert"><ShieldAlert size={16} /><span>{acceptanceError}</span></div> : null}
             <div className="external-invite-actions">
               <button className="button button-secondary" type="button" onClick={copyBrief}>{copied ? <Check size={16} /> : <Copy size={16} />} {copied ? 'Brief copied' : 'Copy provider brief'}</button>
-              <button className="button button-primary" type="button" disabled={!mandate || !agent.isActive} onClick={() => navigate(`/open-mandate?${candidateParams}${acceptance ? `&acceptance=${encodeURIComponent(acceptance.mandate_digest)}` : ''}`)}>{acceptance ? 'Use verified acceptance' : 'Create Open Mandate'} <ArrowRight size={16} /></button>
+              <button className="button button-primary" type="button" disabled={!agent.isActive} onClick={continueWithAcceptance}>{acceptance ? 'Use verified acceptance' : 'Create Open Mandate'} <ArrowRight size={16} /></button>
             </div>
           </section>
         </main>
