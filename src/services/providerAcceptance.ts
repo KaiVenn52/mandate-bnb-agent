@@ -496,12 +496,17 @@ export function loadProviderAcceptance(tokenId: string, digest: Hex): ProviderAc
   }
 }
 
-export async function verifyProviderAcceptance(receipt: ProviderAcceptanceReceipt, expectedProvider?: string, expectedMandateDigest?: Hex) {
+async function verifyProviderAcceptanceWithPolicy(
+  receipt: ProviderAcceptanceReceipt,
+  expectedProvider?: string,
+  expectedMandateDigest?: Hex,
+  requireUnexpired = true,
+) {
   if (expectedProvider && receipt.provider_address.toLowerCase() !== expectedProvider.toLowerCase()) return false
   if (expectedMandateDigest && receipt.mandate_digest.toLowerCase() !== expectedMandateDigest.toLowerCase()) return false
   const acceptedAt = Date.parse(receipt.accepted_at_utc)
   const expiresAt = Date.parse(receipt.expires_at_utc)
-  if (!Number.isFinite(acceptedAt) || !Number.isFinite(expiresAt) || acceptedAt > Date.now() + ACCEPTANCE_CLOCK_SKEW_MS || expiresAt <= Date.now() || expiresAt <= acceptedAt || expiresAt - acceptedAt > MAX_ACCEPTANCE_TTL_MS) return false
+  if (!Number.isFinite(acceptedAt) || !Number.isFinite(expiresAt) || acceptedAt > Date.now() + ACCEPTANCE_CLOCK_SKEW_MS || (requireUnexpired && expiresAt <= Date.now()) || expiresAt <= acceptedAt || expiresAt - acceptedAt > MAX_ACCEPTANCE_TTL_MS) return false
   if (receipt.protocol === 'a2a') {
     const negotiation = receipt.negotiation
     if (!negotiation) return false
@@ -511,12 +516,30 @@ export async function verifyProviderAcceptance(receipt: ProviderAcceptanceReceip
     const contract = negotiation?.verifying_contract
     const expiryValue = negotiation?.quote_expires_at ?? (negotiation?.response && typeof negotiation.response === 'object' ? (negotiation.response as Record<string, unknown>).quote_expires_at : undefined)
     const expiry = typeof expiryValue === 'number' ? expiryValue : typeof expiryValue === 'string' && /^\d+$/.test(expiryValue) ? Number(expiryValue) : NaN
-    if (!isHexHash(negotiationHash) || !isHexSignature(receipt.signature) || typeof quoteProvider !== 'string' || quoteProvider.toLowerCase() !== receipt.provider_address.toLowerCase() || chain !== 97 || typeof contract !== 'string' || contract.toLowerCase() !== ERC8183_COMMERCE_ADDRESS.toLowerCase() || !Number.isSafeInteger(expiry) || expiry <= Math.floor(Date.now() / 1000) || Math.floor(expiresAt / 1000) !== expiry) return false
+    if (!isHexHash(negotiationHash) || !isHexSignature(receipt.signature) || typeof quoteProvider !== 'string' || quoteProvider.toLowerCase() !== receipt.provider_address.toLowerCase() || chain !== 97 || typeof contract !== 'string' || contract.toLowerCase() !== ERC8183_COMMERCE_ADDRESS.toLowerCase() || !Number.isSafeInteger(expiry) || (requireUnexpired && expiry <= Math.floor(Date.now() / 1000)) || Math.floor(expiresAt / 1000) !== expiry) return false
     const derivedNegotiationHash = expectedA2ANegotiationHash(negotiation)
     if (!derivedNegotiationHash || derivedNegotiationHash.toLowerCase() !== negotiationHash.toLowerCase()) return false
     return verifyProviderSignature(receipt.provider_address, negotiationHash, receipt.signature)
   }
   return verifyProviderSignature(receipt.provider_address, receipt.mandate_digest, receipt.signature)
+}
+
+/**
+ * Use while a provider is still being selected. An expired quote must never
+ * authorize a new onchain assignment.
+ */
+export async function verifyProviderAcceptance(receipt: ProviderAcceptanceReceipt, expectedProvider?: string, expectedMandateDigest?: Hex) {
+  return verifyProviderAcceptanceWithPolicy(receipt, expectedProvider, expectedMandateDigest, true)
+}
+
+/**
+ * Re-check the acceptance attached to an already-assigned ERC-8183 job.
+ * Assignment is final, so later quote expiry must not deadlock a funded job;
+ * provider, mandate, timestamp bounds and cryptographic signature still fail
+ * closed. Callers must independently confirm the provider from onchain state.
+ */
+export async function verifyAssignedProviderAcceptance(receipt: ProviderAcceptanceReceipt, expectedProvider: string, expectedMandateDigest?: Hex) {
+  return verifyProviderAcceptanceWithPolicy(receipt, expectedProvider, expectedMandateDigest, false)
 }
 
 export async function requestProviderAcceptance(

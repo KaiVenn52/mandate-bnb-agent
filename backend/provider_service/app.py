@@ -261,6 +261,13 @@ def _sign_text(value: str) -> str:
     return "0x" + account.sign_message(encode_defunct(text=value)).signature.hex().removeprefix("0x")
 
 
+def _hex0x(value: Any) -> str:
+    """Return Web3/HexBytes values in the canonical EVM 0x-prefixed form."""
+
+    encoded = value.hex() if hasattr(value, "hex") else str(value)
+    return "0x" + encoded.removeprefix("0x")
+
+
 def _provider_address() -> str:
     return _account().address
 
@@ -314,7 +321,7 @@ def _send_transaction(w3: Web3, to: str, data: str, value: int = 0) -> str:
         raise HTTPException(502, "Provider transaction could not be broadcast or confirmed.") from exc
     if receipt.get("status") != 1:
         raise HTTPException(502, "Provider transaction reverted on BSC Testnet.")
-    return tx_hash.hex()
+    return _hex0x(tx_hash)
 
 
 def send_configured_asset(*, kind: str = "bootstrap") -> str:
@@ -392,7 +399,7 @@ def _submit_job(w3: Web3, job_id: int, manifest: dict[str, Any]) -> tuple[str, s
             raise HTTPException(409, "This ERC-8183 job already has a submitted or completed deliverable.")
         raise HTTPException(409, "The ERC-8183 job is not funded yet.")
     deliverable_url = f"{_base_url()}/mandate/deliverables/{job_id}.json"
-    deliverable_hash = Web3.keccak(text=_canonical(manifest)).hex()
+    deliverable_hash = _hex0x(Web3.keccak(text=_canonical(manifest)))
     opt_params = json.dumps({"deliverable_url": deliverable_url, "provider_service": PROVIDER_NAME}, separators=(",", ":")).encode()
     contract = w3.eth.contract(address=Web3.to_checksum_address(COMMERCE_ADDRESS), abi=COMMERCE_ABI)
     account = _account()
@@ -418,8 +425,9 @@ def _submit_job(w3: Web3, job_id: int, manifest: dict[str, Any]) -> tuple[str, s
         raise HTTPException(502, "Provider Commerce submission could not be broadcast or confirmed.") from exc
     if receipt.get("status") != 1:
         raise HTTPException(502, "Provider Commerce submission reverted on BSC Testnet.")
-    _remember_receipt(tx_hash.hex(), kind="erc8183-submit")
-    return tx_hash.hex(), deliverable_hash, deliverable_url
+    normalized_tx_hash = _hex0x(tx_hash)
+    _remember_receipt(normalized_tx_hash, kind="erc8183-submit")
+    return normalized_tx_hash, deliverable_hash, deliverable_url
 
 
 def _execute(job_id: int, mandate_digest: str, request_nonce: str, *, protocol: str) -> dict[str, Any]:
@@ -478,7 +486,7 @@ def _execute(job_id: int, mandate_digest: str, request_nonce: str, *, protocol: 
             "protocol": protocol,
             "service_endpoint": f"{_base_url()}/mandate/execute",
         }
-        receipt_digest = Web3.keccak(text=_canonical(unsigned)).hex()
+        receipt_digest = _hex0x(Web3.keccak(text=_canonical(unsigned)))
         return {**unsigned, "receipt_digest": receipt_digest, "signature": _sign_text(receipt_digest)}
     finally:
         with _INFLIGHT_LOCK:
@@ -496,7 +504,7 @@ def _schedule_funded_delivery(job_id: int) -> None:
                 # The official A2A notification path is a real delivery path:
                 # derive a stable digest from the immutable onchain brief, run
                 # the configured bounded action, then submit its manifest.
-                mandate_digest = Web3.keccak(text=str(job[4])).hex()
+                mandate_digest = _hex0x(Web3.keccak(text=str(job[4])))
                 _execute(job_id, mandate_digest, f"notify-{job_id}", protocol="a2a")
         except Exception:
             # The browser can poll and retry through the explicit execution route;
@@ -536,7 +544,7 @@ def _negotiate(data: dict[str, Any]) -> dict[str, Any]:
     terms = negotiation.get("terms")
     if not isinstance(task, str) or not isinstance(terms, dict) or not isinstance(terms.get("deliverables"), str) or not isinstance(terms.get("quality_standards"), str):
         raise HTTPException(422, "A2A negotiation requires task_description and quality_standards.")
-    request_hash = Web3.keccak(text=_canonical(negotiation)).hex()
+    request_hash = _hex0x(Web3.keccak(text=_canonical(negotiation)))
     supplied_hash = data.get("request_hash")
     if supplied_hash and str(supplied_hash).lower() != request_hash.lower():
         raise HTTPException(422, "A2A request_hash does not match the request terms.")
@@ -559,7 +567,7 @@ def _negotiate(data: dict[str, Any]) -> dict[str, Any]:
         "quote_expires_at": expiry,
         "negotiated_at": now,
     }
-    response_hash = Web3.keccak(text=_canonical(response)).hex()
+    response_hash = _hex0x(Web3.keccak(text=_canonical(response)))
     signable = {
         "version": 1,
         "negotiated_at": now,
@@ -576,7 +584,7 @@ def _negotiate(data: dict[str, Any]) -> dict[str, Any]:
     }
     if response_terms.get("success_criteria"):
         signable["terms"]["success_criteria"] = [str(item).replace("[", "(").replace("]", ")") for item in response_terms["success_criteria"]]
-    negotiation_hash = Web3.keccak(text=_canonical(signable)).hex()
+    negotiation_hash = _hex0x(Web3.keccak(text=_canonical(signable)))
     return {
         "request": negotiation,
         "request_hash": request_hash,

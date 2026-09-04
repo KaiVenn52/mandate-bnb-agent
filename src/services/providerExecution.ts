@@ -2,7 +2,7 @@ import { isAddress, keccak256, stringToHex, type Hex, type PublicClient } from '
 import type { CategoryId } from '../catalog'
 import { isPublicHttpsEndpoint, type RegistryAgentDiscovery } from './agentRegistry'
 import { ERC8183_COMMERCE_ADDRESS } from './erc8183'
-import { verifyProviderAcceptance, verifyProviderSignature, type ProviderAcceptanceReceipt } from './providerAcceptance'
+import { verifyAssignedProviderAcceptance, verifyProviderSignature, type ProviderAcceptanceReceipt } from './providerAcceptance'
 
 /**
  * Provider-owned, bounded execution request.  MANDATE never receives a
@@ -436,8 +436,6 @@ export function buildProviderExecutionRequest(input: {
   const provider = input.agent.agentWallet ?? input.agent.ownerAddress
   if (!provider || !isAddress(provider)) throw new Error('The selected registry agent has no valid provider wallet.')
   if (provider.toLowerCase() !== input.acceptance.provider_address.toLowerCase()) throw new Error('The provider acceptance wallet does not match the registry wallet.')
-  const acceptanceExpiry = Date.parse(input.acceptance.expires_at_utc)
-  if (!Number.isFinite(acceptanceExpiry) || acceptanceExpiry <= Date.now()) throw new Error('The provider acceptance has expired; request a fresh signed acceptance before execution.')
   const action = input.action ?? actionForCategory(input.categoryId)
   const request: ProviderExecutionRequest = {
     schema: 'mandate.provider-execution-request.v1',
@@ -472,8 +470,8 @@ export async function requestProviderExecution(
   acceptance?: ProviderAcceptanceReceipt,
   signal?: AbortSignal,
 ) {
-  if (acceptance && !(await verifyProviderAcceptance(acceptance, request.provider_address, request.mandate_digest))) {
-    throw new Error('The provider acceptance is no longer valid for this execution request.')
+  if (acceptance && !(await verifyAssignedProviderAcceptance(acceptance, request.provider_address, request.mandate_digest))) {
+    throw new Error('The assigned provider acceptance does not verify for this execution request.')
   }
   const endpoints = endpointCandidates(agent, acceptance)
   if (!endpoints.length) throw new Error('The provider did not publish a public HTTPS execution endpoint.')

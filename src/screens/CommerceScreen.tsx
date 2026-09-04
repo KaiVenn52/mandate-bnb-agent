@@ -8,7 +8,7 @@ import { useSearchParams } from 'react-router-dom'
 import { getCategory, type CatalogAgent } from '../catalog'
 import { getMarketplaceCategory } from '../services/providerRegistry'
 import { fetchRegistryAgent, isPublicHttpsEndpoint } from '../services/agentRegistry'
-import { loadProviderAcceptance, mandateDigest, verifyProviderAcceptance, type ProviderAcceptanceReceipt } from '../services/providerAcceptance'
+import { loadProviderAcceptance, mandateDigest, verifyAssignedProviderAcceptance, verifyProviderAcceptance, type ProviderAcceptanceReceipt } from '../services/providerAcceptance'
 import { buildProviderExecutionRequest, loadProviderExecution, notifyProviderFunded, requestProviderExecution, saveProviderExecution, verifyProviderExecutionReceipt, type ProviderExecutionReceipt, type ProviderFundingNotification } from '../services/providerExecution'
 import { U_TOKEN_ADDRESS } from '../services/uFaucet'
 import {
@@ -256,8 +256,8 @@ export function CommerceScreen() {
       setExecutionError('A verified provider acceptance for this exact mandate is required before requesting execution.')
       return
     }
-    if (!(await verifyProviderAcceptance(externalAcceptance, chainState.job.provider, externalAcceptanceDigest ?? undefined))) {
-      setExecutionError('The stored provider acceptance no longer verifies against the assigned wallet or mandate digest.')
+    if (!(await verifyAssignedProviderAcceptance(externalAcceptance, chainState.job.provider, externalAcceptanceDigest ?? undefined))) {
+      setExecutionError('The assigned provider acceptance does not verify against the onchain wallet or mandate digest.')
       return
     }
     if (walletRole !== 'client') {

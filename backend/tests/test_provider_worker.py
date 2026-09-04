@@ -66,3 +66,12 @@ def test_public_url_validation_rejects_credentials_and_local_hosts():
 def test_render_external_url_is_supported(monkeypatch):
     monkeypatch.setattr(worker, "PUBLIC_BASE_URL", "https://mandate-provider-yield.onrender.com")
     assert worker._base_url() == "https://mandate-provider-yield.onrender.com"
+
+
+def test_hex_values_are_always_returned_with_evm_prefix():
+    class PrefixlessHex:
+        def hex(self):
+            return "ab" * 32
+
+    assert worker._hex0x(PrefixlessHex()) == "0x" + "ab" * 32
+    assert worker._hex0x("0x" + "cd" * 32) == "0x" + "cd" * 32
