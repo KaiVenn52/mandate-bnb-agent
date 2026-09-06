@@ -58,6 +58,7 @@
 - [x] Disconnected wallet, loading/error/retry, wrong network and rejected publication tested in Playwright; wallet errors are simulated without broadcast. Empty/missing-draft guard reviewed.
 - [x] 375px, 768px, 1280px, and 1440px layouts checked across Discover, Results, Permission Review, Commerce, and Evidence
 - [x] Fresh local clone: npm ci, lint and production build pass (see final-qa.md).
+- [x] Post-deployment fresh-browser production smoke: create mandate, search, all four categories, Job #873 reconstruction and Evidence page; no page-level JavaScript errors.
 - [ ] 3-minute demo recorded and uploaded (owner action)
 - [x] Public GitHub repository created and linked
 - [ ] Official submission form sent (owner approval required)

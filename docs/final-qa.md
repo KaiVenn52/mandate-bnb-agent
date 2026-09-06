@@ -35,6 +35,10 @@ Flow: create mandate -> saved confirmation -> marketplace; fresh browser -> Job 
 - Screenshots outside repository: `D:/mandate-qa-completed.png`, `D:/mandate-qa-mobile.png`, `D:/mandate-qa-rejected.png`. Main observations: `D:/mandate-qa-results.json`; targeted loading/error test: `D:/mandate-qa-loading.cjs`.
 - Actual extension signing, mobile wallet QR return, a new funded hire and organizer-side hiring were not exercised. Those require human-controlled signatures and are not inferred from mock tests.
 
+### Post-deployment production smoke — September 7
+
+A fresh isolated headless Chrome context tested the deployed Vercel application after commit `8c83139`: homepage mandate creation, explicit marketplace search, all four required category surfaces, direct loading of completed Job #873 without browser-local state, and the Evidence page with Job #873 as primary proof plus the Agent Advantage Report. All checks passed with no page-level JavaScript errors. This verifies the public no-wallet judge path; it is not represented as a human extension-signing rehearsal or a new funded hire.
+
 ## Publish handoff
 
 1. GitHub commit `9b1aac2e6ea62acadcb45fe19ce6fddbdbdacbe6`, Vercel artifacts and the Render provider are public. Production capability lists both verified receipt hashes.
