@@ -23,6 +23,9 @@ export function EvidenceScreen() {
 
   return (
     <section className="evidence-screen page-gutter">
+      <section className="wallet-readiness" aria-label="Primary independent provider proof">
+        <div><span className="section-kicker">PRIMARY PROOF · BSC TESTNET</span><h2>Job #873 · Independent Yield Provider #2054</h2><p>Separate client and provider wallets, provider execution and submission, then third-wallet settlement. The bounded action approved Commerce for one base unit of test U; it is not yield routing or a trading return.</p><p><a href="/evidence/evidence-passport-873.json" target="_blank" rel="noreferrer">Evidence passport</a> · <a href="https://mandate-provider-yield.onrender.com/mandate/deliverables/873.json" target="_blank" rel="noreferrer">Original deliverable</a> · <a href="https://testnet.bscscan.com/tx/0x413a64410246ae228b573ecd0900819ef9f9fadbcd866a3fc7e9848a41fc3b21" target="_blank" rel="noreferrer">Settlement receipt</a></p></div>
+      </section>
       <div className="report-heading">
         <div><span className="section-kicker">TERMIX QUALIFIED EVIDENCE · THREE INDEPENDENT ERC-8183 HIRES</span><h1>Agent Advantage Evidence Lab</h1><p>Three frozen tasks were completed by independently hired marketplace agents and compared with the original browser-timed human path. Every agent result is bound to a completed BSC Testnet job.</p></div>
         <div className="report-actions"><Link className="button button-secondary" to="/provider-onboarding">Add independent provider</Link><a className="button button-secondary" href="/evidence/termix/grid-track-record.json" target="_blank" rel="noreferrer">Grid track record <ExternalLink size={16} /></a><a className="button button-primary" href="/evidence/MANDATE-Agent-Advantage-Report.pdf" target="_blank" rel="noreferrer"><Download size={16} /> Download final report</a></div>
@@ -42,7 +45,7 @@ export function EvidenceScreen() {
 
       <section className="evidence-boundary" aria-label="Execution and data boundaries">
         <ShieldCheck size={18} />
-        <div><strong>What the receipts prove — and what they do not</strong><p>The three ERC-8183 jobs prove paid service delivery and settlement. They do not prove autonomous DeFi trades, a second provider, or realized trading returns. Those claims require a provider-owned wallet, bounded testnet transaction receipts and a fresh track record.</p></div>
+        <div><strong>What the receipts prove — and what they do not</strong><p>The three ERC-8183 jobs prove paid service delivery and settlement. They do not prove autonomous DeFi trades or realized returns. Separately, Yield Provider #2054 completed one bounded approval in Job #873. The other three categories still need equivalent execution depth; Grid needs real trading receipts.</p></div>
         <Link className="button button-secondary compact-button" to="/provider-onboarding">Start provider path</Link>
       </section>
 

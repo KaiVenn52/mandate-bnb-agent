@@ -2,6 +2,34 @@
 
 Verified independently against BSC Testnet RPC on 2026-08-12.
 
+## Primary proof: independent Yield Provider #2054, Job #873
+
+Reverified through BSC Testnet RPC during the September 5-6 final audit.
+
+Agent #2054 / Job #873 is the primary independent-provider proof: an Open Mandate was assigned to a separate provider wallet, funded with 0.1 test U, executed by that provider, submitted by that provider and settled permissionlessly by a third wallet. The verified action is ERC-20 approve(Commerce, 1 base unit of test U); it is not a swap, liquidity routing, realized yield or a profitability record.
+
+- Identity Registry: `0x8004A818BFB912233c491871b3d84c89A494BD9e`; `ownerOf(2054)` matches the provider.
+- Client: `0xD30BbB80c863c9B94622EF92337AaD65148D2EC3`
+- Provider: `0x1007950f2cd328ceA873e212b0D18EF17c51dc9f`
+- Settler: `0xb038d6d8c4E3b173Add7AE3a205Ac33C9A27033A`
+- Status: `COMPLETED (3)`; budget `100000000000000000` base units = 0.1 test U.
+- Deliverable hash: `0xa7888fe02420a18dc757699b9cab0071f4cd63a037fc4d12c0a849edac772cb4`
+- Canonical JSON: Python `json.dumps(manifest, sort_keys=True, separators=(',', ':'), ensure_ascii=True)`, then Keccak-256. Hash independently matches onchain.
+- [Original manifest](https://mandate-provider-yield.onrender.com/mandate/deliverables/873.json)
+- [Machine-readable passport](../public/evidence/evidence-passport-873.json); planned public route `/evidence/evidence-passport-873.json` requires deployment.
+
+| Step | Block | Verified successful transaction |
+|---|---:|---|
+| Provider approves Commerce for 1 base unit of test U, native value 0 | 129054130 | [Execution](https://testnet.bscscan.com/tx/0x0d0ec0d8e1368639f1037adb36b004fabbda8f84523d61e7bec6c4b5d064ca44) |
+| Provider submits matching deliverable hash | 129054135 | [Submit](https://testnet.bscscan.com/tx/0x7088528bbaf86c916f8279da98a9ecd3d902efe3f4dcd142e2ca71b448692c3b) |
+| Third wallet settles; escrow transfers to provider | 129060940 | [Settle](https://testnet.bscscan.com/tx/0x413a64410246ae228b573ecd0900819ef9f9fadbcd866a3fc7e9848a41fc3b21) |
+
+The stored job description records an initially unassigned Open Mandate inviting Agent #2054; current state proves assignment and completion. Historical create, signed acceptance/assignment, policy registration, budget, client approval, funding and identity-registration transaction hashes were not recovered in this audit: PublicNode history was pruned, BNB seed RPC logs were limited and BscScan returned HTTP 403. Do not invent these links or label the historical signature independently reverified. The three receipts above are independently retrieved and decoded.
+
+Provider `/health`, `/ready`, agent card, capability and manifest returned HTTP 200. Capability currently reports an empty receipt list despite the verified chain receipt. A local compatibility fix accepts legacy 64-digit unprefixed hashes without rewriting the hash-bound manifest; production verification remains pending deployment. This is a likely cause, not proof of the private database contents.
+
+The four reference agents #1804-#1807 still share one legacy provider and offer read-only analysis. Independent Yield provider #2054 adds one provider-owned bounded BSC Testnet call. Rebalancing, Grid and Health do not yet have equivalent asset-execution depth. Two independent providers in every category and a real Grid trading track record remain incomplete. A distinct wallet proves wallet separation, not independent business ownership. Provider #2054 is compromised and permanently testnet-only. This proof authorizes no further signing and establishes no mainnet safety.
+
 ## Shared facts
 
 - Chain ID: `97`
@@ -51,7 +79,7 @@ Verified independently through BSC Testnet RPC on 2026-08-13.
 | Submit hash-verifiable YieldRoute deliverable | 2026-08-13 12:34:58 | 124840277 | [0x73f98a...eff1](https://testnet.bscscan.com/tx/0x73f98a37fa2277e543e468d5ca28ebc737acf687baed4b2fc1380d0519d8eff1) |
 | Settle after optimistic dispute window | 2026-08-13 14:26:33 | 124855156 | [0xf423d6...f043](https://testnet.bscscan.com/tx/0xf423d6403c8e7926ea0e125c3b216226b95856fc836293645ef14c8ae531f043) |
 
-Job #506 is the primary submission proof because its deliverable is the public YieldRoute live-data report shown in the marketplace. The longer wall-clock lifecycle includes the mandatory optimistic window and user-paced wallet confirmations; it is not presented as agent execution speed.
+Job #506 is the archived same-wallet mechanics proof. Job #873 is the primary independent-provider proof. The longer wall-clock lifecycle includes the mandatory optimistic window and user-paced wallet confirmations; it is not presented as agent execution speed.
 
 ## ERC-8183 controlled pilot — Job #478
 

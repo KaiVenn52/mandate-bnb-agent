@@ -2,9 +2,17 @@
 
 **Set the outcome. Cap the risk. Hire the proof.**
 
-MANDATE is an outcome-first BNB Chain agent marketplace. A user states an objective and hard limits, verifies an eligible agent with a live read-only capability, reviews a bounded permission contract, then creates an auditable ERC-8183 job. Every completed job becomes evidence instead of a generic star rating.
+MANDATE is an outcome-first BNB Chain agent marketplace. A user states an objective and hard limits, verifies an eligible agent through its capability and public receipts, reviews a bounded permission contract, then creates an auditable ERC-8183 job. Every completed job becomes evidence instead of a generic star rating.
 
-## Why this can win
+## Primary proof
+
+Agent #2054 / Job #873 is the primary independent-provider proof: an Open Mandate was assigned to a separate provider wallet, funded with 0.1 test U, executed by that provider, submitted by that provider and settled permissionlessly by a third wallet. The verified action is ERC-20 approve(Commerce, 1 base unit of test U); it is not a swap, liquidity routing, realized yield or a profitability record.
+
+[Original public manifest](https://mandate-provider-yield.onrender.com/mandate/deliverables/873.json) · [Local evidence passport](public/evidence/evidence-passport-873.json) · [Settlement receipt](https://testnet.bscscan.com/tx/0x413a64410246ae228b573ecd0900819ef9f9fadbcd866a3fc7e9848a41fc3b21)
+
+The four reference agents #1804-#1807 still share one legacy provider and offer read-only analysis. Independent Yield provider #2054 adds one provider-owned bounded BSC Testnet call. Rebalancing, Grid and Health do not yet have equivalent asset-execution depth. Two independent providers in every category and a real Grid trading track record remain incomplete. A distinct wallet proves wallet separation, not independent business ownership.
+
+## Product capabilities
 
 - **Different marketplace primitive:** outcome -> evidence -> permission -> execution, rather than an agent-card directory.
 - **Decision-grade data:** complete flows and category-specific scoreboards for LP rebalancing, grid trading, yield optimisation, and health-factor monitoring.
@@ -47,7 +55,7 @@ MANDATE is an outcome-first BNB Chain agent marketplace. A user states an object
 ## Run the web app
 
 ```bash
-npm install
+npm ci
 copy .env.example .env.local
 npm run dev
 ```
@@ -123,8 +131,8 @@ User requirement
 
 ## Submission-critical status
 
-- Complete: public source, four ERC-8004 identities, settled lifecycle proof Job #506, four live read-only agent capabilities, strict marketplace matching, external-provider Open Mandates, provider onboarding, three independent funded TermiX hires, and the regenerated hire-backed Agent Advantage Report.
-- Honest boundary: the current built-in agents do not sign DeFi asset transactions; the grid record has no onchain trades; a second provider and real trading record still require wallet-controlled registration and bounded testnet receipts. MANDATE does not claim mainnet execution or profitability.
+- Complete: public source, four ERC-8004 identities, independent-provider proof Job #873, archived same-wallet lifecycle proof Job #506, four live read-only agent capabilities, strict marketplace matching, external-provider Open Mandates, provider onboarding, three independent funded TermiX hires, and the regenerated hire-backed Agent Advantage Report.
+- Honest boundary: the current built-in agents do not sign DeFi asset transactions; the grid record has no onchain trades; independent Yield provider #2054 has completed Job #873, but the remaining categories still need comparable bounded action receipts and Grid needs a real trading record. MANDATE does not claim mainnet execution or profitability.
 - Remaining external actions: record/upload the demo video and submit the official form. Each requires owner approval.
 
 ## Public evidence endpoints
@@ -135,9 +143,14 @@ User requirement
 - `POST /api/benchmarks/{task_id}/baseline-score` — scores a browser-timed human answer without fabricating a baseline
 - `GET /api/erc8183/yield-deliverable/506` — canonical SDK-compatible YieldRoute deliverable
 - `GET /api/erc8183/marketplace-deliverable/{category}/{jobId}` — canonical category deliverable used by the four hire paths
+- `GET /evidence/evidence-passport-873.json` — primary evidence (available after this update is deployed)
 - `GET /evidence/evidence-passport-506.json` — machine-readable identity, benchmark and transaction evidence
 - `GET /evidence/MANDATE-Agent-Advantage-Report.pdf` — final hire-backed report generated from Jobs #642, #644, and #666
 
 Before final submission, add the final demo-video URL and obtain owner approval for the submission form.
 
 See [submission-checklist.md](docs/submission-checklist.md), [onchain-runbook.md](docs/onchain-runbook.md), and [demo-script.md](docs/demo-script.md).
+
+## Reverify the primary proof
+
+Run `backend/.venv/Scripts/python.exe scripts/collect_primary_evidence.py` from the repository root. This read-only script loads no credentials, verifies chain 97, Job #873, Agent #2054 ownership, receipts and the canonical manifest hash, and records historical RPC retrieval gaps explicitly. Provider #2054 is compromised and permanently testnet-only. Never use it for real funds.

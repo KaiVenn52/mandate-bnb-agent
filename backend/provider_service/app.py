@@ -186,6 +186,10 @@ def _receipt_hashes() -> list[str]:
     values: list[str] = []
     for item in raw:
         value = item.get("hash") if isinstance(item, dict) else item
+        # Older Web3/HexBytes versions persisted 64 hex digits without 0x.
+        # Normalize only valid legacy hashes; the browser still checks receipts.
+        if isinstance(value, str) and re.fullmatch(r"[0-9a-fA-F]{64}", value):
+            value = "0x" + value
         if isinstance(value, str) and re.fullmatch(r"0x[0-9a-fA-F]{64}", value):
             key = value.lower()
             if key not in seen:

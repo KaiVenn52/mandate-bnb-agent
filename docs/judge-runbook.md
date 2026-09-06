@@ -1,6 +1,15 @@
 # Judge runbook - MANDATE
 
-## Fast path (about 2 minutes, no wallet required)
+## Start here: Job #873 (45 seconds, no wallet required)
+
+1. Open the [primary passport](https://mandate-bnb-agent.vercel.app/evidence/evidence-passport-873.json) after this update is deployed; before publication use `public/evidence/evidence-passport-873.json` from the checkout.
+2. Confirm chain 97, Agent #2054, separate client/provider addresses, COMPLETED status and `canonical_hash_matches`.
+3. Open the [original public manifest](https://mandate-provider-yield.onrender.com/mandate/deliverables/873.json), then the execution, submission and settlement explorer links in the passport.
+4. Inspect the execution calldata: test U `approve(Commerce, 1 base unit)`, native value zero. This proves a bounded provider call, not yield routing or a profitable trade.
+5. The third-wallet settlement transfers 0.1 test U to the provider. Job #506 below is the old same-wallet mechanics proof; TermiX #642/#644/#666 are the separate benchmark hires.
+6. Review `retrieval_gaps`: earlier lifecycle hashes and historical signed acceptance were not independently recovered in the final audit. `/ready` 200 is not sufficient proof of onboarding readiness; production capability currently lists zero receipts.
+
+## Product path (no wallet required)
 
 1. Open <https://mandate-bnb-agent.vercel.app>.
 2. Enter: `Earn on 5,000 USDT. No leverage. Low risk. Max 3 actions per week. Allowed protocols: Venus, Lista.`
@@ -25,7 +34,7 @@
 4. Select **Publish open mandate**. Confirm the brief is unchanged, Provider is **UNASSIGNED**, escrow is **0 U**, and publication requires only a BSC Testnet `createJob` signature.
 5. Do not sign during the fast demo. This screen is the inspectable proof that a user specification is independent from provider discovery; a confirmed publication creates a real unfunded ERC-8183 job.
 
-## Proof path (pre-completed; no transaction required)
+## Archived mechanics and TermiX proofs (no transaction required)
 
 - Evidence Passport: <https://mandate-bnb-agent.vercel.app/evidence/evidence-passport-506.json>
 - ERC-8183 Job #506 settlement: <https://testnet.bscscan.com/tx/0xf423d6403c8e7926ea0e125c3b216226b95856fc836293645ef14c8ae531f043>
@@ -36,7 +45,7 @@
 
 ## What is real
 
-- Four ERC-8004 identities on BSC Testnet.
+- Four reference ERC-8004 identities plus independent Yield Agent #2054 on BSC Testnet; four-category execution depth remains uneven.
 - Live public registry context.
 - Live read-only YieldRoute and Venus data retrieval.
 - Three independently hired Agent Advantage task pairs, completed ERC-8183 jobs and raw outputs.

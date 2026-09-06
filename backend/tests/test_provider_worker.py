@@ -38,6 +38,16 @@ def test_receipt_store_rejects_non_hashes_and_deduplicates(tmp_path, monkeypatch
     assert worker._receipt_hashes() == [valid]
 
 
+def test_legacy_unprefixed_receipts_remain_visible_without_mutating_manifest(tmp_path, monkeypatch):
+    valid = "ab" * 32
+    receipt_file = tmp_path / "receipts.json"
+    original = json.dumps([{"hash": valid}, "0x" + valid, "xyz" * 22])
+    receipt_file.write_text(original, encoding="utf-8")
+    monkeypatch.setattr(worker, "RECEIPTS_FILE", receipt_file)
+    assert worker._receipt_hashes() == ["0x" + valid]
+    assert receipt_file.read_text(encoding="utf-8") == original
+
+
 def test_manifest_is_idempotent_and_bound_to_exact_terms(tmp_path, monkeypatch):
     deliverables = tmp_path / "deliverables.json"
     monkeypatch.setattr(worker, "DELIVERABLES_FILE", deliverables)

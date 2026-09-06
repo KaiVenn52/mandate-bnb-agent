@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft, CheckCircle2, ExternalLink, LoaderCircle, Radio, Search, ShieldCheck, UserCheck } from 'lucide-react'
-import { isAddress, parseEventLogs, zeroAddress } from 'viem'
+import { formatEther, isAddress, parseEventLogs, zeroAddress } from 'viem'
 import { useAccount, usePublicClient, useWalletClient } from 'wagmi'
 import { bscTestnet } from 'wagmi/chains'
 import { useNavigate, useSearchParams } from 'react-router-dom'
@@ -137,7 +137,7 @@ export function OpenMandateScreen() {
       setJobId(createdId)
       setLatestHash(hash)
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'Open mandate publication failed or was rejected.')
+      setError(reason instanceof Error && /rejected|denied|4001/i.test(reason.message) ? 'Signature rejected. No publication transaction was sent.' : reason instanceof Error ? reason.message : 'Open mandate publication failed.')
     } finally {
       setIsPublishing(false)
     }
@@ -199,7 +199,11 @@ export function OpenMandateScreen() {
     }
   }
 
-  if (!mandate) {
+  if (!job && jobId !== undefined) {
+    return <section className="open-mandate-screen page-gutter"><h1>Job #{jobId.toString()}</h1>{error ? <div role="alert"><p>Unable to load this onchain mandate.</p><button className="button button-secondary" onClick={() => void refresh()}>Retry</button></div> : <p role="status">Loading onchain mandate…</p>}</section>
+  }
+
+  if (!mandate && !job) {
     return (
       <section className="open-mandate-screen page-gutter">
         <button className="text-button back-button" type="button" onClick={() => navigate('/')}><ArrowLeft size={16} /> Back</button>
@@ -208,20 +212,28 @@ export function OpenMandateScreen() {
     )
   }
 
+  let displayPrompt = mandate?.prompt ?? 'Read the immutable description in the job evidence.'
+  if (job) {
+    try {
+      const description: unknown = JSON.parse(job.description)
+      if (description && typeof description === 'object' && 'mandate' in description && typeof description.mandate === 'string') displayPrompt = description.mandate
+    } catch { displayPrompt = job.description }
+  }
+  const escrowLabel = !job || job.status === 0 ? '0 U · not funded' : job.status === 1 || job.status === 2 ? `${formatEther(job.budget)} test U · funded` : job.status === 3 ? 'Settled · service payment released' : 'Closed · inspect transaction receipts'
   const providerUnassigned = !job || job.provider.toLowerCase() === zeroAddress
   return (
     <section className="open-mandate-screen page-gutter">
       <button className="text-button back-button" type="button" onClick={() => navigate(`/results?category=${category.id}`)}><ArrowLeft size={16} /> Back to matching</button>
       <div className="open-mandate-heading">
         <span className="section-kicker">OPEN MANDATE · ERC-8183 · BSC TESTNET</span>
-        <h1>Publish the requirement, not a fake match.</h1>
-        <p>No disclosed agent satisfies every hard limit. This creates an OPEN ERC-8183 job with no provider assigned. It moves no tokens and preserves your mandate exactly.</p>
+        <h1>{job ? `Open Mandate #${jobId} · ${jobStatusLabels[job.status] ?? "UNKNOWN"}` : "Publish the requirement, not a fake match."}</h1>
+        <p>{job ? "This published requirement and its current state are read directly from BSC Testnet." : "No disclosed agent satisfies every hard limit. This creates an OPEN ERC-8183 job with no provider assigned. It moves no tokens and preserves your mandate exactly."}</p>
       </div>
 
       <div className="open-mandate-flow" aria-label="Open mandate workflow">
-        <div className="is-complete"><CheckCircle2 size={18} /><span><small>01</small><strong>Mandate created</strong><p>{mandate.prompt}</p></span></div>
-        <div className="is-complete"><Search size={18} /><span><small>02</small><strong>{candidateTokenId ? 'External candidate reviewed' : 'Marketplace searched'}</strong><p>{candidateTokenId ? `ERC-8004 Agent #${candidateTokenId} was discovered, but must accept every hard limit.` : 'No verified provider passed every hard limit.'}</p></span></div>
-        <div className={job ? 'is-complete' : 'is-current'}><Radio size={18} /><span><small>03</small><strong>Open mandate</strong><p>{job ? `Public Job #${jobId} is waiting for provider proposals.` : 'Publish an unassigned job for provider discovery and offchain bidding.'}</p></span></div>
+        <div className="is-complete"><CheckCircle2 size={18} /><span><small>01</small><strong>Mandate created</strong><p>{displayPrompt}</p></span></div>
+        <div className="is-complete"><Search size={18} /><span><small>02</small><strong>{job ? 'Requirement preserved' : candidateTokenId ? 'External candidate reviewed' : 'Marketplace searched'}</strong><p>{job ? 'The immutable onchain brief is shown below.' : candidateTokenId ? `ERC-8004 Agent #${candidateTokenId} was discovered, but must accept every hard limit.` : 'No verified provider passed every hard limit.'}</p></span></div>
+        <div className={job ? 'is-complete' : 'is-current'}><Radio size={18} /><span><small>03</small><strong>Open mandate</strong><p>{job ? `Public Job #${jobId} · ${jobStatusLabels[job.status] ?? "UNKNOWN"}.` : 'Publish an unassigned job for provider discovery and offchain bidding.'}</p></span></div>
         <div className={!providerUnassigned ? 'is-complete' : job && candidateTokenId ? 'is-current' : ''}><UserCheck size={18} /><span><small>04</small><strong>Provider acceptance</strong><p>{!providerUnassigned ? `Assigned to ${job?.provider}.` : 'A live provider must accept every hard limit before the client assigns it.'}</p></span></div>
       </div>
 
@@ -229,14 +241,14 @@ export function OpenMandateScreen() {
         <div>
           <span className="section-kicker">IMMUTABLE JOB BRIEF</span>
           <h2 id="open-contract-title">{category.label} open mandate</h2>
-          <p>{mandate.prompt}</p>
+          <p>{displayPrompt}</p>
         </div>
         <dl>
           {candidateTokenId ? <div><dt>Invited candidate</dt><dd>{candidate.data ? `${candidate.data.name} · ERC-8004 #${candidateTokenId}` : `ERC-8004 #${candidateTokenId}`}</dd></div> : null}
           <div><dt>Client</dt><dd className="mono">{job ? job.client : address ?? 'Connect wallet'}</dd></div>
           <div><dt>Provider</dt><dd className="mono">{providerUnassigned ? 'UNASSIGNED' : job?.provider}</dd></div>
           <div><dt>Status</dt><dd>{job ? jobStatusLabels[job.status] ?? `STATE ${job.status}` : 'NOT PUBLISHED'}</dd></div>
-          <div><dt>Escrow</dt><dd>0 U · not funded</dd></div>
+          <div><dt>Escrow</dt><dd>{escrowLabel}</dd></div>
           <div><dt>Provider assignment</dt><dd>Client only · before funding</dd></div>
           <div><dt>Expiry</dt><dd>{job ? new Date(Number(job.expiredAt) * 1000).toLocaleString() : '7 days after publication'}</dd></div>
         </dl>
@@ -245,10 +257,10 @@ export function OpenMandateScreen() {
             {isPublishing ? <><LoaderCircle className="spin" size={17} /> Confirming publication…</> : <><Radio size={17} /> Publish open mandate</>}
           </button>
         ) : (
-          <div className="open-mandate-published"><ShieldCheck size={19} /><div><strong>Open mandate published onchain</strong><p>Provider bidding stays offchain by ERC-8183 design. Funding remains locked until you explicitly assign a provider.</p></div></div>
+          <div className="open-mandate-published"><ShieldCheck size={19} /><div><strong>Open mandate published onchain</strong><p>{job.status === 3 ? "The provider submitted its deliverable and settlement completed." : providerUnassigned ? "Funding remains locked until the client assigns an accepted provider." : "Provider assigned. Follow the onchain lifecycle and inspect its receipts."}</p></div></div>
         )}
 
-        {job && providerUnassigned && candidateTokenId ? (
+        {job && job.status === 0 && providerUnassigned && candidateTokenId ? (
           <div className="open-provider-assignment">
             <div>
               <span className="section-kicker">EXPLICIT PROVIDER ASSIGNMENT</span>
@@ -266,7 +278,7 @@ export function OpenMandateScreen() {
         ) : null}
 
         {job && !providerUnassigned ? (
-          <div className="registration-guard"><UserCheck size={18} /><div><strong>Provider assignment is final for this OPEN job</strong><p>The client can now continue with policy registration, the exact service budget and escrow funding. The provider—not MANDATE—must submit its own result.</p></div><button className="button button-primary compact-button" type="button" onClick={() => navigate(`/commerce?category=${category.id}&jobId=${jobId}${candidateTokenId ? `&candidate=${candidateTokenId}` : ''}`)}>Continue funded hire</button></div>
+          <div className="registration-guard"><UserCheck size={18} /><div><strong>{job.status === 0 ? "Provider assigned" : `Job ${jobStatusLabels[job.status] ?? "state updated"}`}</strong><p>{job.status === 0 ? "The client can continue with policy registration, exact budget and escrow funding." : "Inspect the recorded lifecycle. Completed work needs no new funding or signature."}</p></div><button className="button button-primary compact-button" type="button" onClick={() => navigate(`/commerce?category=${category.id}&jobId=${jobId}${candidateTokenId ? `&candidate=${candidateTokenId}` : ''}`)}>{job.status === 0 ? "Continue funded hire" : "View job lifecycle"}</button></div>
         ) : null}
       </section>
 

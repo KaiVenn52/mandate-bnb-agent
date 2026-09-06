@@ -11,15 +11,18 @@
 - [x] Live public ERC-8004 registry read
 - [x] BNB Agent SDK / ERC-8183 gateway implementation
 - [x] Four ERC-8004 reference-agent registrations on BSC Testnet (Agents #1804–#1807)
-- [x] One fully completed YieldRoute ERC-8183 job with BscScan links (Job #506)
+- [x] Primary independent-wallet proof: Agent #2054 / Job #873 COMPLETED; execution, submit and settlement receipts and manifest hash reverified.
+- [x] Historical same-wallet mechanics proof: Job #506.
+- [ ] Recover historical #873 create/acceptance/assignment/policy/budget/approval/fund and #2054 registration transaction links; RPC history currently unavailable.
+- [ ] Publish and HTTP/hash-verify the new #873 passport after owner approval.
 - [x] Public web URL and public gateway health URL
 - [x] Submission wallet recorded: `0xD30BbB80c863c9B94622EF92337AaD65148D2EC3`
 - [x] Submission wallet funded with testnet gas and test U
 
 ## Championship gap audit (must not be marked complete without receipts)
 
-- [ ] Each category has at least two independent provider wallets with confirmed ERC-8004 registrations. The product now counts this by wallet and provides `/provider-onboarding`; owner action is to connect a second provider wallet and pass the provider capability probe before signing the four registrations.
-- [ ] Each category has a provider-owned, bounded BSC Testnet asset action. The current four gateway endpoints are live read-only; owner/provider action is to expose `mandate.provider-service.v1`, add the protocol allowlist and scoped session key, execute the bounded action, and provide public receipts that the browser checks against the provider wallet.
+- [ ] Each category has at least two independent provider wallets with confirmed ERC-8004 registrations. The product now counts this by wallet and provides `/provider-onboarding`; Yield now has independent wallet #2054; this does not complete two providers in every category. Further registrations require provider-controlled signatures.
+- [ ] Each category has a provider-owned, bounded BSC Testnet asset action. The four reference gateway endpoints are read-only. Yield #2054 has one bounded approve(Commerce, 1 base unit) proof; the other three categories still lack equivalent action depth. Future provider work is to expose `mandate.provider-service.v1`, add the protocol allowlist and scoped session key, execute the bounded action, and provide public receipts that the browser checks against the provider wallet.
 - [ ] Replace the paper GridPilot record with a real trading record. The current record includes the window, modeled risk exposure and an explicit empty onchain transaction set; owner/provider action is to execute bounded testnet swaps and attach every receipt, win/loss calculation and drawdown window.
 - [ ] External ERC-8004 candidates pass direct-hire qualification. Discovery now deduplicates results and creates a structured Open Mandate/Provider brief, but arbitrary registry metadata cannot assign or fund a provider without its acceptance and deliverable endpoint.
 
@@ -52,9 +55,20 @@
 
 - [x] Every unverified historical metric remains explicitly labelled demo/sample
 - [x] No shortened placeholder hash links to an explorer homepage
-- [ ] Empty, loading, error, disconnected-wallet, wrong-network, rejected-signature states tested
+- [x] Disconnected wallet, loading/error/retry, wrong network and rejected publication tested in Playwright; wallet errors are simulated without broadcast. Empty/missing-draft guard reviewed.
 - [x] 375px, 768px, 1280px, and 1440px layouts checked across Discover, Results, Permission Review, Commerce, and Evidence
-- [ ] Fresh-clone setup instructions pass
+- [x] Fresh local clone: npm ci, lint and production build pass (see final-qa.md).
 - [ ] 3-minute demo recorded and uploaded (owner action)
 - [x] Public GitHub repository created and linked
 - [ ] Official submission form sent (owner approval required)
+
+## Final audit operational gates
+
+- [x] Local and remote GitHub main verified at `6a869d2cb87e2acab673707c13399176becb995a` before changes; worktree was clean.
+- [x] Provider health, readiness, card, capability and Job #873 manifest HTTP 200.
+- [ ] Production capability lists a verifiable receipt (currently empty; local legacy-prefix compatibility fix needs approved deployment and recheck).
+- [ ] Final GitHub push and Vercel/Render deployment approved and durable deployment IDs recorded.
+- [ ] Public video URL inserted into submission copy and HTML package.
+- [ ] Form success response captured after owner-authorized submission.
+
+The compromised #2054 wallet remains testnet-only. No private keys or seed phrases are needed for this audit. Current test results and remaining runtime gaps belong in `docs/final-qa.md`.

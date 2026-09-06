@@ -1,0 +1,260 @@
+{
+  "schema": "mandate.evidence-passport.v1",
+  "verified_at_utc": "2026-09-06T12:16:15.592838+00:00",
+  "rpc": "https://bsc-testnet-rpc.publicnode.com",
+  "chain_id": 97,
+  "job_id": 873,
+  "agent_id": 2054,
+  "identity_registry": "0x8004A818BFB912233c491871b3d84c89A494BD9e",
+  "identity_owner": "0x1007950f2cd328ceA873e212b0D18EF17c51dc9f",
+  "commerce": "0xa206c0517B6371C6638CD9e4a42Cc9f02A33B0DE",
+  "client": "0xD30BbB80c863c9B94622EF92337AaD65148D2EC3",
+  "provider": "0x1007950f2cd328ceA873e212b0D18EF17c51dc9f",
+  "status": "COMPLETED",
+  "status_code": 3,
+  "budget_wei": "100000000000000000",
+  "description": {
+    "version": 1,
+    "type": "open-mandate",
+    "provider": "unassigned",
+    "category": "yield",
+    "mandate": "Earn on 10,000 USDT. No leverage. Medium risk or lower. Move funds no more than twice a week.",
+    "constraints": {
+      "capitalAmount": 10000,
+      "asset": "USDT",
+      "riskMax": "medium",
+      "riskSpecified": true,
+      "leverageMax": 0,
+      "leverageSpecified": true,
+      "actionCap": 2,
+      "actionPeriod": "week",
+      "actionCapSpecified": true,
+      "protocols": [],
+      "gasDragMaxPct": null,
+      "drawdownMaxPct": null,
+      "spendCapUsd": null,
+      "spendCapPeriod": "total",
+      "spendCapSpecified": false
+    },
+    "service_budget_ceiling": "0.1 test U",
+    "bidding": "offchain-provider-proposals; client-assigns-provider-before-funding",
+    "evidence_requirements": [
+      "ERC-8004 identity",
+      "bounded decision",
+      "public deliverable manifest",
+      "onchain deliverable hash"
+    ],
+    "invited_candidate": {
+      "chain_id": 97,
+      "token_id": "2054",
+      "name": "YieldRoute Provider",
+      "owner": "0x1007950f2cd328cea873e212b0d18ef17c51dc9f",
+      "acceptance_required_before_assignment": true
+    }
+  },
+  "deliverable_hash": "0xa7888fe02420a18dc757699b9cab0071f4cd63a037fc4d12c0a849edac772cb4",
+  "canonical_hash_matches": true,
+  "manifest_url": "https://mandate-provider-yield.onrender.com/mandate/deliverables/873.json",
+  "manifest": {
+    "action": "execute-bounded-yield-route",
+    "job_id": 873,
+    "schema": "mandate.provider-deliverable.v1",
+    "version": 1,
+    "category": "yield",
+    "chain_id": 97,
+    "decision": "bounded-testnet-action-completed",
+    "limitations": [
+      "This receipt covers one provider-owned BSC Testnet call inside the declared allowlist.",
+      "It is not a profitability guarantee or a mainnet authorization."
+    ],
+    "request_nonce": "notify-873",
+    "mandate_digest": "0x26905734ca311d6e6285d629f8ff4cbca57ce228586c8806e95f8f86e817d311",
+    "generated_at_utc": "2026-09-04T11:21:07.590628Z",
+    "provider_address": "0x1007950f2cd328ceA873e212b0D18EF17c51dc9f",
+    "execution_transaction_hash": "0d0ec0d8e1368639f1037adb36b004fabbda8f84523d61e7bec6c4b5d064ca44"
+  },
+  "transactions": [
+    {
+      "hash": "0x0d0ec0d8e1368639f1037adb36b004fabbda8f84523d61e7bec6c4b5d064ca44",
+      "explorer_url": "https://testnet.bscscan.com/tx/0x0d0ec0d8e1368639f1037adb36b004fabbda8f84523d61e7bec6c4b5d064ca44",
+      "block": 129054130,
+      "from": "0x1007950f2cd328ceA873e212b0D18EF17c51dc9f",
+      "to": "0xc70B8741B8B07A6d61E54fd4B20f22Fa648E5565",
+      "value_wei": "0",
+      "input": "0x095ea7b3000000000000000000000000a206c0517b6371c6638cd9e4a42cc9f02a33b0de0000000000000000000000000000000000000000000000000000000000000001",
+      "status": 1,
+      "logs": [
+        {
+          "address": "0xc70B8741B8B07A6d61E54fd4B20f22Fa648E5565",
+          "topics": [
+            "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925",
+            "0x0000000000000000000000001007950f2cd328cea873e212b0d18ef17c51dc9f",
+            "0x000000000000000000000000a206c0517b6371c6638cd9e4a42cc9f02a33b0de"
+          ],
+          "data": "0x0000000000000000000000000000000000000000000000000000000000000001",
+          "blockHash": "0x711bca6ba31f1ab681db6874c85be9b678c5466ddac38c3aa267dc0bc9dff47e",
+          "blockNumber": 129054130,
+          "blockTimestamp": "0x6a9aa9a2",
+          "transactionHash": "0x0d0ec0d8e1368639f1037adb36b004fabbda8f84523d61e7bec6c4b5d064ca44",
+          "transactionIndex": 1,
+          "logIndex": 10,
+          "removed": false
+        }
+      ]
+    },
+    {
+      "hash": "0x7088528bbaf86c916f8279da98a9ecd3d902efe3f4dcd142e2ca71b448692c3b",
+      "explorer_url": "https://testnet.bscscan.com/tx/0x7088528bbaf86c916f8279da98a9ecd3d902efe3f4dcd142e2ca71b448692c3b",
+      "block": 129054135,
+      "from": "0x1007950f2cd328ceA873e212b0D18EF17c51dc9f",
+      "to": "0xa206c0517B6371C6638CD9e4a42Cc9f02A33B0DE",
+      "value_wei": "0",
+      "input": "0x9e63798d0000000000000000000000000000000000000000000000000000000000000369a7888fe02420a18dc757699b9cab0071f4cd63a037fc4d12c0a849edac772cb4000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000927b2264656c6976657261626c655f75726c223a2268747470733a2f2f6d616e646174652d70726f76696465722d7969656c642e6f6e72656e6465722e636f6d2f6d616e646174652f64656c6976657261626c65732f3837332e6a736f6e222c2270726f76696465725f73657276696365223a224d414e44415445205969656c64526f7574652050726f76696465722042227d0000000000000000000000000000",
+      "status": 1,
+      "logs": [
+        {
+          "address": "0xd6a4217588F6B1F5657a92A3e94E6422aD771cEA",
+          "topics": [
+            "0x979e9cbf6f2afb4a66fd728cf2159d5f9119c4df4c65d24187fce959c64d3a8d",
+            "0x0000000000000000000000000000000000000000000000000000000000000369"
+          ],
+          "data": "0xa7888fe02420a18dc757699b9cab0071f4cd63a037fc4d12c0a849edac772cb4000000000000000000000000000000000000000000000000000000006a9aa9a5000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000927b2264656c6976657261626c655f75726c223a2268747470733a2f2f6d616e646174652d70726f76696465722d7969656c642e6f6e72656e6465722e636f6d2f6d616e646174652f64656c6976657261626c65732f3837332e6a736f6e222c2270726f76696465725f73657276696365223a224d414e44415445205969656c64526f7574652050726f76696465722042227d0000000000000000000000000000",
+          "blockHash": "0x18c205f2d18cc992bd0aa4f18617c81423361504477ab833e3d818000249f0f6",
+          "blockNumber": 129054135,
+          "blockTimestamp": "0x6a9aa9a5",
+          "transactionHash": "0x7088528bbaf86c916f8279da98a9ecd3d902efe3f4dcd142e2ca71b448692c3b",
+          "transactionIndex": 0,
+          "logIndex": 0,
+          "removed": false
+        },
+        {
+          "address": "0xa206c0517B6371C6638CD9e4a42Cc9f02A33B0DE",
+          "topics": [
+            "0x80c17db79857f338a6a6df68a6883ecc0ce78e2202fe61ed979733573f40538e",
+            "0x0000000000000000000000000000000000000000000000000000000000000369",
+            "0x0000000000000000000000001007950f2cd328cea873e212b0d18ef17c51dc9f"
+          ],
+          "data": "0xa7888fe02420a18dc757699b9cab0071f4cd63a037fc4d12c0a849edac772cb4",
+          "blockHash": "0x18c205f2d18cc992bd0aa4f18617c81423361504477ab833e3d818000249f0f6",
+          "blockNumber": 129054135,
+          "blockTimestamp": "0x6a9aa9a5",
+          "transactionHash": "0x7088528bbaf86c916f8279da98a9ecd3d902efe3f4dcd142e2ca71b448692c3b",
+          "transactionIndex": 0,
+          "logIndex": 1,
+          "removed": false
+        }
+      ]
+    },
+    {
+      "hash": "0x413a64410246ae228b573ecd0900819ef9f9fadbcd866a3fc7e9848a41fc3b21",
+      "explorer_url": "https://testnet.bscscan.com/tx/0x413a64410246ae228b573ecd0900819ef9f9fadbcd866a3fc7e9848a41fc3b21",
+      "block": 129060940,
+      "from": "0xb038d6d8c4E3b173Add7AE3a205Ac33C9A27033A",
+      "to": "0xD7d36D66d2F1B608A0F943f722D27e3744f66F25",
+      "value_wei": "0",
+      "input": "0x39c2ebb9000000000000000000000000000000000000000000000000000000000000036900000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000",
+      "status": 1,
+      "logs": [
+        {
+          "address": "0xc70B8741B8B07A6d61E54fd4B20f22Fa648E5565",
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x000000000000000000000000a206c0517b6371c6638cd9e4a42cc9f02a33b0de",
+            "0x0000000000000000000000001007950f2cd328cea873e212b0d18ef17c51dc9f"
+          ],
+          "data": "0x000000000000000000000000000000000000000000000000016345785d8a0000",
+          "blockHash": "0x43ab884a9c2fa33c737df55820dca448bdf84c092f1800ea0ca6919dda1cbfbd",
+          "blockNumber": 129060940,
+          "blockTimestamp": "0x6a9ab59b",
+          "transactionHash": "0x413a64410246ae228b573ecd0900819ef9f9fadbcd866a3fc7e9848a41fc3b21",
+          "transactionIndex": 0,
+          "logIndex": 0,
+          "removed": false
+        },
+        {
+          "address": "0xD7d36D66d2F1B608A0F943f722D27e3744f66F25",
+          "topics": [
+            "0x54409176c7fa66866a73b5aa419b4d28fac78b158ac66aee4332e9abfa68fdd6",
+            "0x0000000000000000000000000000000000000000000000000000000000000369",
+            "0x0000000000000000000000000000000000000000000000000000000000000003"
+          ],
+          "data": "0x",
+          "blockHash": "0x43ab884a9c2fa33c737df55820dca448bdf84c092f1800ea0ca6919dda1cbfbd",
+          "blockNumber": 129060940,
+          "blockTimestamp": "0x6a9ab59b",
+          "transactionHash": "0x413a64410246ae228b573ecd0900819ef9f9fadbcd866a3fc7e9848a41fc3b21",
+          "transactionIndex": 0,
+          "logIndex": 1,
+          "removed": false
+        },
+        {
+          "address": "0xa206c0517B6371C6638CD9e4a42Cc9f02A33B0DE",
+          "topics": [
+            "0x0fd54bd364fa9e67f17b091aefe930932c09fe7651cf5ad02c71a418f3341444",
+            "0x0000000000000000000000000000000000000000000000000000000000000369",
+            "0x000000000000000000000000d7d36d66d2f1b608a0f943f722d27e3744f66f25"
+          ],
+          "data": "0x85bf18bc2ca1d797a2eb656e3ed3092023283af3714e18d3f13f4d3921885d96",
+          "blockHash": "0x43ab884a9c2fa33c737df55820dca448bdf84c092f1800ea0ca6919dda1cbfbd",
+          "blockNumber": 129060940,
+          "blockTimestamp": "0x6a9ab59b",
+          "transactionHash": "0x413a64410246ae228b573ecd0900819ef9f9fadbcd866a3fc7e9848a41fc3b21",
+          "transactionIndex": 0,
+          "logIndex": 2,
+          "removed": false
+        },
+        {
+          "address": "0xa206c0517B6371C6638CD9e4a42Cc9f02A33B0DE",
+          "topics": [
+            "0x21d71db5be59bb9fa133895586b7404307dd33fb93b16db09dc6f1d9d7d231b0",
+            "0x0000000000000000000000000000000000000000000000000000000000000369",
+            "0x0000000000000000000000001007950f2cd328cea873e212b0d18ef17c51dc9f"
+          ],
+          "data": "0x000000000000000000000000000000000000000000000000016345785d8a0000",
+          "blockHash": "0x43ab884a9c2fa33c737df55820dca448bdf84c092f1800ea0ca6919dda1cbfbd",
+          "blockNumber": 129060940,
+          "blockTimestamp": "0x6a9ab59b",
+          "transactionHash": "0x413a64410246ae228b573ecd0900819ef9f9fadbcd866a3fc7e9848a41fc3b21",
+          "transactionIndex": 0,
+          "logIndex": 3,
+          "removed": false
+        },
+        {
+          "address": "0xD7d36D66d2F1B608A0F943f722D27e3744f66F25",
+          "topics": [
+            "0x771fbd01246ab044986d0a55b6d9b732fcfd6d7eaa5ee0d05110b0d23cf496fc",
+            "0x0000000000000000000000000000000000000000000000000000000000000369",
+            "0x000000000000000000000000d6a4217588f6b1f5657a92a3e94e6422ad771cea",
+            "0x0000000000000000000000000000000000000000000000000000000000000001"
+          ],
+          "data": "0xcff4b2730cac7938c235056123e2b993a9ad6c647dcf36188f099ba8b8cb6845",
+          "blockHash": "0x43ab884a9c2fa33c737df55820dca448bdf84c092f1800ea0ca6919dda1cbfbd",
+          "blockNumber": 129060940,
+          "blockTimestamp": "0x6a9ab59b",
+          "transactionHash": "0x413a64410246ae228b573ecd0900819ef9f9fadbcd866a3fc7e9848a41fc3b21",
+          "transactionIndex": 0,
+          "logIndex": 4,
+          "removed": false
+        }
+      ]
+    }
+  ],
+  "retrieval_gaps": [
+    "Historical lifecycle logs unavailable: {'code': -32005, 'message': 'limit exceeded'}"
+  ],
+  "unrecovered_steps": [
+    "identity registration transaction",
+    "create",
+    "signed acceptance and assignment",
+    "policy registration",
+    "set budget",
+    "client approval",
+    "fund"
+  ],
+  "limitations": [
+    "Execution is test U approve(Commerce, 1 base unit), not a swap, liquidity routing, APY or profit proof.",
+    "Provider address is compromised and permanently testnet-only; no fresh authorization is implied.",
+    "Independent wallet does not establish independent business ownership.",
+    "Provider capability currently omits stored legacy receipts; do not equate health with onboarding readiness."
+  ]
+}
