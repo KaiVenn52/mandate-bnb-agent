@@ -2,7 +2,7 @@
 
 ## Baseline and scope
 
-Started with a clean worktree. HEAD, local origin/main and remote `git ls-remote` all matched `6a869d2cb87e2acab673707c13399176becb995a`. These changes remain local pending owner approval. No secrets were loaded, no signing key reused, no transaction broadcast, no deployment or form submission performed.
+The final audit started from a clean worktree at `6a869d2cb87e2acab673707c13399176becb995a`. The reviewed product and evidence fixes were subsequently pushed as `9b1aac2e6ea62acadcb45fe19ce6fddbdbdacbe6`; the Vercel artifacts and Render provider endpoints were then reverified. No secrets were loaded or reused, and the audit itself broadcast no transaction or form submission.
 
 ## Verified evidence
 
@@ -14,7 +14,7 @@ Started with a clean worktree. HEAD, local origin/main and remote `git ls-remote
 
 ## Fixes and tests
 
-- Provider `_receipt_hashes` now accepts valid legacy prefixless hashes, deduplicates and still rejects malformed data. It never rewrites a hash-bound manifest. Regression tests prove original stored text is unchanged. Production capability currently reports an empty list; this compatibility fix must be deployed and verified before calling that problem resolved.
+- Provider `_receipt_hashes` accepts valid legacy prefixless hashes, deduplicates and still rejects malformed data. It never rewrites a hash-bound manifest. Regression tests prove original stored text is unchanged. After deployment, production capability reports the bounded provider action and provider ERC-8183 submission receipts.
 - Historical Open Mandate links load without a browser-local draft, use the onchain brief, show actual job status and settled/funded escrow state, and avoid directing completed jobs to fund again.
 - Evidence page leads with #873 and distinguishes it from the three TermiX hires. Submission HTML wraps long wallet addresses on mobile.
 - Rejected publication shows a concise rejection notice. No real wallet was connected during QA.
@@ -37,10 +37,9 @@ Flow: create mandate -> saved confirmation -> marketplace; fresh browser -> Job 
 
 ## Publish handoff
 
-1. Owner approves GitHub push and Vercel/Render deployment of this reviewed change set.
-2. Record commit, deployment IDs and HTTP/JSON proof; verify capability now lists the actual execution receipt. If still empty, inspect only non-secret state using a separately authorized provider operation. Do not replay an execution to manufacture evidence.
-3. Verify public #873 passport and original manifest hash, public HTML copy and completed-job route. Run `python scripts/sync_submission.py` whenever editing the submission HTML source.
-4. User records the 165-second script and uploads the video; insert and test the public URL.
-5. Review current official form fields, obtain final submission approval, then preserve the form confirmation. Form submission and video upload are still pending.
+1. GitHub commit `9b1aac2e6ea62acadcb45fe19ce6fddbdbdacbe6`, Vercel artifacts and the Render provider are public. Production capability lists both verified receipt hashes.
+2. Public #873 passport, original manifest hash, public HTML copy and completed-job route have been reverified. Run `python scripts/sync_submission.py` whenever editing the submission HTML source.
+3. User records the 165-second script and uploads the video; insert and test the public URL.
+4. Review current official form fields, obtain final submission approval, then preserve the form confirmation. Form submission and video upload are still pending.
 
-Remaining competition limitations: unequal category execution depth, no two independent providers in every category, no realized Grid trading record, three-task/one-human benchmark, testnet-only execution and compromised #2054 wallet permanently restricted to testnet. See `official-rules-check.md`; September 9 UTC is the listed closing date, exact hour was not stated.
+Remaining competition limitations: unequal category execution depth, no two independent providers in every category, no realized Grid trading record, three-task/one-human benchmark, testnet-only execution and compromised #2054 wallet permanently restricted to testnet. The official form states the build period closes September 9, 2026 at 12:00 UTC (20:00 Malaysia time).

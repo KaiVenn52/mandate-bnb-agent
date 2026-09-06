@@ -14,7 +14,7 @@
 - [x] Primary independent-wallet proof: Agent #2054 / Job #873 COMPLETED; execution, submit and settlement receipts and manifest hash reverified.
 - [x] Historical same-wallet mechanics proof: Job #506.
 - [ ] Recover historical #873 create/acceptance/assignment/policy/budget/approval/fund and #2054 registration transaction links; RPC history currently unavailable.
-- [ ] Publish and HTTP/hash-verify the new #873 passport after owner approval.
+- [x] Publish and HTTP/hash-verify the new #873 passport.
 - [x] Public web URL and public gateway health URL
 - [x] Submission wallet recorded: `0xD30BbB80c863c9B94622EF92337AaD65148D2EC3`
 - [x] Submission wallet funded with testnet gas and test U
@@ -66,9 +66,9 @@
 
 - [x] Local and remote GitHub main verified at `6a869d2cb87e2acab673707c13399176becb995a` before changes; worktree was clean.
 - [x] Provider health, readiness, card, capability and Job #873 manifest HTTP 200.
-- [ ] Production capability lists a verifiable receipt (currently empty; local legacy-prefix compatibility fix needs approved deployment and recheck).
-- [ ] Final GitHub push and Vercel/Render deployment approved and durable deployment IDs recorded.
+- [x] Production capability lists two verifiable receipts: the bounded provider action and provider-signed ERC-8183 submission.
+- [x] Final GitHub push and Vercel/Render deployment completed; public artifacts and provider readiness reverified after deployment.
 - [ ] Public video URL inserted into submission copy and HTML package.
 - [ ] Form success response captured after owner-authorized submission.
 
-The compromised #2054 wallet remains testnet-only. No private keys or seed phrases are needed for this audit. Current test results and remaining runtime gaps belong in `docs/final-qa.md`.
+Agent #2054 uses a retired historical testnet proof wallet after key exposure and remains permanently testnet-only. No private keys or seed phrases are needed for this audit. Current test results and remaining runtime gaps belong in `docs/final-qa.md`.

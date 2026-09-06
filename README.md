@@ -153,4 +153,4 @@ See [submission-checklist.md](docs/submission-checklist.md), [onchain-runbook.md
 
 ## Reverify the primary proof
 
-Run `backend/.venv/Scripts/python.exe scripts/collect_primary_evidence.py` from the repository root. This read-only script loads no credentials, verifies chain 97, Job #873, Agent #2054 ownership, receipts and the canonical manifest hash, and records historical RPC retrieval gaps explicitly. Provider #2054 is compromised and permanently testnet-only. Never use it for real funds.
+Run `backend/.venv/Scripts/python.exe scripts/collect_primary_evidence.py` from the repository root. This read-only script loads no credentials, verifies chain 97, Job #873, Agent #2054 ownership, receipts and the canonical manifest hash, and records historical RPC retrieval gaps explicitly. Agent #2054 uses a retired historical proof wallet whose signing key was exposed; it is permanently restricted to testnet and must never hold real funds.

@@ -41,7 +41,7 @@ For the TermiX challenge, MANDATE gates each qualifying agent run behind a verif
 ## Links
 
 - Live app: <https://mandate-bnb-agent.vercel.app>
-- Primary passport (pending publication of this update): <https://mandate-bnb-agent.vercel.app/evidence/evidence-passport-873.json>
+- Primary passport: <https://mandate-bnb-agent.vercel.app/evidence/evidence-passport-873.json>
 - Primary public manifest: <https://mandate-provider-yield.onrender.com/mandate/deliverables/873.json>
 - Job #873 settlement: <https://testnet.bscscan.com/tx/0x413a64410246ae228b573ecd0900819ef9f9fadbcd866a3fc7e9848a41fc3b21>
 - Job #506 settlement: <https://testnet.bscscan.com/tx/0xf423d6403c8e7926ea0e125c3b216226b95856fc836293645ef14c8ae531f043>
@@ -66,6 +66,6 @@ Kai Venn - solo builder; product, design and engineering.
 - BSC Testnet only for state-changing evidence.
 - The four reference agents #1804-#1807 still share one legacy provider and offer read-only analysis. Independent Yield provider #2054 adds one provider-owned bounded BSC Testnet call. Rebalancing, Grid and Health do not yet have equivalent asset-execution depth. Two independent providers in every category and a real Grid trading track record remain incomplete. A distinct wallet proves wallet separation, not independent business ownership.
 - Job #506 is a historical same-wallet mechanics proof; Jobs #642/#644/#666 remain the separate-client/provider TermiX task pairs, not three independent provider businesses.
-- Provider #2054 is compromised and permanently testnet-only. Historical acceptance/assignment transaction evidence is not yet recovered by this audit; current job state and execution/submit/settlement receipts are independently verified.
+- Agent #2054 uses a retired historical testnet proof wallet whose signing key was exposed. It is permanently restricted to testnet and must never hold real funds. Historical acceptance/assignment transaction evidence is not yet recovered by this audit; current job state and execution/submit/settlement receipts are independently verified.
 - Candidate historical metrics without public receipts are withheld from hiring and ranking; a point-in-time live quote is not presented as performance history.
 - The Agent Advantage sample contains three tasks and one human operator; it is not a universal productivity or profitability estimate.

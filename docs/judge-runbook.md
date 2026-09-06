@@ -7,7 +7,7 @@
 3. Open the [original public manifest](https://mandate-provider-yield.onrender.com/mandate/deliverables/873.json), then the execution, submission and settlement explorer links in the passport.
 4. Inspect the execution calldata: test U `approve(Commerce, 1 base unit)`, native value zero. This proves a bounded provider call, not yield routing or a profitable trade.
 5. The third-wallet settlement transfers 0.1 test U to the provider. Job #506 below is the old same-wallet mechanics proof; TermiX #642/#644/#666 are the separate benchmark hires.
-6. Review `retrieval_gaps`: earlier lifecycle hashes and historical signed acceptance were not independently recovered in the final audit. `/ready` 200 is not sufficient proof of onboarding readiness; production capability currently lists zero receipts.
+6. Review `retrieval_gaps`: earlier lifecycle hashes and historical signed acceptance were not independently recovered in the final audit. Production `/ready` and `/mandate/capability` now expose the independent provider and two receipt hashes; the passport independently verifies the provider action and ERC-8183 submission receipts.
 
 ## Product path (no wallet required)
 
