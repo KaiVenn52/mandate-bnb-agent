@@ -38,6 +38,15 @@ For the TermiX challenge, MANDATE gates each qualifying agent run behind a verif
 - Exact token approvals and zero residual allowance after settlement.
 - External registry records are actionable when a public HTTPS endpoint returns a provider-signed acceptance for the exact mandate; otherwise MANDATE keeps the requirement unfunded and unassigned instead of pretending an invite is a hire.
 
+## Four first-class category surfaces
+
+- **LP Rebalancing:** live PancakeSwap BNB/USDT context, action-frequency continuity and gas-drag rejection.
+- **Grid Trading:** live BNB/USDT market context, grid decision, hard drawdown/action limits and an explicitly paper-only record until receipt-linked trades exist.
+- **Yield Optimisation:** current DefiLlama pool/protocol evidence, capital-specific outcome estimates, leverage/protocol rejection and the independent-provider Job #873 proof.
+- **Health Factor Monitoring:** pinned-block Venus Comptroller evidence, liquidation-buffer decisions and a policy that permits only repay/add-collateral recommendations, never new borrowing.
+
+The four decision surfaces are live and category-specific. Their asset-execution depth is not yet equal: only independent Yield Agent #2054 has a provider-owned bounded BSC Testnet action receipt.
+
 ## Links
 
 - Live app: <https://mandate-bnb-agent.vercel.app>
