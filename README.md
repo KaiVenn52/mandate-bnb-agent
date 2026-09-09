@@ -133,7 +133,8 @@ User requirement
 
 - Complete: public source, four ERC-8004 identities, independent-provider proof Job #873, archived same-wallet lifecycle proof Job #506, four live read-only agent capabilities, strict marketplace matching, external-provider Open Mandates, provider onboarding, three independent funded TermiX hires, and the regenerated hire-backed Agent Advantage Report.
 - Honest boundary: the current built-in agents do not sign DeFi asset transactions; the grid record has no onchain trades; independent Yield provider #2054 has completed Job #873, but the remaining categories still need comparable bounded action receipts and Grid needs a real trading record. MANDATE does not claim mainnet execution or profitability.
-- Remaining external actions: record/upload the demo video and submit the official form. Each requires owner approval.
+- Demo published: [MANDATE — Outcome-First BNB Agent Marketplace | Build the Era Demo](https://youtu.be/KCMmjUGv4LY).
+- Remaining external action: submit the official form. This requires the owner's final review and submission.
 
 ## Public evidence endpoints
 
@@ -147,7 +148,7 @@ User requirement
 - `GET /evidence/evidence-passport-506.json` — machine-readable identity, benchmark and transaction evidence
 - `GET /evidence/MANDATE-Agent-Advantage-Report.pdf` — final hire-backed report generated from Jobs #642, #644, and #666
 
-Before final submission, add the final demo-video URL and obtain owner approval for the submission form.
+Before final submission, verify the published demo URL and obtain owner approval for the submission form.
 
 See [submission-checklist.md](docs/submission-checklist.md), [onchain-runbook.md](docs/onchain-runbook.md), and [demo-script.md](docs/demo-script.md).
 

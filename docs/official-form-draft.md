@@ -45,7 +45,7 @@ Agent Advantage Report: https://mandate-bnb-agent.vercel.app/evidence/MANDATE-Ag
 
 Job #873 settlement: https://testnet.bscscan.com/tx/0x413a64410246ae228b573ecd0900819ef9f9fadbcd866a3fc7e9848a41fc3b21
 
-State-changing evidence is on BSC Testnet. The submission does not claim mainnet execution or profitability. Demo video will be recorded separately; the current official form exposes no dedicated video field.
+State-changing evidence is on BSC Testnet. The submission does not claim mainnet execution or profitability. Published demo: https://youtu.be/KCMmjUGv4LY. The current official form exposes no dedicated video field, so include this URL in any available project-links or additional-notes field.
 
 ## Final owner actions
 
@@ -53,4 +53,3 @@ State-changing evidence is on BSC Testnet. The submission does not claim mainnet
 2. Read and accept the Terms of Participation.
 3. Before pressing **Submit**, verify every URL and request final submission approval.
 4. After submitting, save the confirmation page or response email as durable proof.
-

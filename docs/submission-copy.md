@@ -58,7 +58,7 @@ The four decision surfaces are live and category-specific. Their asset-execution
 - Hire inventory: <https://mandate-bnb-agent.vercel.app/evidence/termix/onchain-hires.json>
 - Submission wallet: `0xD30BbB80c863c9B94622EF92337AaD65148D2EC3`
 - Source code: <https://github.com/KaiVenn52/mandate-bnb-agent>
-- Demo video: `[ADD VIDEO URL AFTER RECORDING AND OWNER APPROVAL]`
+- Demo video: <https://youtu.be/KCMmjUGv4LY>
 
 ## Track positioning
 

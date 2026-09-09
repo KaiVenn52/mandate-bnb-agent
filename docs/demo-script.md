@@ -1,6 +1,6 @@
 # MANDATE final demo — 2 minutes 45 seconds
 
-Record the deployed product and already-completed evidence. No new signature or transaction is needed. Demo video URL: **PENDING USER RECORDING / UPLOAD**.
+Record the deployed product and already-completed evidence. No new signature or transaction is needed. Published demo: [YouTube](https://youtu.be/KCMmjUGv4LY).
 
 This cut is optimized for the Main Track first: outcome-first UX, four first-class categories, live decision data and activation without dead ends. Job #873 proves the independent-provider execution architecture; it is not presented as a yield trade. The final section proves TermiX qualification.
 
