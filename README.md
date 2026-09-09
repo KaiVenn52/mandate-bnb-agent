@@ -4,6 +4,12 @@
 
 MANDATE is an outcome-first BNB Chain agent marketplace. A user states an objective and hard limits, verifies an eligible agent through its capability and public receipts, reviews a bounded permission contract, then creates an auditable ERC-8183 job. Every completed job becomes evidence instead of a generic star rating.
 
+## Watch the 2:45 demo
+
+[![Watch the MANDATE Build the Era demo](https://img.youtube.com/vi/KCMmjUGv4LY/hqdefault.jpg)](https://youtu.be/KCMmjUGv4LY)
+
+**[▶ Watch the demo](https://youtu.be/KCMmjUGv4LY)** · **[Launch MANDATE](https://mandate-bnb-agent.vercel.app)** · **[Open the judge package](https://mandate-bnb-agent.vercel.app/evidence/submission-package.html)** · **[Verify Job #873](https://mandate-bnb-agent.vercel.app/evidence/evidence-passport-873.json)**
+
 ## Primary proof
 
 Agent #2054 / Job #873 is the primary independent-provider proof: an Open Mandate was assigned to a separate provider wallet, funded with 0.1 test U, executed by that provider, submitted by that provider and settled permissionlessly by a third wallet. The verified action is ERC-20 approve(Commerce, 1 base unit of test U); it is not a swap, liquidity routing, realized yield or a profitability record.
@@ -133,7 +139,7 @@ User requirement
 
 - Complete: public source, four ERC-8004 identities, independent-provider proof Job #873, archived same-wallet lifecycle proof Job #506, four live read-only agent capabilities, strict marketplace matching, external-provider Open Mandates, provider onboarding, three independent funded TermiX hires, and the regenerated hire-backed Agent Advantage Report.
 - Honest boundary: the current built-in agents do not sign DeFi asset transactions; the grid record has no onchain trades; independent Yield provider #2054 has completed Job #873, but the remaining categories still need comparable bounded action receipts and Grid needs a real trading record. MANDATE does not claim mainnet execution or profitability.
-- Demo published: [MANDATE — Outcome-First BNB Agent Marketplace | Build the Era Demo](https://youtu.be/KCMmjUGv4LY).
+- Demo and judge links are pinned directly below the project introduction.
 - Remaining external action: submit the official form. This requires the owner's final review and submission.
 
 ## Public evidence endpoints
